@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "860197339001",
+    "project_id": "ultimate-stats-a2c89",
+    "storage_bucket": "ultimate-stats-a2c89.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860197339001:android:c2412112155eb67ff679a8",
+        "android_client_info": {
+          "package_name": "com.example.ilkuygulamam"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAhWRx56egQeeQqJ0zCY_SnCosyWkajgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
