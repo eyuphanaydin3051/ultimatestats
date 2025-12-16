@@ -1,8 +1,6 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 import android.app.DatePickerDialog
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
@@ -54,10 +52,8 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
-import com.example.ilkuygulamam.ui.theme.*
-import kotlinx.coroutines.Dispatchers
+import com.example.discbase.ui.theme.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
 
 // ==========================================
@@ -262,7 +258,7 @@ fun TeamSelectionScreen(
                 actions = {
                     // Çıkış butonu (Opsiyonel, profil sayfasına taşımıştık ama burada da kalabilir)
                     IconButton(onClick = onSignOut) {
-                        Icon(Icons.AutoMirrored.Filled.Logout, null, tint = com.example.ilkuygulamam.ui.theme.StitchDefense)
+                        Icon(Icons.AutoMirrored.Filled.Logout, null, tint = com.example.discbase.ui.theme.StitchDefense)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
@@ -545,7 +541,7 @@ fun ProfileEditScreen(
                                     .size(100.dp)
                                     .clip(CircleShape)
                                     .border(2.dp,
-                                        com.example.ilkuygulamam.ui.theme.StitchPrimary, CircleShape),
+                                        com.example.discbase.ui.theme.StitchPrimary, CircleShape),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
@@ -569,7 +565,7 @@ fun ProfileEditScreen(
                                     )
                                 },
                                 shape = CircleShape,
-                                color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                                color = com.example.discbase.ui.theme.StitchPrimary,
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Icon(
@@ -593,8 +589,8 @@ fun ProfileEditScreen(
                         shape = RoundedCornerShape(12.dp),
                         enabled = isAdmin,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = com.example.ilkuygulamam.ui.theme.StitchPrimary,
-                            focusedLabelColor = com.example.ilkuygulamam.ui.theme.StitchPrimary
+                            focusedBorderColor = com.example.discbase.ui.theme.StitchPrimary,
+                            focusedLabelColor = com.example.discbase.ui.theme.StitchPrimary
                         )
                     )
 
@@ -648,8 +644,8 @@ fun ProfileEditScreen(
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, com.example.ilkuygulamam.ui.theme.StitchPrimary),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                    border = BorderStroke(1.dp, com.example.discbase.ui.theme.StitchPrimary),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = com.example.discbase.ui.theme.StitchPrimary)
                 ) { Text("Takım Değiştir") }
 
                 // Çıkış Yap
@@ -659,7 +655,7 @@ fun ProfileEditScreen(
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = com.example.ilkuygulamam.ui.theme.StitchDefense) // Kırmızı
+                    colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense) // Kırmızı
                 ) { Text("Çıkış Yap") }
             }
 
@@ -875,7 +871,7 @@ fun SettingsScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
                 Surface(
-                    color = com.example.ilkuygulamam.ui.theme.StitchPrimary.copy(0.05f),
+                    color = com.example.discbase.ui.theme.StitchPrimary.copy(0.05f),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp)
@@ -888,7 +884,7 @@ fun SettingsScreen(
                         Text(
                             formattedSample,
                             fontWeight = FontWeight.Bold,
-                            color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                            color = com.example.discbase.ui.theme.StitchPrimary,
                             fontSize = 14.sp
                         )
                     }
@@ -930,7 +926,7 @@ fun SettingsScreen(
                         RadioButton(
                             selected = currentTheme == AppTheme.LIGHT,
                             onClick = null,
-                            colors = RadioButtonDefaults.colors(selectedColor = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                            colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchPrimary)
                         )
                         Spacer(Modifier.width(8.dp))
                         Text("Açık Tema (Varsayılan)")
@@ -952,7 +948,7 @@ fun SettingsScreen(
                         RadioButton(
                             selected = currentTheme == AppTheme.DARK,
                             onClick = null,
-                            colors = RadioButtonDefaults.colors(selectedColor = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                            colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchPrimary)
                         )
                         Spacer(Modifier.width(8.dp))
                         Text("Koyu Tema")
@@ -974,7 +970,7 @@ fun SettingsScreen(
                         RadioButton(
                             selected = currentTheme == AppTheme.SYSTEM,
                             onClick = null,
-                            colors = RadioButtonDefaults.colors(selectedColor = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                            colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchPrimary)
                         )
                         Spacer(Modifier.width(8.dp))
                         Text("Sistem Teması")
@@ -1035,7 +1031,7 @@ fun SettingsScreen(
                 SettingsActionRow(
                     icon = Icons.Default.DeleteForever,
                     text = "Tüm Verileri Sıfırla",
-                    color = com.example.ilkuygulamam.ui.theme.StitchDefense,
+                    color = com.example.discbase.ui.theme.StitchDefense,
                     onClick = {
                         // Buraya bir AlertDialog ekleyerek mainViewModel.resetAllData() çağırabilirsiniz.
                         Toast.makeText(
@@ -1193,8 +1189,8 @@ fun TournamentSetupScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = com.example.ilkuygulamam.ui.theme.StitchPrimary,
-                            focusedLabelColor = com.example.ilkuygulamam.ui.theme.StitchPrimary
+                            focusedBorderColor = com.example.discbase.ui.theme.StitchPrimary,
+                            focusedLabelColor = com.example.discbase.ui.theme.StitchPrimary
                         )
                     )
 
@@ -1215,7 +1211,7 @@ fun TournamentSetupScreen(
                             disabledTextColor = StitchColor.TextPrimary,
                             disabledBorderColor = Color.Gray,
                             disabledLabelColor = Color.Gray,
-                            disabledTrailingIconColor = com.example.ilkuygulamam.ui.theme.StitchPrimary
+                            disabledTrailingIconColor = com.example.discbase.ui.theme.StitchPrimary
                         )
                     )
                 }
@@ -1250,7 +1246,7 @@ fun TournamentSetupScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isSelected) com.example.ilkuygulamam.ui.theme.StitchPrimary.copy(0.1f) else Color.Transparent)
+                                    .background(if (isSelected) com.example.discbase.ui.theme.StitchPrimary.copy(0.1f) else Color.Transparent)
                                     .clickable {
                                         selectedPlayerIds = if (isSelected) selectedPlayerIds - player.id
                                         else selectedPlayerIds + player.id
@@ -1267,7 +1263,7 @@ fun TournamentSetupScreen(
                                 Checkbox(
                                     checked = isSelected,
                                     onCheckedChange = null,
-                                    colors = CheckboxDefaults.colors(checkedColor = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                                    colors = CheckboxDefaults.colors(checkedColor = com.example.discbase.ui.theme.StitchPrimary)
                                 )
                             }
                         }
@@ -1365,13 +1361,13 @@ fun TournamentDetailScreen(
                             ModernIconButton(
                                 icon = Icons.Default.Edit,
                                 onClick = { navController.navigate("tournament_setup?tournamentId=${tournament.id}") },
-                                color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                                color = com.example.discbase.ui.theme.StitchPrimary,
                                 contentDescription = "Düzenle"
                             )
                             ModernIconButton(
                                 icon = Icons.Default.Delete,
                                 onClick = { showDeleteDialog = true },
-                                color = com.example.ilkuygulamam.ui.theme.StitchDefense,
+                                color = com.example.discbase.ui.theme.StitchDefense,
                                 contentDescription = "Sil"
                             )
                         }
@@ -1426,7 +1422,7 @@ fun TournamentDetailScreen(
                         modifier = Modifier
                             .size(64.dp)
                             .clip(RoundedCornerShape(20.dp))
-                            .background(com.example.ilkuygulamam.ui.theme.StitchPrimary.copy(alpha = 0.1f)),
+                            .background(com.example.discbase.ui.theme.StitchPrimary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -1454,14 +1450,14 @@ fun TournamentDetailScreen(
                         }
                         Spacer(Modifier.height(8.dp))
                         Surface(
-                            color = if(wins >= losses) StitchOffense.copy(0.1f) else com.example.ilkuygulamam.ui.theme.StitchDefense.copy(0.1f),
+                            color = if(wins >= losses) StitchOffense.copy(0.1f) else com.example.discbase.ui.theme.StitchDefense.copy(0.1f),
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
                                 text = recordText,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if(wins >= losses) StitchOffense else com.example.ilkuygulamam.ui.theme.StitchDefense,
+                                color = if(wins >= losses) StitchOffense else com.example.discbase.ui.theme.StitchDefense,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
@@ -1640,7 +1636,7 @@ fun MatchDetailScreen(
                     }
                     // Info Butonu
                     IconButton(onClick = { showEfficiencyInfo = true }) {
-                        Icon(Icons.Default.Info, contentDescription = "Bilgi", tint = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                        Icon(Icons.Default.Info, contentDescription = "Bilgi", tint = com.example.discbase.ui.theme.StitchPrimary)
                     }
                 }
             },
@@ -1752,7 +1748,7 @@ fun MatchDetailScreen(
                 title = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("$ourTeamName vs $opponentName", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        Text("${match.scoreUs} - ${match.scoreThem}", fontSize = 14.sp, color = if(match.scoreUs > match.scoreThem) StitchOffense else if(match.scoreThem > match.scoreUs) com.example.ilkuygulamam.ui.theme.StitchDefense else Color.Gray, fontWeight = FontWeight.Bold)
+                        Text("${match.scoreUs} - ${match.scoreThem}", fontSize = 14.sp, color = if(match.scoreUs > match.scoreThem) StitchOffense else if(match.scoreThem > match.scoreUs) com.example.discbase.ui.theme.StitchDefense else Color.Gray, fontWeight = FontWeight.Bold)
                     }
                 },
                 navigationIcon = {
@@ -1779,10 +1775,10 @@ fun MatchDetailScreen(
                     }
                     if (isAdmin) {
                         ModernIconButton(Icons.Default.Edit, { navController.navigate("match_playback/$tournamentId/${match.opponentName}?matchId=${match.id}") },
-                            com.example.ilkuygulamam.ui.theme.StitchPrimary, "Düzenle")
+                            com.example.discbase.ui.theme.StitchPrimary, "Düzenle")
                         Spacer(Modifier.width(8.dp))
                         ModernIconButton(Icons.Default.Delete, { showDeleteDialog = true },
-                            com.example.ilkuygulamam.ui.theme.StitchDefense, "Sil")
+                            com.example.discbase.ui.theme.StitchDefense, "Sil")
                         Spacer(Modifier.width(8.dp))
                     }
                 },
@@ -1795,11 +1791,11 @@ fun MatchDetailScreen(
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
                 containerColor = StitchColor.Surface,
-                contentColor = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                contentColor = com.example.discbase.ui.theme.StitchPrimary,
                 indicator = { tabPositions ->
                     androidx.compose.material3.TabRowDefaults.Indicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                        color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                        color = com.example.discbase.ui.theme.StitchPrimary,
                         height = 3.dp
                     )
                 }
@@ -1812,7 +1808,7 @@ fun MatchDetailScreen(
                             Text(
                                 title,
                                 fontWeight = if(pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if(pagerState.currentPage == index) com.example.ilkuygulamam.ui.theme.StitchPrimary else Color.Gray
+                                color = if(pagerState.currentPage == index) com.example.discbase.ui.theme.StitchPrimary else Color.Gray
                             )
                         }
                     )
@@ -2113,7 +2109,7 @@ fun PointDetailScreen(
                                 .size(if (isSelected) 56.dp else 48.dp)
                                 .border(
                                     if (isSelected) 2.dp else 0.dp,
-                                    if (isSelected) com.example.ilkuygulamam.ui.theme.StitchPrimary else Color.Transparent,
+                                    if (isSelected) com.example.discbase.ui.theme.StitchPrimary else Color.Transparent,
                                     CircleShape
                                 )
                                 .padding(4.dp)
@@ -2129,7 +2125,7 @@ fun PointDetailScreen(
                             p.name.split(" ").first(),
                             fontSize = 11.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) com.example.ilkuygulamam.ui.theme.StitchPrimary else Color.Gray
+                            color = if (isSelected) com.example.discbase.ui.theme.StitchPrimary else Color.Gray
                         )
                     }
                 }
@@ -2345,7 +2341,7 @@ fun SettingsSwitchRow(
             enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = com.example.ilkuygulamam.ui.theme.StitchPrimary
+                checkedTrackColor = com.example.discbase.ui.theme.StitchPrimary
             )
         )
     }
@@ -2363,7 +2359,7 @@ fun NameFormatOption(label: String, selected: Boolean, onClick: () -> Unit) {
         RadioButton(
             selected = selected,
             onClick = null,
-            colors = RadioButtonDefaults.colors(selectedColor = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+            colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchPrimary)
         )
         Spacer(Modifier.width(8.dp))
         Text(label, fontSize = 14.sp)
@@ -2608,7 +2604,7 @@ fun MainAppScaffold(
                             badge = {
                                 if (hasNotification) {
                                     androidx.compose.material3.Badge(
-                                        containerColor = com.example.ilkuygulamam.ui.theme.StitchDefense, // Kırmızı renk
+                                        containerColor = com.example.discbase.ui.theme.StitchDefense, // Kırmızı renk
                                         contentColor = Color.White
                                     ) {
                                         // İstersen sayı da yazdırabilirsin ama şimdilik sadece nokta yeterli
@@ -2621,7 +2617,7 @@ fun MainAppScaffold(
                             ModernIconButton(
                                 icon = Icons.Default.Person,
                                 onClick = { topLevelNavController.navigate("profile_edit") },
-                                color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                                color = com.example.discbase.ui.theme.StitchPrimary,
                                 contentDescription = "Profil"
                             )
                         }

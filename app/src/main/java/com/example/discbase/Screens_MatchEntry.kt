@@ -1,4 +1,4 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -34,19 +34,13 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.ilkuygulamam.ui.theme.*
+import com.example.discbase.ui.theme.*
 import java.util.UUID
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import kotlin.inc
 
 // --- 1. MAÇ KURULUM (İSİM GİRME) ---
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,7 +84,7 @@ fun MatchSetupScreen(
                     modifier = Modifier.padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(ourTeamName.uppercase(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                    Text(ourTeamName.uppercase(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = com.example.discbase.ui.theme.StitchPrimary)
                     Spacer(Modifier.height(16.dp))
 
                     // VS İkonu
@@ -114,8 +108,8 @@ fun MatchSetupScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = com.example.ilkuygulamam.ui.theme.StitchPrimary,
-                            focusedLabelColor = com.example.ilkuygulamam.ui.theme.StitchPrimary
+                            focusedBorderColor = com.example.discbase.ui.theme.StitchPrimary,
+                            focusedLabelColor = com.example.discbase.ui.theme.StitchPrimary
                         ),
                         singleLine = true
                     )
@@ -982,7 +976,7 @@ fun StatEntryScreen(
                         showDeletePointDialog = false
                         onDeletePoint()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = com.example.ilkuygulamam.ui.theme.StitchDefense)
+                    colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense)
                 ) { Text("Evet, Sil") }
             },
             dismissButton = {
@@ -1093,7 +1087,7 @@ fun StatEntryScreen(
                     ModernIconButton(
                         Icons.Default.Refresh,
                         { showResetDialog = true },
-                        com.example.ilkuygulamam.ui.theme.StitchDefense,
+                        com.example.discbase.ui.theme.StitchDefense,
                         "Sıfırla"
                     )
                     Spacer(Modifier.width(8.dp))
@@ -1303,7 +1297,7 @@ fun PointStartUI(
                     onClick = onStartDefense,
                     modifier = Modifier.fillMaxWidth().height(64.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = com.example.ilkuygulamam.ui.theme.StitchDefense) // Kırmızı
+                    colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense) // Kırmızı
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Shield, null)
@@ -1429,7 +1423,7 @@ fun SimpleStatEntryUI(
             ) {
                 Text(ourTeamName, fontWeight = FontWeight.Bold, color = Color.Gray, fontSize = 16.sp)
                 Spacer(Modifier.width(16.dp))
-                Text("$scoreUs", fontSize = 48.sp, fontWeight = FontWeight.Black, color = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                Text("$scoreUs", fontSize = 48.sp, fontWeight = FontWeight.Black, color = com.example.discbase.ui.theme.StitchPrimary)
                 Text(" - ", fontSize = 48.sp, fontWeight = FontWeight.Light)
                 Text("$scoreThem", fontSize = 48.sp, fontWeight = FontWeight.Black)
                 Spacer(Modifier.width(16.dp))
@@ -1440,7 +1434,7 @@ fun SimpleStatEntryUI(
         Spacer(Modifier.height(32.dp))
 
         // 2. OYUNCU SEÇİMİ
-        Text("KİM GOL ATTI?", fontWeight = FontWeight.Bold, color = com.example.ilkuygulamam.ui.theme.StitchPrimary, fontSize = 18.sp)
+        Text("KİM GOL ATTI?", fontWeight = FontWeight.Bold, color = com.example.discbase.ui.theme.StitchPrimary, fontSize = 18.sp)
         Spacer(Modifier.height(16.dp))
 
         PlayerSelectionDropdown("Asist Yapan (Pas)", currentPointStats, assisterId, { assisterId = it }, setOfNotNull(scorerId))
@@ -1466,7 +1460,7 @@ fun SimpleStatEntryUI(
             onClick = { onTheyScored() },
             modifier = Modifier.fillMaxWidth().height(60.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = com.example.ilkuygulamam.ui.theme.StitchDefense)
+            colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense)
         ) {
             Text("RAKİP ATTI (+1)", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
@@ -1597,7 +1591,7 @@ fun PullResultUI(
                         onClick = { onResultSelected(true) },
                         modifier = Modifier.fillMaxWidth().height(60.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                        colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchPrimary)
                     ) {
                         Text("BAŞARILI PULL (In bounds)", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
@@ -1675,7 +1669,7 @@ fun StatTrackingUI(
         // Süre durduysa dikkat çekici bir renk (Örn: Turuncu veya Koyu Gri)
         Color(0xFFFB8C00) // Canlı Turuncu
     } else if (gameMode == GameMode.DEFENSE) {
-        com.example.ilkuygulamam.ui.theme.StitchDefense
+        com.example.discbase.ui.theme.StitchDefense
     } else {
         StitchOffense
     }
@@ -1742,7 +1736,7 @@ fun StatTrackingUI(
                     Text(
                         text = ourTeamName.uppercase(),
                         fontWeight = FontWeight.Bold,
-                        color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                        color = com.example.discbase.ui.theme.StitchPrimary,
                         fontSize = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -1758,7 +1752,7 @@ fun StatTrackingUI(
                             "$scoreUs",
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Black,
-                            color = com.example.ilkuygulamam.ui.theme.StitchPrimary
+                            color = com.example.discbase.ui.theme.StitchPrimary
                         )
                         // DÜZELTME: Tire işareti ve rakip skoru rengi dinamik yapıldı
                         Text(
@@ -1819,14 +1813,14 @@ fun StatTrackingUI(
                             modifier = Modifier
                                 .width(60.dp) // Sabit genişlik
                                 .fillMaxHeight()
-                                .background(com.example.ilkuygulamam.ui.theme.StitchDefense.copy(alpha = 0.1f)) // Hafif kırmızı zemin
+                                .background(com.example.discbase.ui.theme.StitchDefense.copy(alpha = 0.1f)) // Hafif kırmızı zemin
                                 .clickable(onClick = onInjuryClick),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.MedicalServices,
                                 contentDescription = "Sakatlık",
-                                tint = com.example.ilkuygulamam.ui.theme.StitchDefense
+                                tint = com.example.discbase.ui.theme.StitchDefense
                             )
                         }
                     }
@@ -1928,11 +1922,11 @@ fun StatTrackingUI(
                     Button(
                         onClick = onOpponentScore,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = com.example.ilkuygulamam.ui.theme.StitchDefense.copy(0.1f), contentColor = com.example.ilkuygulamam.ui.theme.StitchDefense
+                            containerColor = com.example.discbase.ui.theme.StitchDefense.copy(0.1f), contentColor = com.example.discbase.ui.theme.StitchDefense
                         ),
                         modifier = Modifier.weight(1f).height(50.dp),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, com.example.ilkuygulamam.ui.theme.StitchDefense)
+                        border = BorderStroke(1.dp, com.example.discbase.ui.theme.StitchDefense)
                     ) { Text("RAKİP GOL", fontWeight = FontWeight.Bold) }
                     Button(
                         onClick = onOpponentTurnover,
@@ -2078,7 +2072,7 @@ fun RowScope.ActionButtonsContent(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Button(
                     onClick = onThrowaway,
-                    colors = ButtonDefaults.buttonColors(containerColor = com.example.ilkuygulamam.ui.theme.StitchDefense),
+                    colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.width(140.dp).height(36.dp),
                     contentPadding = PaddingValues(0.dp)
@@ -2097,14 +2091,14 @@ fun RowScope.ActionButtonsContent(
             )
             StatIconButton(
                 icon = Icons.Default.Close,
-                color = com.example.ilkuygulamam.ui.theme.StitchDefense.copy(alpha = 0.2f),
-                tint = com.example.ilkuygulamam.ui.theme.StitchDefense,
+                color = com.example.discbase.ui.theme.StitchDefense.copy(alpha = 0.2f),
+                tint = com.example.discbase.ui.theme.StitchDefense,
                 onClick = onDrop,
                 modifier = Modifier.weight(1f)
             )
             StatIconButton(
                 icon = Icons.Default.Adjust,
-                color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                color = com.example.discbase.ui.theme.StitchPrimary,
                 tint = Color.White,
                 onClick = onGoal,
                 modifier = Modifier.weight(1f)
@@ -2181,7 +2175,7 @@ fun InjurySubDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.MedicalServices, null, tint = com.example.ilkuygulamam.ui.theme.StitchDefense)
+                Icon(Icons.Default.MedicalServices, null, tint = com.example.discbase.ui.theme.StitchDefense)
                 Spacer(Modifier.width(8.dp))
                 Text(
                     "Sakatlık / Oyuncu Değişimi",
@@ -2203,7 +2197,7 @@ fun InjurySubDialog(
                 Text(
                     "ÇIKAN OYUNCU",
                     fontWeight = FontWeight.Bold,
-                    color = com.example.ilkuygulamam.ui.theme.StitchDefense,
+                    color = com.example.discbase.ui.theme.StitchDefense,
                     fontSize = 12.sp
                 )
                 Box(
@@ -2219,7 +2213,7 @@ fun InjurySubDialog(
                                     .fillMaxWidth()
                                     .clickable { selectedPlayerOut = player.playerId }
                                     .background(
-                                        if (selectedPlayerOut == player.playerId) com.example.ilkuygulamam.ui.theme.StitchDefense.copy(
+                                        if (selectedPlayerOut == player.playerId) com.example.discbase.ui.theme.StitchDefense.copy(
                                             0.1f
                                         ) else Color.Transparent
                                     )
@@ -2229,7 +2223,7 @@ fun InjurySubDialog(
                                 RadioButton(
                                     selected = selectedPlayerOut == player.playerId,
                                     onClick = null,
-                                    colors = RadioButtonDefaults.colors(selectedColor = com.example.ilkuygulamam.ui.theme.StitchDefense)
+                                    colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchDefense)
                                 )
                                 Text(player.name, fontWeight = FontWeight.SemiBold)
                             }
@@ -2347,12 +2341,12 @@ fun LineSelectionScreen(
             // Filtre varsa temizleme butonu
             if (activeFilterIds != null) {
                 TextButton(onClick = { activeFilterIds = null }) {
-                    Text("Filtreyi Kaldır", color = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                    Text("Filtreyi Kaldır", color = com.example.discbase.ui.theme.StitchPrimary)
                 }
             } else if (selectedPlayerIds.isNotEmpty()) {
                 // Filtre yoksa ama seçim varsa "Temizle" butonu
                 TextButton(onClick = { selectedPlayerIds = emptySet() }) {
-                    Text("Temizle", color = com.example.ilkuygulamam.ui.theme.StitchDefense)
+                    Text("Temizle", color = com.example.discbase.ui.theme.StitchDefense)
                 }
             }
         }
@@ -2418,7 +2412,7 @@ fun LineSelectionScreen(
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 // Aktifse Yeşil, Değilse Mor
-                                color = if (isLastLineActive) StitchOffense else com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                                color = if (isLastLineActive) StitchOffense else com.example.discbase.ui.theme.StitchPrimary,
                                 contentColor = Color.White
                             ) {
                                 Row(
@@ -2607,7 +2601,7 @@ fun QuickSetChip(
     val bgColor = if (isActive) StitchSecondary else Color.White
     val contentColor = if (isActive) Color.White else StitchColor.TextPrimary
     val badgeColor =
-        if (isActive) Color.White.copy(0.8f) else if (isFilter) Color.Gray else com.example.ilkuygulamam.ui.theme.StitchPrimary
+        if (isActive) Color.White.copy(0.8f) else if (isFilter) Color.Gray else com.example.discbase.ui.theme.StitchPrimary
 
     Surface(
         onClick = onClick,
@@ -2703,14 +2697,14 @@ fun RosterSelectionRow(
                     "O: ${stats.oPointsPlayed} | D: ${stats.dPointsPlayed}",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = com.example.ilkuygulamam.ui.theme.StitchPrimary
+                    color = com.example.discbase.ui.theme.StitchPrimary
                 )
             }
 
             Checkbox(
                 checked = isSelected,
                 onCheckedChange = null,
-                colors = CheckboxDefaults.colors(checkedColor = com.example.ilkuygulamam.ui.theme.StitchPrimary),
+                colors = CheckboxDefaults.colors(checkedColor = com.example.discbase.ui.theme.StitchPrimary),
                 enabled = isSelected || !isSelectionFull // Doluysa ve seçili değilse disable et
             )
         }

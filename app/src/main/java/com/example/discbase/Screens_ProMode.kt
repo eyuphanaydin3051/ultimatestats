@@ -1,4 +1,4 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 // Screens_ProMode.kt en üstüne ekleyin:
 import android.content.pm.ActivityInfo // <-- BU IMPORT'U EKLEMEYİ UNUTMA
@@ -40,16 +40,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import androidx.navigation.NavType
-import com.example.ilkuygulamam.ui.theme.*
+import com.example.discbase.ui.theme.*
 import java.util.UUID
 import kotlin.math.pow
 import kotlin.math.sqrt
 import androidx.compose.foundation.lazy.LazyRow // <-- BU EKSİKTİ
-import androidx.compose.foundation.lazy.items // <-- BU LAZIM
 import androidx.compose.foundation.BorderStroke // <-- Border hatası için
-import androidx.compose.foundation.border
 import androidx.compose.material3.FilterChip // <-- Chip hatası için
 import androidx.compose.material3.FilterChipDefaults // <-- Chip renkleri için
 // --- OYUN DURUMU ENUM ---

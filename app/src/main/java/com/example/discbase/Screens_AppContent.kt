@@ -1,8 +1,7 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
@@ -19,7 +18,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,15 +27,10 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,11 +44,8 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
-import com.example.ilkuygulamam.ui.theme.*
-import kotlinx.coroutines.Dispatchers
+import com.example.discbase.ui.theme.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
 import java.util.*
 
 // --- 1. ANA SAYFA (HOME SCREEN) ---
@@ -91,7 +81,7 @@ fun HomeScreen(
                         badge = {
                             if (hasNotification) {
                                 androidx.compose.material3.Badge(
-                                    containerColor = com.example.ilkuygulamam.ui.theme.StitchDefense,
+                                    containerColor = com.example.discbase.ui.theme.StitchDefense,
                                     contentColor = Color.White
                                 )
                             }
@@ -101,7 +91,7 @@ fun HomeScreen(
                         ModernIconButton(
                             icon = Icons.Default.Person,
                             onClick = { navController.navigate("profile_edit") },
-                            color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                            color = com.example.discbase.ui.theme.StitchPrimary,
                             contentDescription = "Profil Ayarları"
                         )
                     }
@@ -131,7 +121,7 @@ fun HomeScreen(
                         model = getLogoModel(teamProfile.logoPath),
                         contentDescription = null,
                         modifier = Modifier.size(64.dp).clip(CircleShape).border(2.dp,
-                            com.example.ilkuygulamam.ui.theme.StitchPrimary, CircleShape)
+                            com.example.discbase.ui.theme.StitchPrimary, CircleShape)
                     )
                 } else {
                     Icon(
@@ -218,8 +208,8 @@ fun HomeScreen(
                     ) {
                         Text("Toplam Hata", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                         Spacer(Modifier.height(8.dp))
-                        Text("$totalTurnovers", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = com.example.ilkuygulamam.ui.theme.StitchDefense)
-                        Icon(Icons.Default.TrendingDown, null, tint = com.example.ilkuygulamam.ui.theme.StitchDefense)
+                        Text("$totalTurnovers", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = com.example.discbase.ui.theme.StitchDefense)
+                        Icon(Icons.Default.TrendingDown, null, tint = com.example.discbase.ui.theme.StitchDefense)
                     }
                 }
             }
@@ -240,7 +230,7 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text("İstatistik Merkezi", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                        Text("İstatistik Merkezi", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = com.example.discbase.ui.theme.StitchPrimary)
                         Text("Detaylı takım analizi ve veriler", fontSize = 12.sp, color = Color.Gray)
                     }
                     Icon(
@@ -310,7 +300,7 @@ fun RosterScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                        focusedBorderColor = com.example.discbase.ui.theme.StitchPrimary,
                         unfocusedBorderColor = Color.LightGray,
                         focusedContainerColor = StitchColor.Surface,   // DOĞRU: Büyük C
                         unfocusedContainerColor = StitchColor.Surface
@@ -390,7 +380,7 @@ private fun PlayerGridCard(
 ) {
     // Pozisyona göre renk
     val posColor = when (player.position) {
-        "Handler" -> com.example.ilkuygulamam.ui.theme.StitchPrimary // Mor
+        "Handler" -> com.example.discbase.ui.theme.StitchPrimary // Mor
         "Cutter" -> StitchOffense // Yeşil/Teal
         else -> Color.Gray
     }
@@ -619,7 +609,7 @@ fun PlayerAddScreen(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Box(
                     modifier = Modifier.size(100.dp)
-                        .background(com.example.ilkuygulamam.ui.theme.StitchPrimary.copy(0.1f), CircleShape),
+                        .background(com.example.discbase.ui.theme.StitchPrimary.copy(0.1f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -735,7 +725,7 @@ fun TrainingScreen(
                     ModernIconButton(
                         icon = Icons.Default.Person,
                         onClick = { navController.navigate("profile_edit") },
-                        color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                        color = com.example.discbase.ui.theme.StitchPrimary,
                         contentDescription = "Profil"
                     )
                 },
@@ -763,11 +753,11 @@ fun TrainingScreen(
             TabRow(
                 selectedTabIndex = selectedTabIndex,
                 containerColor = StitchColor.Surface,
-                contentColor = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                contentColor = com.example.discbase.ui.theme.StitchPrimary,
                 indicator = { tabPositions ->
                     androidx.compose.material3.TabRowDefaults.Indicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                        color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                        color = com.example.discbase.ui.theme.StitchPrimary,
                         height = 3.dp
                     )
                 }) {
@@ -790,8 +780,8 @@ fun TrainingScreen(
                     divider = {}) {
                     months.forEachIndexed { index, monthName ->
                         val isSelected = index == selectedMonthIndex;
-                        val textColor = if (isSelected) com.example.ilkuygulamam.ui.theme.StitchPrimary else Color.Gray;
-                        val bgColor = if (isSelected) com.example.ilkuygulamam.ui.theme.StitchPrimary.copy(0.1f) else Color.Transparent;
+                        val textColor = if (isSelected) com.example.discbase.ui.theme.StitchPrimary else Color.Gray;
+                        val bgColor = if (isSelected) com.example.discbase.ui.theme.StitchPrimary.copy(0.1f) else Color.Transparent;
                         Tab(
                             selected = isSelected,
                             onClick = { selectedMonthIndex = index },
@@ -894,7 +884,7 @@ fun ExpandableTrainingCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // TARIH KUTUSU
                     Surface(
-                        color = com.example.ilkuygulamam.ui.theme.StitchPrimary.copy(0.1f),
+                        color = com.example.discbase.ui.theme.StitchPrimary.copy(0.1f),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.size(50.dp)
                     ) {
@@ -903,7 +893,7 @@ fun ExpandableTrainingCard(
                             verticalArrangement = Arrangement.Center
                         ) {
                             val day = training.date.split("/").getOrNull(0) ?: "?"
-                            Text(day, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                            Text(day, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = com.example.discbase.ui.theme.StitchPrimary)
                         }
                     }
                     Spacer(Modifier.width(12.dp))
@@ -985,10 +975,10 @@ fun ExpandableTrainingCard(
                         }
                         Button(
                             onClick = onDelete,
-                            colors = ButtonDefaults.buttonColors(containerColor = com.example.ilkuygulamam.ui.theme.StitchDefense.copy(0.1f), contentColor = com.example.ilkuygulamam.ui.theme.StitchDefense),
+                            colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense.copy(0.1f), contentColor = com.example.discbase.ui.theme.StitchDefense),
                             modifier = Modifier.weight(1f).height(40.dp),
                             shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, com.example.ilkuygulamam.ui.theme.StitchDefense)
+                            border = BorderStroke(1.dp, com.example.discbase.ui.theme.StitchDefense)
                         ) {
                             Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(8.dp))
@@ -1063,7 +1053,7 @@ fun AttendanceReportList(
                             Text(
                                 "$count / ${trainings.size}",
                                 fontWeight = FontWeight.Bold,
-                                color = if (percentage > 0.7) StitchOffense else if (percentage > 0.4) com.example.ilkuygulamam.ui.theme.StitchPrimary else com.example.ilkuygulamam.ui.theme.StitchDefense
+                                color = if (percentage > 0.7) StitchOffense else if (percentage > 0.4) com.example.discbase.ui.theme.StitchPrimary else com.example.discbase.ui.theme.StitchDefense
                             )
                         }
                         Spacer(Modifier.height(8.dp))
@@ -1071,7 +1061,7 @@ fun AttendanceReportList(
                             progress = percentage,
                             modifier = Modifier.fillMaxWidth().height(8.dp)
                                 .clip(RoundedCornerShape(50)),
-                            color = if (percentage > 0.7f) StitchOffense else if (percentage > 0.4f) com.example.ilkuygulamam.ui.theme.StitchPrimary else com.example.ilkuygulamam.ui.theme.StitchDefense,
+                            color = if (percentage > 0.7f) StitchOffense else if (percentage > 0.4f) com.example.discbase.ui.theme.StitchPrimary else com.example.discbase.ui.theme.StitchDefense,
                             trackColor = Color(0xFFF0F0F0)
                         )
                     }
@@ -1219,7 +1209,7 @@ fun TrainingAddDialog(
 
                                 OutlinedTextField(
                                     value = description, onValueChange = { description = it }, label = { Text("Notlar") },
-                                    modifier = Modifier.fillMaxWidth().height(80.dp)
+                                    modifier = Modifier.fillMaxWidth().height(300.dp)
                                 )
                             }
                         }
@@ -1397,7 +1387,7 @@ fun TeamStatisticsScreen(
                     Surface(
                         onClick = { showDropdown = true },
                         shape = RoundedCornerShape(50),
-                        color = com.example.ilkuygulamam.ui.theme.StitchPrimary.copy(alpha = 0.1f),
+                        color = com.example.discbase.ui.theme.StitchPrimary.copy(alpha = 0.1f),
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Row(
@@ -1408,7 +1398,7 @@ fun TeamStatisticsScreen(
                                 selectedTournamentName,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = com.example.ilkuygulamam.ui.theme.StitchPrimary
+                                color = com.example.discbase.ui.theme.StitchPrimary
                             )
                             Spacer(Modifier.width(4.dp))
                             Icon(
@@ -1500,7 +1490,7 @@ fun PerformanceCard(
                 percentage = passRate.text,
                 ratio = passRate.ratio,
                 progress = passRate.progress,
-                progressColor = com.example.ilkuygulamam.ui.theme.StitchPrimary // Mor
+                progressColor = com.example.discbase.ui.theme.StitchPrimary // Mor
             )
         }
     }
@@ -1614,11 +1604,11 @@ fun DetailedStatsCard(
             // 2. Satır: Hatalar
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StitchStatBox("Turnover", totalTurnovers,
-                    com.example.ilkuygulamam.ui.theme.StitchDefense, Modifier.weight(1f))
+                    com.example.discbase.ui.theme.StitchDefense, Modifier.weight(1f))
                 StitchStatBox(
                     "O. turn/Maç",
                     avgTurnoverMatch,
-                    com.example.ilkuygulamam.ui.theme.StitchDefense.copy(alpha = 0.8f),
+                    com.example.discbase.ui.theme.StitchDefense.copy(alpha = 0.8f),
                     Modifier.weight(1f),
                     valueFontSize = myFontSize
                 )
@@ -1714,7 +1704,7 @@ fun SeasonMatchesScreen(
                             Text(
                                 text = item.tournamentName,
                                 fontSize = 11.sp,
-                                color = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                                color = com.example.discbase.ui.theme.StitchPrimary,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
@@ -1756,7 +1746,7 @@ fun SeasonMatchesScreen(
                                 Text(
                                     item.match.opponentName,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (item.match.scoreThem > item.match.scoreUs) com.example.ilkuygulamam.ui.theme.StitchDefense else Color.Gray,
+                                    color = if (item.match.scoreThem > item.match.scoreUs) com.example.discbase.ui.theme.StitchDefense else Color.Gray,
                                     textAlign = TextAlign.End,
                                     fontSize = 14.sp,
                                     modifier = Modifier.weight(1f)
@@ -2134,11 +2124,11 @@ fun EfficiencyDescriptionDialog(onDismiss: () -> Unit) {
                     Icon(
                         Icons.Default.Shield,
                         null,
-                        tint = com.example.ilkuygulamam.ui.theme.StitchPrimary,
+                        tint = com.example.discbase.ui.theme.StitchPrimary,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("+1.5 Puan: ", fontWeight = FontWeight.Bold, color = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                    Text("+1.5 Puan: ", fontWeight = FontWeight.Bold, color = com.example.discbase.ui.theme.StitchPrimary)
                     Text("Blok (Defense)")
                 }
 
@@ -2179,11 +2169,11 @@ fun EfficiencyDescriptionDialog(onDismiss: () -> Unit) {
                     Icon(
                         Icons.Default.TrendingDown,
                         null,
-                        tint = com.example.ilkuygulamam.ui.theme.StitchDefense,
+                        tint = com.example.discbase.ui.theme.StitchDefense,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("-1.0 Puan: ", fontWeight = FontWeight.Bold, color = com.example.ilkuygulamam.ui.theme.StitchDefense)
+                    Text("-1.0 Puan: ", fontWeight = FontWeight.Bold, color = com.example.discbase.ui.theme.StitchDefense)
                     Text("Hata (Turnover), Drop")
                 }
             }
@@ -2648,13 +2638,13 @@ fun PlayerEditScreen(
                     colors = CardDefaults.cardColors(containerColor = StitchColor.Surface),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, com.example.ilkuygulamam.ui.theme.StitchPrimary.copy(alpha = 0.5f))
+                    border = BorderStroke(1.dp, com.example.discbase.ui.theme.StitchPrimary.copy(alpha = 0.5f))
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text("Profili Düzenle", fontWeight = FontWeight.Bold, color = com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                        Text("Profili Düzenle", fontWeight = FontWeight.Bold, color = com.example.discbase.ui.theme.StitchPrimary)
 
                         if (isAdmin) {
                             // --- YENİ E-POSTA SEÇİCİ ---
@@ -2732,7 +2722,7 @@ fun PlayerEditScreen(
                                 enabled = false, // Görsel olarak enabled, tıklama modifier ile yönetiliyor
                                 colors = OutlinedTextFieldDefaults.colors(
                                     disabledTextColor = Color.Black,
-                                    disabledBorderColor = if (canEditPhotoAndNumber) com.example.ilkuygulamam.ui.theme.StitchPrimary else Color.Gray,
+                                    disabledBorderColor = if (canEditPhotoAndNumber) com.example.discbase.ui.theme.StitchPrimary else Color.Gray,
                                     disabledLabelColor = Color.Gray
                                 )
                             )
@@ -2830,7 +2820,7 @@ fun PlayerEditScreen(
                             },
                             modifier = Modifier.fillMaxWidth().height(50.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = com.example.ilkuygulamam.ui.theme.StitchPrimary),
+                            colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchPrimary),
                             enabled = !isSaving
                         ) {
                             if (isSaving) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
@@ -3017,7 +3007,7 @@ fun PlayerEditScreen(
                                 if (handlerRatio > 0) {
                                     Box(
                                         modifier = Modifier.fillMaxHeight().weight(handlerRatio)
-                                            .background(com.example.ilkuygulamam.ui.theme.StitchPrimary)
+                                            .background(com.example.discbase.ui.theme.StitchPrimary)
                                     ) {
                                         if (handlerRatio > 0.15) Text(
                                             "${(handlerRatio * 100).toInt()}%",
@@ -3052,7 +3042,7 @@ fun PlayerEditScreen(
                                     Box(
                                         modifier = Modifier.size(
                                             10.dp
-                                        ).background(com.example.ilkuygulamam.ui.theme.StitchPrimary, CircleShape)
+                                        ).background(com.example.discbase.ui.theme.StitchPrimary, CircleShape)
                                     ); Spacer(Modifier.width(6.dp)); Text(
                                     "Handler'a Pas",
                                     fontSize = 12.sp,
@@ -3128,7 +3118,7 @@ fun PlayerEditScreen(
                                             )
                                             Text(
                                                 text = receiverPos,
-                                                color = if (isHandlerConnection) com.example.ilkuygulamam.ui.theme.StitchPrimary else StitchOffense,
+                                                color = if (isHandlerConnection) com.example.discbase.ui.theme.StitchPrimary else StitchOffense,
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.SemiBold
                                             )
@@ -3151,7 +3141,7 @@ fun PlayerEditScreen(
                                                 progress = percentage.toFloat(),
                                                 modifier = Modifier.fillMaxWidth().height(6.dp)
                                                     .clip(RoundedCornerShape(50)),
-                                                color = if (isHandlerConnection) com.example.ilkuygulamam.ui.theme.StitchPrimary else StitchOffense,
+                                                color = if (isHandlerConnection) com.example.discbase.ui.theme.StitchPrimary else StitchOffense,
                                                 trackColor = Color(0xFFF0F0F0)
                                             )
                                         }

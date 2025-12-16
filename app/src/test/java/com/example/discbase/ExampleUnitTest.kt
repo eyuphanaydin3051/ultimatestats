@@ -1,4 +1,4 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 import org.junit.Test
 

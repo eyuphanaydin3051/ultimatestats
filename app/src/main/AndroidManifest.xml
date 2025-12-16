@@ -32,7 +32,7 @@
             android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar" />
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.ilkuygulamam.fileprovider"
+            android:authorities="com.example.discbase.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

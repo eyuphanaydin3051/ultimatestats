@@ -1,4 +1,4 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -55,18 +55,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
-import com.example.ilkuygulamam.ui.theme.IlkuygulamamTheme
-import com.example.ilkuygulamam.ui.theme.StitchColor
-import com.example.ilkuygulamam.ui.theme.StitchDefense
-import com.example.ilkuygulamam.ui.theme.StitchOffense
-import com.example.ilkuygulamam.ui.theme.StitchPrimary
+import com.example.discbase.ui.theme.IlkuygulamamTheme
+import com.example.discbase.ui.theme.StitchColor
+import com.example.discbase.ui.theme.StitchDefense
+import com.example.discbase.ui.theme.StitchPrimary
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.UUID
@@ -282,7 +280,7 @@ fun PerformanceStatRow(
                 Text(
                     "Ort: $avgText",
                     fontSize = 11.sp,
-                    color = if (isAbove) com.example.ilkuygulamam.StitchOffense else Color.Gray,
+                    color = if (isAbove) com.example.discbase.StitchOffense else Color.Gray,
                     fontWeight = if (isAbove) FontWeight.Bold else FontWeight.Normal
                 )
             }
@@ -364,7 +362,7 @@ fun PassNetworkChordDiagram(
                 val isHandler =
                     receiver?.position == "Handler" || receiver?.position == "Hybrid"
                 val nodeColor =
-                    if (isHandler) StitchPrimary else com.example.ilkuygulamam.StitchOffense // Mor veya Yeşil
+                    if (isHandler) StitchPrimary else com.example.discbase.StitchOffense // Mor veya Yeşil
                 // İsmin sadece ilk kelimesini al (uzun isimler taşmasın)
                 val shortName = receiver?.name?.trim()?.split(" ")?.firstOrNull() ?: "?"
 
@@ -527,7 +525,7 @@ fun MatchCard(
     // Sonuç Rengi Belirle
     val isWin = match.scoreUs > match.scoreThem
     val isLoss = match.scoreThem > match.scoreUs
-    val resultColor = if (isWin) com.example.ilkuygulamam.StitchOffense else if (isLoss) StitchDefense else Color.Gray
+    val resultColor = if (isWin) com.example.discbase.StitchOffense else if (isLoss) StitchDefense else Color.Gray
     val resultText = if (isWin) "KAZANDIK" else if (isLoss) "KAYBETTİK" else "BERABERE"
 
     Card(
@@ -577,7 +575,7 @@ fun MatchCard(
                         text = "${match.scoreUs}",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isWin) com.example.ilkuygulamam.StitchOffense else StitchColor.TextPrimary // <-- Kazandıysak yeşil, yoksa tema rengi
+                        color = if (isWin) com.example.discbase.StitchOffense else StitchColor.TextPrimary // <-- Kazandıysak yeşil, yoksa tema rengi
                     )
                     Text(
                         text = " - ",
@@ -613,7 +611,7 @@ fun PointSummaryCard(
         null -> "-"
     }
     val isUs = pointData.whoScored == "US"
-    val scoreColor = if (isUs) com.example.ilkuygulamam.StitchOffense else StitchDefense
+    val scoreColor = if (isUs) com.example.discbase.StitchOffense else StitchDefense
     val titleText = if (isUs) "BİZİM SAYIMIZ" else "RAKİP SAYI"
 
     Card(
@@ -777,7 +775,7 @@ fun PlayerStatCard(
 ) {
     val stats = playerWithStats.basicStats
     val plusMinus = playerWithStats.plusMinus
-    val plusMinusColor = if (plusMinus > 0) com.example.ilkuygulamam.StitchOffense else if (plusMinus < 0) StitchDefense else Color.Gray
+    val plusMinusColor = if (plusMinus > 0) com.example.discbase.StitchOffense else if (plusMinus < 0) StitchDefense else Color.Gray
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1800,9 +1798,9 @@ fun GameTimeCard(
                         "$offensePoints",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = com.example.ilkuygulamam.StitchOffense
+                        color = com.example.discbase.StitchOffense
                     )
-                    Text("Ofans", fontSize = 12.sp, color = com.example.ilkuygulamam.StitchOffense)
+                    Text("Ofans", fontSize = 12.sp, color = com.example.discbase.StitchOffense)
                 }
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -1839,7 +1837,7 @@ fun ReceivingStatsCard(
                 Icon(
                     Icons.Default.PanTool,
                     null,
-                    tint = com.example.ilkuygulamam.StitchOffense,
+                    tint = com.example.discbase.StitchOffense,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(Modifier.width(8.dp))
@@ -1857,7 +1855,7 @@ fun ReceivingStatsCard(
                 percentage = catchRate.text,
                 ratio = catchRate.ratio,
                 progress = catchRate.progress,
-                progressColor = com.example.ilkuygulamam.StitchOffense,
+                progressColor = com.example.discbase.StitchOffense,
                 teamAverage = teamAverages["catchRate"]?.toFloat()
             )
             Spacer(Modifier.height(8.dp))
@@ -1866,7 +1864,7 @@ fun ReceivingStatsCard(
                 StitchStatBox(
                     "Catch",
                     stats.catchStat.toString(),
-                    com.example.ilkuygulamam.StitchOffense,
+                    com.example.discbase.StitchOffense,
                     Modifier.weight(1f)
                 )
                 StitchStatBox("Drop", stats.drop.toString(), StitchDefense, Modifier.weight(1f))
@@ -2061,7 +2059,7 @@ fun PlayerAttendanceDetailDialog(
                                     .size(36.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (isAttended) com.example.ilkuygulamam.StitchOffense.copy(0.2f) else StitchDefense.copy(
+                                        if (isAttended) com.example.discbase.StitchOffense.copy(0.2f) else StitchDefense.copy(
                                             0.1f
                                         )
                                     ),
@@ -2070,7 +2068,7 @@ fun PlayerAttendanceDetailDialog(
                                 Icon(
                                     imageVector = if (isAttended) Icons.Default.Check else Icons.Default.Close,
                                     contentDescription = null,
-                                    tint = if (isAttended) com.example.ilkuygulamam.StitchOffense else StitchDefense,
+                                    tint = if (isAttended) com.example.discbase.StitchOffense else StitchDefense,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -2126,7 +2124,7 @@ fun PlayerAttendanceDetailDialog(
                                     modifier = Modifier
                                         .fillMaxWidth(ratio)
                                         .fillMaxHeight()
-                                        .background(if (ratio > 0.7) com.example.ilkuygulamam.StitchOffense else StitchPrimary)
+                                        .background(if (ratio > 0.7) com.example.discbase.StitchOffense else StitchPrimary)
                                 )
                             }
 
@@ -2174,7 +2172,7 @@ fun EfficiencyCard(
     // Rengi puana göre belirle
     val scoreColor = when {
         efficiencyScore >= 10.0 -> Color(0xFF00C853) // Çok İyi (Koyu Yeşil)
-        efficiencyScore >= 5.0 -> com.example.ilkuygulamam.StitchOffense      // İyi (Teal)
+        efficiencyScore >= 5.0 -> com.example.discbase.StitchOffense      // İyi (Teal)
         efficiencyScore >= 0.0 -> StitchPrimary      // Normal (Mor)
         else -> StitchDefense                        // Kötü (Kırmızı)
     }

@@ -1,10 +1,9 @@
-package com.example.ilkuygulamam.ui.theme
+package com.example.discbase.ui.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import com.example.ilkuygulamam.StitchSecondary
+import com.example.discbase.StitchSecondary
 
 // --- SABİT RENK PALETİ (Bu renkler değişmez, referans içindir) ---
 val Purple80 = Color(0xFFD0BCFF)

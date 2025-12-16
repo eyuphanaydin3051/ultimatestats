@@ -1,214 +1,56 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 // Bu satırları mevcut importların arasına yapıştır:
-import androidx.compose.material.icons.filled.Restore       // Restore ikonu için
-import androidx.compose.material.icons.filled.DeleteForever // DeleteForever ikonu için
-import androidx.compose.material3.SwitchDefaults            // Switch renk ayarları için
-import java.text.SimpleDateFormat
-import java.util.Locale
 // Gerekli importlar
-import androidx.compose.material.icons.filled.Adjust
-import androidx.compose.material.icons.filled.SwapHoriz
 // --- YENİ EKLENMESİ GEREKEN KÜTÜPHANELER ---
-import androidx.compose.animation.animateContentSize // Animasyon için
-import androidx.compose.material.icons.filled.ExpandLess // Yukarı ok ikonu için
-import androidx.compose.foundation.rememberScrollState // horizontalScroll için
-import androidx.compose.material3.FilterChip // FilterChip hatasını çözer
-import androidx.compose.material.icons.filled.Info // Örnek ikon
 // --- BİTTİ ---
-import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
-import androidx.compose.foundation.layout.heightIn
-import android.app.DatePickerDialog
-import java.util.Calendar
-import androidx.compose.material3.OutlinedTextFieldDefaults // Renk ayarı için
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
-import java.io.ByteArrayOutputStream
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.verticalScroll
-import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Undo
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu // <-- YENİ SATIR
-import androidx.compose.material3.DropdownMenuItem // <-- YENİ SATIR
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
-import com.example.ilkuygulamam.ui.theme.IlkuygulamamTheme
-import java.util.UUID
-import kotlinx.coroutines.launch
+import com.example.discbase.ui.theme.IlkuygulamamTheme
 import kotlinx.serialization.Serializable
-import androidx.compose.material3.Switch
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.TrendingUp
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.Checkbox
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.ArrowForward // Throwaway (Hata) için
-import androidx.compose.material3.IconButtonDefaults // Ikon buton renkleri için
-import androidx.compose.material3.TextButton
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.Image
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.TopAppBarDefaults // <-- YENİ EKLENECEK IMPORT
-import android.app.TimePickerDialog
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.FormatListNumbered
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DirectionsRun
-import androidx.compose.material.icons.filled.TrendingDown
-import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.GroupAdd
-import androidx.compose.material.icons.filled.MedicalServices
-import androidx.compose.material.icons.filled.PanTool
-import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Sports
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.zIndex
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.ui.layout.ContentScale
 // MainActivity.kt - En üst kısımlara bu importları ekleyin/güncelleyin
 
 // --- İKON IMPORTLARI ---
-import androidx.compose.material.icons.automirrored.filled.Logout // Logout için
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material.icons.filled.Vibration
-import com.example.ilkuygulamam.ui.theme.StitchColor
-import com.example.ilkuygulamam.ui.theme.StitchDefense
-import com.example.ilkuygulamam.ui.theme.StitchPrimary
-import coil.compose.SubcomposeAsyncImage
-import com.canhub.cropper.CropImageContract
-import com.canhub.cropper.CropImageContractOptions
-import com.canhub.cropper.CropImageOptions
-import com.canhub.cropper.CropImageView
+import com.example.discbase.ui.theme.StitchColor
+import com.example.discbase.ui.theme.StitchPrimary
+
 // ... diğer ikonlar ...
 
 

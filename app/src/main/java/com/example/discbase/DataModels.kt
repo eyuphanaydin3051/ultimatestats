@@ -1,4 +1,4 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 import com.google.firebase.firestore.Exclude
 import kotlinx.serialization.Serializable

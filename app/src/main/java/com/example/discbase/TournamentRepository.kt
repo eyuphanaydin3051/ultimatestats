@@ -1,7 +1,6 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -20,7 +19,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
-import com.google.firebase.firestore.ListenerRegistration
 
 // DataStore
 private val ACTIVE_TEAM_ID_KEY = stringPreferencesKey("active_team_id")

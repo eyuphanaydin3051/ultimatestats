@@ -1,4 +1,4 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 import android.content.Context
 import android.graphics.Canvas
@@ -10,7 +10,6 @@ import android.graphics.pdf.PdfDocument
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.cos
-import kotlin.math.min
 import kotlin.math.sin
 
 class PdfReportGenerator(private val context: Context) {

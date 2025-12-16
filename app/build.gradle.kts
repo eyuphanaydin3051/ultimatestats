@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ilkuygulamam"
+    namespace = "com.example.discbase"
     compileSdk = 36
 
     defaultConfig {

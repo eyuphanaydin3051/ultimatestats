@@ -1,4 +1,4 @@
-package com.example.ilkuygulamam.ui.theme
+package com.example.discbase.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import com.example.ilkuygulamam.AppTheme // ViewModel'deki Enum'ı import et
+import com.example.discbase.AppTheme // ViewModel'deki Enum'ı import et
 
 // Koyu Tema Renkleri
 private val DarkColorScheme = darkColorScheme(

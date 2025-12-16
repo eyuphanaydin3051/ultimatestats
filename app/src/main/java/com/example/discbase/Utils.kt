@@ -1,4 +1,4 @@
-package com.example.ilkuygulamam
+package com.example.discbase
 
 import android.content.Context
 import android.graphics.Bitmap
