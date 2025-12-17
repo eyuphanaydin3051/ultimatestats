@@ -1,4 +1,4 @@
-package com.example.discbase
+package com.eyuphanaydin.discbase
 
 import android.app.Application
 import android.content.Context
@@ -227,16 +227,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val id = repository.createNewTeam(uid, name)
         if (id != null) {
             repository.setActiveTeamId(id)
-            _userMessage.emit("Takım oluşturuldu!")
+            val msg = getApplication<Application>().getString(R.string.msg_team_created)
+            _userMessage.emit(msg)
         }
     }
 
     fun joinExistingTeam(teamId: String) = viewModelScope.launch {
+        val context = getApplication<Application>()
         val uid = auth.currentUser?.uid ?: return@launch
         if (repository.checkIfTeamExists(teamId)) {
             val success = repository.joinExistingTeam(uid, teamId)
-            if (success) _userMessage.emit("İstek gönderildi.") else _userMessage.emit("Hata.")
-        } else _userMessage.emit("Takım bulunamadı.")
+            if (success) {
+                _userMessage.emit(context.getString(R.string.msg_request_sent))
+            } else {
+                _userMessage.emit(context.getString(R.string.error_generic))
+            }
+        } else {
+            _userMessage.emit(context.getString(R.string.msg_team_not_found))
+        }
     }
 
     // CRUD İşlemleri
@@ -244,11 +252,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun savePlayer(player: Player) = viewModelScope.launch {
         val tid = getCurrentTeamId() ?: return@launch
-        if (repository.savePlayer(tid, player)) _userMessage.emit("Kaydedildi.")
+        if (repository.savePlayer(tid, player)) {
+            _userMessage.emit(getApplication<Application>().getString(R.string.msg_saved))
+        }
     }
+
     fun deletePlayer(player: Player) = viewModelScope.launch {
         val tid = getCurrentTeamId() ?: return@launch
-        if (repository.deletePlayer(tid, player)) _userMessage.emit("Silindi.")
+        if (repository.deletePlayer(tid, player)) {
+            _userMessage.emit(getApplication<Application>().getString(R.string.msg_deleted))
+        }
     }
     fun updatePlayerLimited(pid: String, photo: String?, num: Int?) = viewModelScope.launch {
         val tid = getCurrentTeamId() ?: return@launch
@@ -257,24 +270,34 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun saveTournament(t: Tournament) = viewModelScope.launch {
         val tid = getCurrentTeamId() ?: return@launch
-        if (repository.saveTournament(tid, t)) _userMessage.emit("Kaydedildi.")
-    }
-    fun deleteTournament(t: Tournament) = viewModelScope.launch {
-        val tid = getCurrentTeamId() ?: return@launch
-        if (repository.deleteTournament(tid, t)) _userMessage.emit("Silindi.")
+        if (repository.saveTournament(tid, t)) {
+            _userMessage.emit(getApplication<Application>().getString(R.string.msg_saved))
+        }
     }
 
-    // --- MATCH SAVING (DÜZELTİLDİ) ---
-    fun saveMatch(tournamentId: String, match: Match) = viewModelScope.launch {
+    fun deleteTournament(t: Tournament) = viewModelScope.launch {
         val tid = getCurrentTeamId() ?: return@launch
-        // Alt koleksiyona kaydet
-        if (repository.saveMatch(tid, tournamentId, match)) _userMessage.emit("Maç kaydedildi.")
-        else _userMessage.emit("Maç kaydedilemedi.")
+        if (repository.deleteTournament(tid, t)) {
+            _userMessage.emit(getApplication<Application>().getString(R.string.msg_deleted))
+        }
+    }
+
+    fun saveMatch(tournamentId: String, match: Match) = viewModelScope.launch {
+        val context = getApplication<Application>()
+        val tid = getCurrentTeamId() ?: return@launch
+
+        if (repository.saveMatch(tid, tournamentId, match)) {
+            _userMessage.emit(context.getString(R.string.msg_match_saved))
+        } else {
+            _userMessage.emit(context.getString(R.string.msg_match_save_error))
+        }
     }
 
     fun deleteMatch(tournamentId: String, matchId: String) = viewModelScope.launch {
         val tid = getCurrentTeamId() ?: return@launch
-        if (repository.deleteMatch(tid, tournamentId, matchId)) _userMessage.emit("Maç silindi.")
+        if (repository.deleteMatch(tid, tournamentId, matchId)) {
+            _userMessage.emit(getApplication<Application>().getString(R.string.msg_match_deleted))
+        }
     }
 
     fun deleteLastPoint(tournamentId: String, matchId: String) = viewModelScope.launch {
@@ -331,22 +354,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val fileOutputStream: FileOutputStream = context.openFileOutput(filename, Context.MODE_PRIVATE)
             fileOutputStream.write(jsonString.toByteArray())
             fileOutputStream.close()
-            _userMessage.emit("Yedeklendi: $filename")
-        } catch (e: Exception) { _userMessage.emit("Yedekleme hatası.") }
+
+            // Formatlı String kullanımı
+            _userMessage.emit(context.getString(R.string.msg_backup_filename, filename))
+        } catch (e: Exception) {
+            _userMessage.emit(context.getString(R.string.msg_backup_error))
+        }
     }
-    // MainViewModel.kt içine ekle
 
-    // Kullanıcının seçtiği konuma (Uri) veriyi yazan fonksiyon
-    // MainViewModel.kt
-
-    // Kullanıcının seçtiği konuma (Uri) veriyi yazan ve DOĞRULAYAN fonksiyon
     fun saveBackupToUri(uri: Uri, players: List<Player>, tournaments: List<Tournament>) = viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-        _userMessage.emit("Yedekleme yapılıyor, lütfen bekleyin...")
+        val context = getApplication<Application>()
+        _userMessage.emit(context.getString(R.string.msg_backup_progress))
 
         try {
-            val contentResolver = getApplication<Application>().contentResolver
+            val contentResolver = context.contentResolver
 
-            // 1. Veriyi Hazırla (Nesneyi oluştur)
+            // 1. Veriyi Hazırla
             val backupOriginal = BackupData(profile.value, players, tournaments, trainings.value)
             val jsonString = Json.encodeToString(backupOriginal)
 
@@ -355,51 +378,53 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 outputStream.write(jsonString.toByteArray())
             }
 
-            // --- 3. DOĞRULAMA ADIMI (VERIFICATION) ---
-            // Dosyayı hemen geri okuyup parse etmeyi deniyoruz.
-            // Eğer dosya yarım yazıldıysa veya bozuksa, burada hata fırlatır.
+            // 3. DOĞRULAMA (VERIFICATION)
             val inputStream = contentResolver.openInputStream(uri)
             val writtenContent = inputStream?.bufferedReader().use { it?.readText() }
 
             if (writtenContent.isNullOrBlank()) {
-                throw Exception("Dosya oluşturuldu ama içi boş.")
+                throw Exception(context.getString(R.string.msg_file_empty))
             }
 
-            // JSON'ı tekrar nesneye çevirmeyi dene (Parse Testi)
             val backupCheck = Json.decodeFromString<BackupData>(writtenContent)
 
-            // İçerik sayılarını karşılaştır (Double Check)
             if (backupCheck.players.size == backupOriginal.players.size &&
                 backupCheck.tournaments.size == backupOriginal.tournaments.size) {
 
-                _userMessage.emit("✅ Yedekleme başarılı ve doğrulandı!")
+                _userMessage.emit(context.getString(R.string.msg_backup_verified))
             } else {
-                throw Exception("Veri uyuşmazlığı tespit edildi.")
+                throw Exception(context.getString(R.string.msg_data_mismatch))
             }
 
         } catch (e: Exception) {
             Log.e("Backup", "Yedekleme hatası", e)
-            _userMessage.emit("❌ Yedekleme başarısız: ${e.localizedMessage}")
+            _userMessage.emit(context.getString(R.string.msg_backup_failed, e.localizedMessage))
         }
     }
+    // MainViewModel.kt içine ekle
+
+    // Kullanıcının seçtiği konuma (Uri) veriyi yazan fonksiyon
+    // MainViewModel.kt
+
+    // Kullanıcının seçtiği konuma (Uri) veriyi yazan ve DOĞRULAYAN fonksiyon
 
     // --- GÜNCELLENMİŞ IMPORT FONKSİYONU ---
     fun importBackupFromJson(uri: Uri) = viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-        _userMessage.emit("Yedek dosyası okunuyor...")
+        val context = getApplication<Application>()
+        _userMessage.emit(context.getString(R.string.msg_reading_backup))
 
         try {
             // 1. Dosyayı Oku
-            val contentResolver = getApplication<Application>().contentResolver
+            val contentResolver = context.contentResolver
             val inputStream = contentResolver.openInputStream(uri)
             val jsonString = inputStream?.bufferedReader().use { it?.readText() }
 
             if (jsonString.isNullOrBlank()) {
-                _userMessage.emit("Hata: Dosya boş veya okunamadı.")
+                _userMessage.emit(context.getString(R.string.msg_file_empty_error))
                 return@launch
             }
 
             // 2. JSON'ı Parse Et
-            // JSON yapısındaki olası eksik alanları tolere etmek için leniment modunu açıyoruz
             val jsonParser = Json {
                 ignoreUnknownKeys = true
                 isLenient = true
@@ -409,26 +434,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             // 3. Aktif Takıma Yükle
             val currentTeamId = activeTeamId.value
             if (currentTeamId != null) {
-                _userMessage.emit("Veriler veritabanına yazılıyor...")
+                _userMessage.emit(context.getString(R.string.msg_writing_db))
 
                 val success = repository.restoreTeamData(currentTeamId, backupData)
 
                 if (success) {
-                    _userMessage.emit("Yedek başarıyla yüklendi! Lütfen sayfayı yenileyin.")
+                    _userMessage.emit(context.getString(R.string.msg_restore_success))
                 } else {
-                    _userMessage.emit("Hata: Veritabanına yazarken sorun oluştu.")
+                    _userMessage.emit(context.getString(R.string.msg_db_write_error))
                 }
             } else {
-                _userMessage.emit("Hata: Önce bir takım seçmelisiniz.")
+                _userMessage.emit(context.getString(R.string.msg_select_team_first))
             }
 
         } catch (e: Exception) {
             Log.e("Import", "Json hatası", e)
-            _userMessage.emit("Hata: Dosya formatı geçersiz. (${e.localizedMessage})")
+            _userMessage.emit(context.getString(R.string.msg_invalid_format, e.localizedMessage))
         }
     }
     fun shareMatchReport(context: Context, match: Match, tournamentName: String, stats: List<AdvancedPlayerStats>) = viewModelScope.launch {
-        _userMessage.emit("PDF Raporu hazırlanıyor...")
+        // Context parametresi dışarıdan geliyor, onu kullanıyoruz.
+        _userMessage.emit(context.getString(R.string.msg_preparing_pdf))
         try {
             val generator = PdfReportGenerator(context)
             val pdfFile = generator.generateMatchReport(match, tournamentName, stats)
@@ -436,39 +462,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (pdfFile != null) {
                 shareFile(context, pdfFile)
             } else {
-                _userMessage.emit("Hata: PDF oluşturulamadı.")
+                _userMessage.emit(context.getString(R.string.msg_pdf_error))
             }
         } catch (e: Exception) {
             Log.e("PDF", "Paylaşım hatası", e)
-            _userMessage.emit("Paylaşım hatası: ${e.localizedMessage}")
+            _userMessage.emit(context.getString(R.string.msg_share_error, e.localizedMessage))
         }
     }
-    // MainViewModel.kt içinde...
 
-    // Fonksiyona 'sourcePlayers' parametresini ekliyoruz
     fun shareTournamentReport(context: Context, tournament: Tournament, sourcePlayers: List<Player>) = viewModelScope.launch {
-        _userMessage.emit("Turnuva raporu hazırlanıyor...")
+        _userMessage.emit(context.getString(R.string.msg_preparing_tour_report))
         try {
-            // 1. Takım İstatistikleri
             val teamStats = calculateTeamStatsForFilter(listOf(tournament), tournament.id)
-
-            // 2. Oyuncu İstatistikleri
             val tournamentPoints = tournament.matches.flatMap { it.pointsArchive }
 
-            // ARTIK BURADA 'players.value' YERİNE PARAMETRE OLARAK GELEN LİSTEYİ KULLANIYORUZ
             val tournamentPlayerStats = tournament.rosterPlayerIds.map { playerId ->
-                // Parametre olarak gelen listeden oyuncuyu bul
                 val player = sourcePlayers.find { it.id == playerId }
-
-                // İstatistikleri hesapla
                 val stats = calculateStatsFromPoints(playerId, tournamentPoints)
 
-                // Oyuncu bulunduysa ismini, bulunamazsa varsayılanı kullan
-                val finalName = player?.name ?: "Bilinmeyen Oyuncu"
+                // "Bilinmeyen Oyuncu" -> Resource kullanımı
+                val finalName = player?.name ?: context.getString(R.string.msg_unknown_player)
 
-                // İsim bilgisini stats objesine kopyala
                 val statsWithName = stats.copy(basicStats = stats.basicStats.copy(name = finalName))
-
                 statsWithName
             }
 
@@ -478,39 +493,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (pdfFile != null) {
                 shareFile(context, pdfFile)
             } else {
-                _userMessage.emit("Hata: PDF oluşturulamadı.")
+                _userMessage.emit(context.getString(R.string.msg_pdf_error))
             }
         } catch (e: Exception) {
             Log.e("PDF", "Turnuva rapor hatası", e)
-            _userMessage.emit("Rapor oluşturulamadı: ${e.localizedMessage}")
+            _userMessage.emit(context.getString(R.string.msg_report_create_error, e.localizedMessage))
         }
     }
 
-    // --- OYUNCU PROFİLİ PAYLAŞ ---
-    // --- OYUNCU PROFİLİ PAYLAŞ ---
-    // Parametreye 'allPlayers' eklendi
     fun sharePlayerReport(context: Context, player: Player, allTournaments: List<Tournament>, allPlayers: List<Player>) = viewModelScope.launch {
-        _userMessage.emit("Oyuncu profili hazırlanıyor...")
+        _userMessage.emit(context.getString(R.string.msg_preparing_profile))
         try {
-            // Calculate global stats for this player
             val stats = calculateGlobalPlayerStats(player.id, "GENEL", null, allTournaments)
-
             val generator = PdfReportGenerator(context)
-
-            // Parametreyi buraya geçiriyoruz
             val pdfFile = generator.generatePlayerReport(player, allTournaments, stats, allPlayers)
 
             if (pdfFile != null) {
                 shareFile(context, pdfFile)
             } else {
-                _userMessage.emit("Hata: PDF oluşturulamadı.")
+                _userMessage.emit(context.getString(R.string.msg_pdf_error))
             }
         } catch (e: Exception) {
             Log.e("PDF", "Oyuncu rapor hatası", e)
-            _userMessage.emit("Rapor oluşturulamadı.")
+            _userMessage.emit(context.getString(R.string.msg_report_create_error, e.localizedMessage))
         }
     }
 
+
+
+    // HELPER: Share Intent
     // HELPER: Share Intent
     private fun shareFile(context: Context, file: java.io.File) {
         val uri = androidx.core.content.FileProvider.getUriForFile(
@@ -523,13 +534,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             putExtra(android.content.Intent.EXTRA_STREAM, uri)
             addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        val chooser = android.content.Intent.createChooser(shareIntent, "Raporu Paylaş")
+
+        // GÜNCELLENDİ: Başlık artık strings.xml'den geliyor
+        val title = context.getString(R.string.chooser_share_report)
+        val chooser = android.content.Intent.createChooser(shareIntent, title)
+
         chooser.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(chooser)
     }
 }
 
 
+// Giriş işleminin durumunu tutmak için
 // Giriş işleminin durumunu tutmak için
 sealed class SignInState {
     object Idle : SignInState()
@@ -546,12 +562,8 @@ class SignInViewModel : ViewModel() {
     val signInState = _signInState.asStateFlow()
 
     fun getGoogleSignInClient(context: Context): GoogleSignInClient {
-        // --- ÖNEMLİ DÜZELTME BURADA ---
-        // R.string.default_web_client_id yerine WEB_CLIENT_ID'nizi manuel olarak yapıştırın
-        // Bu kimlik ...apps.googleusercontent.com ile biten kimliktir.
-        val webClientId = "860197339001-4m2pci2vido0olf43dqp4a8p6eaipjmi.apps.googleusercontent.com" // <-- BURAYI DOLDURUN
-
-        // YENİ: Google Drive'a dosya ekleme izni
+        // Web Client ID (Google Cloud Console'dan alınan ID)
+        val webClientId = "860197339001-4m2pci2vido0olf43dqp4a8p6eaipjmi.apps.googleusercontent.com"
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(webClientId)
@@ -562,7 +574,7 @@ class SignInViewModel : ViewModel() {
 
     fun handleGoogleSignInResult(result: ActivityResult, context: Context) {
         if (result.resultCode != Activity.RESULT_OK) {
-            _signInState.value = SignInState.Error("Google girişi iptal edildi veya başarısız oldu.")
+            _signInState.value = SignInState.Error(context.getString(R.string.msg_google_cancel))
             return
         }
 
@@ -574,29 +586,23 @@ class SignInViewModel : ViewModel() {
                 val idToken = account.idToken!!
 
                 val credential = GoogleAuthProvider.getCredential(idToken, null)
-                auth.signInWithCredential(credential).await()
 
-                _signInState.value = SignInState.Success("Giriş başarılı!")
-                // --- GÜNCELLENMİŞ VE YENİ KOD BLOĞU ---
-
-                // 1. Firebase'e giriş yap
+                // 1. Firebase Giriş
                 val authResult = auth.signInWithCredential(credential).await()
+
+                _signInState.value = SignInState.Success(context.getString(R.string.msg_login_success))
+
+                // 2. Kullanıcı Kaydı (Veritabanı güncellemesi)
                 val firebaseUser = authResult.user
-
-                // 2. Kullanıcı bilgisini ALIR ALMAZ 'users' koleksiyonuna yaz
                 if (firebaseUser != null) {
-                    // Repository'yi (Context ile) burada anlık oluştur
                     val repository = TournamentRepository(context.applicationContext)
-
-                    // Giriş yapan kullanıcının adını 'users' koleksiyonuna hemen yaz/güncelle
                     repository.updateUserInfo(firebaseUser)
                 }
-                // --- KOD BLOĞU BİTTİ ---
 
             } catch (e: ApiException) {
-                _signInState.value = SignInState.Error("Giriş hatası (ApiException): ${e.message}")
+                _signInState.value = SignInState.Error(context.getString(R.string.msg_login_error_api, e.message))
             } catch (e: Exception) {
-                _signInState.value = SignInState.Error("Giriş hatası: ${e.message}")
+                _signInState.value = SignInState.Error(context.getString(R.string.msg_login_error, e.message))
             }
         }
     }

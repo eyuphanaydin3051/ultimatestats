@@ -9,8 +9,8 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.ilkuygulamam" />
-                  <option name="mobileSdkAppId" value="1:860197339001:android:c2412112155eb67ff679a8" />
+                  <option name="appId" value="com.eyuphanaydin.discbase" />
+                  <option name="mobileSdkAppId" value="1:860197339001:android:a052e5957df0443af679a8" />
                   <option name="projectId" value="ultimate-stats-a2c89" />
                   <option name="projectNumber" value="860197339001" />
                 </ConnectionSetting>

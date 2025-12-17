@@ -1,4 +1,4 @@
-package com.example.discbase
+package com.eyuphanaydin.discbase
 
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
@@ -34,14 +34,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.discbase.ui.theme.*
+import com.eyuphanaydin.discbase.ui.theme.*
 import java.util.UUID
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.OutlinedTextField
-
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.stringResource
 // --- 1. MAÇ KURULUM (İSİM GİRME) ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,9 +58,9 @@ fun MatchSetupScreen(
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Yeni Maç", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.match_new_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    ModernIconButton(Icons.Default.ArrowBack, { navController.popBackStack() }, StitchTextPrimary, "Geri")
+                    ModernIconButton(Icons.Default.ArrowBack, { navController.popBackStack() }, StitchTextPrimary,stringResource(R.string.desc_back))
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
             )
@@ -84,7 +85,7 @@ fun MatchSetupScreen(
                     modifier = Modifier.padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(ourTeamName.uppercase(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = com.example.discbase.ui.theme.StitchPrimary)
+                    Text(ourTeamName.uppercase(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
                     Spacer(Modifier.height(16.dp))
 
                     // VS İkonu
@@ -103,13 +104,13 @@ fun MatchSetupScreen(
                     OutlinedTextField(
                         value = opponentName,
                         onValueChange = { opponentName = it },
-                        label = { Text("Rakip Takım") },
-                        placeholder = { Text("Örn: ODTUPUS") },
+                        label = { Text(stringResource(R.string.match_opponent_hint)) },
+                        placeholder = { Text(stringResource(R.string.match_opponent_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = com.example.discbase.ui.theme.StitchPrimary,
-                            focusedLabelColor = com.example.discbase.ui.theme.StitchPrimary
+                            focusedBorderColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
+                            focusedLabelColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary
                         ),
                         singleLine = true
                     )
@@ -139,7 +140,7 @@ fun MatchSetupScreen(
                 )
             ) {
                 Text(
-                    text = if (isReady) "MAÇI BAŞLAT" else "RAKİP İSMİ GİRİNİZ",
+                    text = if (isReady) stringResource(R.string.match_start_btn) else stringResource(R.string.match_opponent_hint),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -923,15 +924,15 @@ fun StatEntryScreen(
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            title = { Text("Sayıyı Sıfırla") },
-            text = { Text("Kadro seçimine geri dönülecek. Emin misiniz?") },
+            title = { Text(stringResource(R.string.dialog_reset_title)) },
+            text = { Text(stringResource(R.string.dialog_reset_msg)) },
             confirmButton = {
                 Button(
                     onClick = { onResetMatch(); showResetDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Evet") }
+                ) { Text(stringResource(R.string.btn_yes)) }
             },
-            dismissButton = { TextButton(onClick = { showResetDialog = false }) { Text("İptal") } }
+            dismissButton = { TextButton(onClick = { showResetDialog = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
     if (activeStoppageType != null) {
@@ -947,7 +948,7 @@ fun StatEntryScreen(
     if (showFinishDialog) {
         AlertDialog(
             onDismissRequest = { showFinishDialog = false },
-            title = { Text("Maçı Bitir") },
+            title = { Text(stringResource(R.string.match_finish_btn)) },
             text = { Text("Maç kaydedilecek ve detay ekranına gidilecek. Emin misiniz?") },
             confirmButton = {
                 Button(
@@ -956,10 +957,10 @@ fun StatEntryScreen(
                         onFinishMatch()          // Sonra kaydetme fonksiyonunu tetikle
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = StitchOffense)
-                ) { Text("Evet, Kaydet") }
+                ) { Text(stringResource(R.string.btn_yes)) }
             },
             dismissButton = {
-                TextButton(onClick = { showFinishDialog = false }) { Text("İptal") }
+                TextButton(onClick = { showFinishDialog = false }) { Text(stringResource(R.string.btn_cancel)) }
             }
         )
     }
@@ -968,19 +969,19 @@ fun StatEntryScreen(
     if (showDeletePointDialog) {
         AlertDialog(
             onDismissRequest = { showDeletePointDialog = false },
-            title = { Text("Sayıyı Sil") },
-            text = { Text("Bu sayı kalıcı olarak silinecek. Emin misiniz?") },
+            title = { Text(stringResource(R.string.dialog_delete_point_title)) },
+            text = { Text(stringResource(R.string.dialog_delete_point_msg)) },
             confirmButton = {
                 Button(
                     onClick = {
                         showDeletePointDialog = false
                         onDeletePoint()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense)
-                ) { Text("Evet, Sil") }
+                    colors = ButtonDefaults.buttonColors(containerColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
+                ) { Text(stringResource(R.string.btn_delete_confirm)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeletePointDialog = false }) { Text("İptal") }
+                TextButton(onClick = { showDeletePointDialog = false }) { Text(stringResource(R.string.btn_cancel)) }
             }
         )
     }
@@ -1051,17 +1052,17 @@ fun StatEntryScreen(
                             onDismissRequest = { showStoppageMenu = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Mola (Timeout)") },
+                                text = { Text(stringResource(R.string.stoppage_timeout)) },
                                 onClick = { onStartStoppage(StoppageType.TIMEOUT); showStoppageMenu = false },
                                 leadingIcon = { Icon(Icons.Default.AccessTime, null) }
                             )
                             DropdownMenuItem(
-                                text = { Text("Faul / Call") },
+                                text = { Text(stringResource(R.string.stoppage_call)) },
                                 onClick = { onStartStoppage(StoppageType.CALL); showStoppageMenu = false },
                                 leadingIcon = { Icon(Icons.Default.PanTool, null) }
                             )
                             DropdownMenuItem(
-                                text = { Text("Sakatlık") },
+                                text = { Text(stringResource(R.string.stoppage_injury)) },
                                 onClick = { onStartStoppage(StoppageType.INJURY); showStoppageMenu = false },
                                 leadingIcon = { Icon(Icons.Default.MedicalServices, null) }
                             )
@@ -1071,7 +1072,7 @@ fun StatEntryScreen(
                 },
                 navigationIcon = {
                     if (isEditMode) {
-                        IconButton(onClick = onResetMatch) { Icon(Icons.Default.ArrowBack, "Geri") }
+                        IconButton(onClick = onResetMatch) { Icon(Icons.Default.ArrowBack, stringResource(R.string.desc_back)) }
                     }
                 },
                 actions = {
@@ -1080,15 +1081,15 @@ fun StatEntryScreen(
                         Icons.Default.Undo,
                         { if (gameMode == GameMode.SIMPLE_ENTRY) onSimpleUndo() else onUndoLastPoint() },
                         StitchTextPrimary,
-                        "Geri Al"
+                        stringResource(R.string.btn_undo)
                     )
                     Spacer(Modifier.width(8.dp))
 
                     ModernIconButton(
                         Icons.Default.Refresh,
                         { showResetDialog = true },
-                        com.example.discbase.ui.theme.StitchDefense,
-                        "Sıfırla"
+                        com.eyuphanaydin.discbase.ui.theme.StitchDefense,
+                        stringResource(R.string.btn_reset)
                     )
                     Spacer(Modifier.width(8.dp))
 
@@ -1098,7 +1099,7 @@ fun StatEntryScreen(
                             icon = Icons.Default.Check,
                             onClick = onFinishMatch, // Bu fonksiyon kaydetmeyi tetikler
                             color = StitchOffense,
-                            contentDescription = "Değişiklikleri Kaydet"
+                            contentDescription = stringResource(R.string.btn_save_changes)
                         )
                         // Silme butonu isterseniz buraya ekleyebilirsiniz, ama sadelik için kaldırdım.
                     } else {
@@ -1107,7 +1108,7 @@ fun StatEntryScreen(
                             Icons.Default.Check,
                             { showFinishDialog = true },
                             StitchOffense,
-                            "Maçı Bitir"
+                            stringResource(R.string.match_finish_btn)
                         )
                     }
                 },
@@ -1288,7 +1289,7 @@ fun PointStartUI(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Sports, null)
                         Spacer(Modifier.width(8.dp))
-                        Text("HÜCUM (Offense)", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.match_start_offense), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -1297,12 +1298,12 @@ fun PointStartUI(
                     onClick = onStartDefense,
                     modifier = Modifier.fillMaxWidth().height(64.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense) // Kırmızı
+                    colors = ButtonDefaults.buttonColors(containerColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense) // Kırmızı
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Shield, null)
                         Spacer(Modifier.width(8.dp))
-                        Text("DEFANS (Pull)", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.match_start_defense).uppercase(), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1341,7 +1342,7 @@ fun StatModeSelectionUI(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "Kayıt Modunu Seçin",
+                    stringResource(R.string.mode_select_title),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -1355,9 +1356,9 @@ fun StatModeSelectionUI(
                     colors = ButtonDefaults.buttonColors(containerColor = StitchSecondary)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("HIZLI KAYIT", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.mode_quick), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Text(
-                            "Sadece Gol ve Asist",
+                            stringResource(R.string.mode_quick_desc),
                             fontSize = 12.sp,
                             color = Color.White.copy(0.8f)
                         )
@@ -1372,9 +1373,9 @@ fun StatModeSelectionUI(
                     colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary)
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("DETAYLI İSTATİSTİK", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.mode_detailed), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Text(
-                            "Pas, Hata, Blok, Drop takibi",
+                            stringResource(R.string.mode_detailed_desc),
                             fontSize = 12.sp,
                             color = Color.White.copy(0.8f)
                         )
@@ -1423,7 +1424,7 @@ fun SimpleStatEntryUI(
             ) {
                 Text(ourTeamName, fontWeight = FontWeight.Bold, color = Color.Gray, fontSize = 16.sp)
                 Spacer(Modifier.width(16.dp))
-                Text("$scoreUs", fontSize = 48.sp, fontWeight = FontWeight.Black, color = com.example.discbase.ui.theme.StitchPrimary)
+                Text("$scoreUs", fontSize = 48.sp, fontWeight = FontWeight.Black, color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
                 Text(" - ", fontSize = 48.sp, fontWeight = FontWeight.Light)
                 Text("$scoreThem", fontSize = 48.sp, fontWeight = FontWeight.Black)
                 Spacer(Modifier.width(16.dp))
@@ -1434,12 +1435,12 @@ fun SimpleStatEntryUI(
         Spacer(Modifier.height(32.dp))
 
         // 2. OYUNCU SEÇİMİ
-        Text("KİM GOL ATTI?", fontWeight = FontWeight.Bold, color = com.example.discbase.ui.theme.StitchPrimary, fontSize = 18.sp)
+        Text(stringResource(R.string.match_event_goal).uppercase(), fontWeight = FontWeight.Bold, color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary, fontSize = 18.sp)
         Spacer(Modifier.height(16.dp))
 
-        PlayerSelectionDropdown("Asist Yapan (Pas)", currentPointStats, assisterId, { assisterId = it }, setOfNotNull(scorerId))
+        PlayerSelectionDropdown(stringResource(R.string.dialog_who_assist), currentPointStats, assisterId, { assisterId = it }, setOfNotNull(scorerId))
         Spacer(Modifier.height(12.dp))
-        PlayerSelectionDropdown("Golü Atan (Skor)", currentPointStats, scorerId, { scorerId = it }, setOfNotNull(assisterId))
+        PlayerSelectionDropdown(stringResource(R.string.dialog_who_scored), currentPointStats, scorerId, { scorerId = it }, setOfNotNull(assisterId))
 
         Spacer(Modifier.weight(1f))
 
@@ -1451,7 +1452,7 @@ fun SimpleStatEntryUI(
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = StitchOffense)
         ) {
-            Text("GOL BİZİM! (+1)", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("${stringResource(R.string.match_score_us)} (+1)", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         Spacer(Modifier.height(16.dp))
@@ -1460,9 +1461,9 @@ fun SimpleStatEntryUI(
             onClick = { onTheyScored() },
             modifier = Modifier.fillMaxWidth().height(60.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense)
+            colors = ButtonDefaults.buttonColors(containerColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
         ) {
-            Text("RAKİP ATTI (+1)", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("${stringResource(R.string.match_score_them)} (+1)", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
 
         Spacer(Modifier.height(24.dp))
@@ -1489,7 +1490,7 @@ fun PullSelectionUI(
         )
         Divider()
         Text(
-            text = "Pull Atan Oyuncuyu Seçin",
+            text = stringResource(R.string.pull_title_select),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(16.dp)
@@ -1564,7 +1565,7 @@ fun PullResultUI(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "Disk Havada...",
+                        stringResource(R.string.pull_in_air),
                         fontSize = 16.sp,
                         color = Color.Gray,
                         fontWeight = FontWeight.Medium
@@ -1581,7 +1582,7 @@ fun PullResultUI(
                     // -------------------
 
                     Text(
-                        "Disk yakalandığında veya düştüğünde seçin:",
+                        stringResource(R.string.pull_result_instruction),
                         fontSize = 12.sp,
                         color = Color.Gray,
                         modifier = Modifier.padding(bottom = 16.dp)
@@ -1591,9 +1592,9 @@ fun PullResultUI(
                         onClick = { onResultSelected(true) },
                         modifier = Modifier.fillMaxWidth().height(60.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchPrimary)
+                        colors = ButtonDefaults.buttonColors(containerColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
                     ) {
-                        Text("BAŞARILI PULL (In bounds)", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.btn_pull_good), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
 
                     Spacer(Modifier.height(12.dp))
@@ -1604,7 +1605,7 @@ fun PullResultUI(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                     ) {
-                        Text("BAŞARISIZ PULL (OB / Brick)", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.btn_pull_bad), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1669,7 +1670,7 @@ fun StatTrackingUI(
         // Süre durduysa dikkat çekici bir renk (Örn: Turuncu veya Koyu Gri)
         Color(0xFFFB8C00) // Canlı Turuncu
     } else if (gameMode == GameMode.DEFENSE) {
-        com.example.discbase.ui.theme.StitchDefense
+        com.eyuphanaydin.discbase.ui.theme.StitchDefense
     } else {
         StitchOffense
     }
@@ -1678,9 +1679,9 @@ fun StatTrackingUI(
     val statusText = if (showStartTimerButton) {
         "SÜREYİ BAŞLAT ▶"
     } else if (gameMode == GameMode.DEFENSE) {
-        "DEFANS"
+        stringResource(R.string.line_defense).uppercase()
     } else if (activePasserId == null) {
-        "HÜCUM BAŞLADI"
+        stringResource(R.string.match_start_offense).uppercase()
     } else {
         "$activePasserName"
     }
@@ -1713,7 +1714,7 @@ fun StatTrackingUI(
                     ) {
 
                         // TOPLAM SÜRE
-                        Text("Match Time: ", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.label_timer), fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                         Text(
                             text = formatSecondsToTime(totalMatchSeconds),
                             fontSize = 12.sp,
@@ -1736,7 +1737,7 @@ fun StatTrackingUI(
                     Text(
                         text = ourTeamName.uppercase(),
                         fontWeight = FontWeight.Bold,
-                        color = com.example.discbase.ui.theme.StitchPrimary,
+                        color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
                         fontSize = 16.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -1752,7 +1753,7 @@ fun StatTrackingUI(
                             "$scoreUs",
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Black,
-                            color = com.example.discbase.ui.theme.StitchPrimary
+                            color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary
                         )
                         // DÜZELTME: Tire işareti ve rakip skoru rengi dinamik yapıldı
                         Text(
@@ -1813,14 +1814,14 @@ fun StatTrackingUI(
                             modifier = Modifier
                                 .width(60.dp) // Sabit genişlik
                                 .fillMaxHeight()
-                                .background(com.example.discbase.ui.theme.StitchDefense.copy(alpha = 0.1f)) // Hafif kırmızı zemin
+                                .background(com.eyuphanaydin.discbase.ui.theme.StitchDefense.copy(alpha = 0.1f)) // Hafif kırmızı zemin
                                 .clickable(onClick = onInjuryClick),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.MedicalServices,
                                 contentDescription = "Sakatlık",
-                                tint = com.example.discbase.ui.theme.StitchDefense
+                                tint = com.eyuphanaydin.discbase.ui.theme.StitchDefense
                             )
                         }
                     }
@@ -1866,7 +1867,7 @@ fun StatTrackingUI(
                             modifier = Modifier.weight(1f)
                         )
                         Text(
-                            "DROP",
+                            stringResource(R.string.action_drop).uppercase(),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Gray,
@@ -1874,7 +1875,7 @@ fun StatTrackingUI(
                             modifier = Modifier.weight(1f)
                         )
                         Text(
-                            "GOAL",
+                            stringResource(R.string.match_event_goal),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Gray,
@@ -1922,18 +1923,18 @@ fun StatTrackingUI(
                     Button(
                         onClick = onOpponentScore,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = com.example.discbase.ui.theme.StitchDefense.copy(0.1f), contentColor = com.example.discbase.ui.theme.StitchDefense
+                            containerColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense.copy(0.1f), contentColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense
                         ),
                         modifier = Modifier.weight(1f).height(50.dp),
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, com.example.discbase.ui.theme.StitchDefense)
-                    ) { Text("RAKİP GOL", fontWeight = FontWeight.Bold) }
+                        border = BorderStroke(1.dp, com.eyuphanaydin.discbase.ui.theme.StitchDefense)
+                    ) { Text("${stringResource(R.string.match_score_board_them)} ${stringResource(R.string.action_goal)}", fontWeight = FontWeight.Bold) }
                     Button(
                         onClick = onOpponentTurnover,
                         colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary),
                         modifier = Modifier.weight(1f).height(50.dp),
                         shape = RoundedCornerShape(12.dp)
-                    ) { Text("RAKİP HATA", fontWeight = FontWeight.Bold) }
+                    ) { Text("${stringResource(R.string.match_score_board_them)} ${stringResource(R.string.action_turnover)}", fontWeight = FontWeight.Bold) }
                 }
             }
         }
@@ -2072,12 +2073,12 @@ fun RowScope.ActionButtonsContent(
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Button(
                     onClick = onThrowaway,
-                    colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense),
+                    colors = ButtonDefaults.buttonColors(containerColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.width(140.dp).height(36.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("THROW AWAY", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.action_turnover).uppercase(), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
         } else if (isReceiver) {
@@ -2091,14 +2092,14 @@ fun RowScope.ActionButtonsContent(
             )
             StatIconButton(
                 icon = Icons.Default.Close,
-                color = com.example.discbase.ui.theme.StitchDefense.copy(alpha = 0.2f),
-                tint = com.example.discbase.ui.theme.StitchDefense,
+                color = com.eyuphanaydin.discbase.ui.theme.StitchDefense.copy(alpha = 0.2f),
+                tint = com.eyuphanaydin.discbase.ui.theme.StitchDefense,
                 onClick = onDrop,
                 modifier = Modifier.weight(1f)
             )
             StatIconButton(
                 icon = Icons.Default.Adjust,
-                color = com.example.discbase.ui.theme.StitchPrimary,
+                color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
                 tint = Color.White,
                 onClick = onGoal,
                 modifier = Modifier.weight(1f)
@@ -2116,7 +2117,7 @@ fun RowScope.ActionButtonsContent(
             contentPadding = PaddingValues(0.dp),
             modifier = Modifier.weight(1f).height(36.dp)
         ) {
-            Text("CALLAHAN", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color.Black)
+            Text(stringResource(R.string.action_callahan).uppercase(), fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color.Black)
         }
 
         Spacer(Modifier.width(8.dp))
@@ -2128,7 +2129,7 @@ fun RowScope.ActionButtonsContent(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.weight(1.5f).height(36.dp)
         ) {
-            Text("BLOK", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.match_event_block), fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -2175,10 +2176,10 @@ fun InjurySubDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.MedicalServices, null, tint = com.example.discbase.ui.theme.StitchDefense)
+                Icon(Icons.Default.MedicalServices, null, tint = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Sakatlık / Oyuncu Değişimi",
+                    stringResource(R.string.injury_dialog_title),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -2187,7 +2188,7 @@ fun InjurySubDialog(
         text = {
             Column {
                 Text(
-                    "Sakatlanan oyuncu ve yerine girecek oyuncuyu seçiniz.",
+                    stringResource(R.string.injury_instruction),
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
@@ -2195,9 +2196,9 @@ fun InjurySubDialog(
 
                 // ÇIKAN OYUNCU (Sahadakiler)
                 Text(
-                    "ÇIKAN OYUNCU",
+                    stringResource(R.string.injury_player_out),
                     fontWeight = FontWeight.Bold,
-                    color = com.example.discbase.ui.theme.StitchDefense,
+                    color = com.eyuphanaydin.discbase.ui.theme.StitchDefense,
                     fontSize = 12.sp
                 )
                 Box(
@@ -2213,7 +2214,7 @@ fun InjurySubDialog(
                                     .fillMaxWidth()
                                     .clickable { selectedPlayerOut = player.playerId }
                                     .background(
-                                        if (selectedPlayerOut == player.playerId) com.example.discbase.ui.theme.StitchDefense.copy(
+                                        if (selectedPlayerOut == player.playerId) com.eyuphanaydin.discbase.ui.theme.StitchDefense.copy(
                                             0.1f
                                         ) else Color.Transparent
                                     )
@@ -2223,7 +2224,7 @@ fun InjurySubDialog(
                                 RadioButton(
                                     selected = selectedPlayerOut == player.playerId,
                                     onClick = null,
-                                    colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchDefense)
+                                    colors = RadioButtonDefaults.colors(selectedColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
                                 )
                                 Text(player.name, fontWeight = FontWeight.SemiBold)
                             }
@@ -2235,7 +2236,7 @@ fun InjurySubDialog(
 
                 // GİREN OYUNCU (Yedekler)
                 Text(
-                    "GİREN OYUNCU",
+                    stringResource(R.string.injury_player_in),
                     fontWeight = FontWeight.Bold,
                     color = StitchOffense,
                     fontSize = 12.sp
@@ -2282,11 +2283,11 @@ fun InjurySubDialog(
                 enabled = selectedPlayerOut != null && selectedPlayerIn != null,
                 colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary)
             ) {
-                Text("Değişikliği Onayla")
+                Text(stringResource(R.string.btn_confirm_sub))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("İptal", color = Color.Gray) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel), color = Color.Gray) }
         },
         containerColor = StitchColor.Surface,
         shape = RoundedCornerShape(16.dp)
@@ -2333,7 +2334,7 @@ fun LineSelectionScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Kadro (${selectedPlayerIds.size}/7)",
+                "${stringResource(R.string.line_selection_title)} (${selectedPlayerIds.size}/7)",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = if (selectedPlayerIds.size == 7) StitchOffense else StitchTextPrimary
@@ -2341,12 +2342,12 @@ fun LineSelectionScreen(
             // Filtre varsa temizleme butonu
             if (activeFilterIds != null) {
                 TextButton(onClick = { activeFilterIds = null }) {
-                    Text("Filtreyi Kaldır", color = com.example.discbase.ui.theme.StitchPrimary)
+                    Text(stringResource(R.string.line_filter_remove), color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
                 }
             } else if (selectedPlayerIds.isNotEmpty()) {
                 // Filtre yoksa ama seçim varsa "Temizle" butonu
                 TextButton(onClick = { selectedPlayerIds = emptySet() }) {
-                    Text("Temizle", color = com.example.discbase.ui.theme.StitchDefense)
+                    Text(stringResource(R.string.line_clear), color = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
                 }
             }
         }
@@ -2369,7 +2370,7 @@ fun LineSelectionScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            "Hızlı Set Yükle",
+                            stringResource(R.string.line_quick_set),
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF1565C0),
                             fontSize = 16.sp
@@ -2392,7 +2393,7 @@ fun LineSelectionScreen(
                                 selectedPlayerIds.containsAll(lastLineSet) && selectedPlayerIds.size == lastLineSet.size
 
                             Text(
-                                "Son Oynanan:",
+                                stringResource(R.string.line_last_played),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Gray
@@ -2412,7 +2413,7 @@ fun LineSelectionScreen(
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 // Aktifse Yeşil, Değilse Mor
-                                color = if (isLastLineActive) StitchOffense else com.example.discbase.ui.theme.StitchPrimary,
+                                color = if (isLastLineActive) StitchOffense else com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
                                 contentColor = Color.White
                             ) {
                                 Row(
@@ -2429,7 +2430,7 @@ fun LineSelectionScreen(
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Text(
-                                        "AYNI KADRO (${lastPointLine.size})",
+                                        "${stringResource(R.string.line_same_line)} (${lastPointLine.size})", // "AYNI KADRO"
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 13.sp
                                     )
@@ -2444,7 +2445,7 @@ fun LineSelectionScreen(
                         // --- TAM KADROLAR (FİLTRELER) ---
                         if (fullLines.isNotEmpty()) {
                             Text(
-                                "Tam Kadrolar (Filtreler):",
+                                stringResource(R.string.line_full_filters),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Gray
@@ -2478,7 +2479,7 @@ fun LineSelectionScreen(
                         // --- KÜÇÜK SETLER (EKLE/ÇIKAR) ---
                         if (smallLines.isNotEmpty()) {
                             Text(
-                                "Setler (Ekle/Çıkar):",
+                                stringResource(R.string.line_sets_add_remove),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Gray
@@ -2524,7 +2525,7 @@ fun LineSelectionScreen(
         ) {
             // HANDLERS
             if (handlers.isNotEmpty()) {
-                item { SectionHeader("HANDLERS") }
+                item { SectionHeader(stringResource(R.string.section_handlers)) }
                 items(handlers) { pair ->
                     RosterSelectionRow(
                         pair = pair,
@@ -2544,7 +2545,7 @@ fun LineSelectionScreen(
 
             // CUTTERS
             if (cutters.isNotEmpty()) {
-                item { Spacer(Modifier.height(12.dp)); SectionHeader("CUTTERS") }
+                item { Spacer(Modifier.height(12.dp)); SectionHeader(stringResource(R.string.section_cutters)) }
                 items(cutters) { pair ->
                     RosterSelectionRow(
                         pair = pair,
@@ -2581,9 +2582,9 @@ fun LineSelectionScreen(
             )
         ) {
             Text(
-                if (selectedPlayerIds.size == 7) "MAÇI BAŞLAT"
-                else if (selectedPlayerIds.size < 7) "${7 - selectedPlayerIds.size} KİŞİ DAHA SEÇ"
-                else "${selectedPlayerIds.size - 7} KİŞİ ÇIKAR",
+                if (selectedPlayerIds.size == 7) stringResource(R.string.match_start_btn)
+                else if (selectedPlayerIds.size < 7) stringResource(R.string.line_select_more, 7 - selectedPlayerIds.size)
+                else stringResource(R.string.line_remove_excess, selectedPlayerIds.size - 7),
                 fontWeight = FontWeight.Bold
             )
         }
@@ -2601,7 +2602,7 @@ fun QuickSetChip(
     val bgColor = if (isActive) StitchSecondary else Color.White
     val contentColor = if (isActive) Color.White else StitchColor.TextPrimary
     val badgeColor =
-        if (isActive) Color.White.copy(0.8f) else if (isFilter) Color.Gray else com.example.discbase.ui.theme.StitchPrimary
+        if (isActive) Color.White.copy(0.8f) else if (isFilter) Color.Gray else com.eyuphanaydin.discbase.ui.theme.StitchPrimary
 
     Surface(
         onClick = onClick,
@@ -2636,7 +2637,7 @@ fun QuickSetChip(
             )
             Spacer(Modifier.width(4.dp))
             Text(
-                if (isFilter) "filtre" else "+${line.playerIds.size}",
+                if (isFilter) stringResource(R.string.line_filter_badge) else "+${line.playerIds.size}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
                 color = badgeColor
@@ -2697,14 +2698,14 @@ fun RosterSelectionRow(
                     "O: ${stats.oPointsPlayed} | D: ${stats.dPointsPlayed}",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = com.example.discbase.ui.theme.StitchPrimary
+                    color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary
                 )
             }
 
             Checkbox(
                 checked = isSelected,
                 onCheckedChange = null,
-                colors = CheckboxDefaults.colors(checkedColor = com.example.discbase.ui.theme.StitchPrimary),
+                colors = CheckboxDefaults.colors(checkedColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary),
                 enabled = isSelected || !isSelectionFull // Doluysa ve seçili değilse disable et
             )
         }
@@ -2794,7 +2795,7 @@ fun StoppageActiveDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.PanTool, null, tint = Color.Red)
                 Spacer(Modifier.width(8.dp))
-                Text("Oyun Durdu: ${type.label}", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.stoppage_game_paused, stringResource(type.labelResId)), fontWeight = FontWeight.Bold)
             }
         },
         text = {
@@ -2808,7 +2809,7 @@ fun StoppageActiveDialog(
                     fontWeight = FontWeight.Black,
                     color = StitchColor.TextPrimary
                 )
-                Text("Süre işliyor...", fontSize = 12.sp, color = Color.Gray)
+                Text(stringResource(R.string.stoppage_time_running), fontSize = 12.sp, color = Color.Gray)
             }
         },
         confirmButton = {
@@ -2817,7 +2818,7 @@ fun StoppageActiveDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = StitchOffense),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("OYUNU BAŞLAT (RESUME)", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.btn_resume_game), fontWeight = FontWeight.Bold)
             }
         },
         containerColor = StitchColor.Surface,
@@ -2867,7 +2868,7 @@ fun SimplePointEditor(
                     ModernIconButton(
                         icon = Icons.Default.Check,
                         color = StitchOffense,
-                        contentDescription = "Kaydet",
+                        contentDescription = stringResource(R.string.btn_save),
                         onClick = {
                             // --- OVERWRITE MANTIĞI ---
                             // Mevcut kadrodaki herkesin istatistiğini sıfırla, sadece yeni seçilenleri işle.
@@ -2903,7 +2904,7 @@ fun SimplePointEditor(
             // SÜRE DÜZENLEME
             Card(colors = CardDefaults.cardColors(containerColor = StitchColor.Surface)) {
                 Column(Modifier.padding(16.dp)) {
-                    Text("Sayı Süresi (Manuel)", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.label_timer), fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AccessTime, null, tint = StitchColor.Primary)
@@ -2913,23 +2914,23 @@ fun SimplePointEditor(
                         OutlinedTextField(
                             value = minText,
                             onValueChange = { if(it.all{c->c.isDigit()}) { minText=it; val m=it.toLongOrNull()?:0L; val s=editedDurationSeconds%60; editedDurationSeconds=m*60+s } },
-                            modifier = Modifier.width(80.dp), label = {Text("Dk")}
+                            modifier = Modifier.width(80.dp), label = {Text(stringResource(R.string.label_min))}
                         )
                         Text(" : ", fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp))
                         var secText by remember { mutableStateOf((editedDurationSeconds % 60).toString()) }
                         OutlinedTextField(
                             value = secText,
                             onValueChange = { if(it.all{c->c.isDigit()} && it.length<=2) { secText=it; val m=editedDurationSeconds/60; val s=it.toLongOrNull()?:0L; editedDurationSeconds=m*60+s } },
-                            modifier = Modifier.width(80.dp), label = {Text("Sn")}
+                            modifier = Modifier.width(80.dp), label = {Text(stringResource(R.string.label_sec))}
                         )
                     }
                 }
             }
 
             // SKOR SEÇİMİ
-            Text("Skor Bilgileri", fontWeight = FontWeight.Bold, color = StitchColor.Primary)
-            PlayerSelectionDropdown("Asist Yapan", currentLineStats, assisterId, { assisterId = it }, setOfNotNull(scorerId))
-            PlayerSelectionDropdown("Golü Atan", currentLineStats, scorerId, { scorerId = it }, setOfNotNull(assisterId))
+            Text(stringResource(R.string.header_score_info), fontWeight = FontWeight.Bold, color = StitchColor.Primary)
+            PlayerSelectionDropdown(stringResource(R.string.dialog_who_assist), currentLineStats, assisterId, { assisterId = it }, setOfNotNull(scorerId))
+            PlayerSelectionDropdown(stringResource(R.string.dialog_who_scored), currentLineStats, scorerId, { scorerId = it }, setOfNotNull(assisterId))
         }
     }
 }
@@ -3068,7 +3069,7 @@ fun AdvancedPointEditor(
         activePasserId = null
         gameMode = GameMode.IDLE
         isTimerRunning = false
-        Toast.makeText(context, "Gol! Kaydetmek için yukarıdaki tike basın.", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.toast_goal_saved), Toast.LENGTH_SHORT).show()
     }
 
     fun handleDrop(receiverId: String) {
@@ -3106,7 +3107,7 @@ fun AdvancedPointEditor(
 
     fun handleUndo() {
         if (pointHistoryStack.isEmpty()) {
-            Toast.makeText(context, "Geri alınacak işlem yok.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.toast_undo_empty), Toast.LENGTH_SHORT).show()
             return
         }
         val lastState = pointHistoryStack.last()
@@ -3148,8 +3149,8 @@ fun AdvancedPointEditor(
             Scaffold(
                 topBar = {
                     CenterAlignedTopAppBar(
-                        title = { Text("Kadro Düzenle", fontWeight = FontWeight.Bold) },
-                        navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, "Geri") } }
+                        title = { Text(stringResource(R.string.line_selection_title)) },
+                        navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Default.ArrowBack, stringResource(R.string.desc_back)) } }
                     )
                 }
             ) { padding ->
@@ -3183,7 +3184,7 @@ fun AdvancedPointEditor(
             Scaffold(
                 topBar = {
                     CenterAlignedTopAppBar(
-                        title = { Text("Başlangıç Durumu", fontWeight = FontWeight.Bold) },
+                        title = { Text(stringResource(R.string.editor_advanced_start_title), fontWeight = FontWeight.Bold) },
                         navigationIcon = { IconButton(onClick = { handleBack() }) { Icon(Icons.Default.ArrowBack, "Geri") } }
                     )
                 }
@@ -3243,7 +3244,7 @@ fun AdvancedPointEditor(
                 onOpponentScore = {
                     gameMode = GameMode.IDLE
                     isTimerRunning = false
-                    Toast.makeText(context, "Rakip Sayı.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.toast_opponent_score), Toast.LENGTH_SHORT).show()
                 },
 
                 // --- EDİT EKRANI ÖZEL BUTONLARI ---

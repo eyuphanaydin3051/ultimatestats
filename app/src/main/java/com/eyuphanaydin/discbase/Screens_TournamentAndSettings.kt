@@ -1,4 +1,4 @@
-package com.example.discbase
+package com.eyuphanaydin.discbase
 
 import android.app.DatePickerDialog
 import android.content.Context
@@ -52,16 +52,21 @@ import com.canhub.cropper.CropImageContract
 import com.canhub.cropper.CropImageContractOptions
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
-import com.example.discbase.ui.theme.*
+import com.eyuphanaydin.discbase.ui.theme.*
 import kotlinx.coroutines.launch
 import java.util.*
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.ui.res.stringResource
+import androidx.core.os.LocaleListCompat
+import com.eyuphanaydin.discbase.R // R sınıfının senin paket isminle olduğundan emin ol
+import com.eyuphanaydin.discbase.R.string.language_option
 
 // ==========================================
 // 1. GİRİŞ VE BAŞLANGIÇ EKRANLARI
 // ==========================================
 
 @Composable
-fun LoadingScreen(text: String = "Yükleniyor...") {
+fun LoadingScreen(text: String = stringResource(R.string.loading)) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -80,32 +85,24 @@ fun SignInScreen(
     val context = LocalContext.current
     val signInState by signInViewModel.signInState.collectAsState()
 
-    // Google'ın giriş ekranını açmak için bir launcher
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         signInViewModel.handleGoogleSignInResult(result, context)
     }
 
-    // Hata veya başarı mesajlarını Toast olarak göster
-    // DİKKAT: 'Success' durumundaki navigasyon buradan kaldırıldı.
-    // Navigasyon artık UltimateStatsApp() içindeki ana NavHost tarafından yönetiliyor.
     LaunchedEffect(signInState) {
         when (val state = signInState) {
             is SignInState.Success -> {
                 Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
-                // Navigasyon artık buradan yapılmıyor.
             }
-
             is SignInState.Error -> {
                 Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
             }
-
             else -> {}
         }
     }
 
-    // Arayüz
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -113,23 +110,20 @@ fun SignInScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // --- LOGO DÜZELTMESİ BURADA ---
-        // 'res/drawable/ic_launcher_playstore.png' dosyasını kullandığınızı varsayarak
         Image(
             painter = painterResource(id = R.drawable.ic_launcher_playstore),
-            contentDescription = "Uygulama Logosu",
+            contentDescription = "App Logo",
             modifier = Modifier.clip(CircleShape).size(150.dp)
         )
-        // --- BİTTİ ---
 
         Spacer(Modifier.height(24.dp))
         Text(
-            "DiscBase",
+            stringResource(R.string.app_name),
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
-            "Takım istatistiklerinizi görmek ve paylaşmak için giriş yapın.", // Metin güncellendi
+            stringResource(R.string.signin_welcome_desc),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             color = Color.Gray
@@ -150,44 +144,39 @@ fun SignInScreen(
             if (signInState is SignInState.Loading) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
             } else {
-                Text("Google ile Giriş Yap", fontSize = 16.sp)
+                Text(stringResource(R.string.signin_google_btn), fontSize = 16.sp)
             }
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamSelectionScreen(
     userTeamsList: List<TeamProfile>,
     onTeamSelected: (String) -> Unit,
     onSignOut: () -> Unit,
-    viewModel: MainViewModel = viewModel()// <-- EKLENDİ: İşlemler için gerekli
-
+    viewModel: MainViewModel = viewModel()
 ) {
-    // --- STATE TANIMLARI ---
     var showCreateDialog by remember { mutableStateOf(false) }
     var showJoinDialog by remember { mutableStateOf(false) }
 
-    // Dialog Input State'leri
     var newTeamName by remember { mutableStateOf("") }
     var joinTeamId by remember { mutableStateOf("") }
 
     val context = LocalContext.current
 
-    // --- YENİ TAKIM OLUŞTURMA DIALOGU ---
     if (showCreateDialog) {
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
-            title = { Text("Yeni Takım Oluştur") },
+            title = { Text(stringResource(R.string.team_create_dialog)) },
             text = {
                 Column {
-                    Text("Takımınızın adını girin:", fontSize = 14.sp, color = Color.Gray)
+                    Text(stringResource(R.string.team_name_label), fontSize = 14.sp, color = Color.Gray)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = newTeamName,
                         onValueChange = { newTeamName = it },
-                        label = { Text("Takım Adı") },
+                        label = { Text(stringResource(R.string.team_name_label)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -199,32 +188,31 @@ fun TeamSelectionScreen(
                         if (newTeamName.isNotBlank()) {
                             viewModel.createNewTeam(newTeamName)
                             showCreateDialog = false
-                            newTeamName = "" // Temizle
+                            newTeamName = ""
                         } else {
-                            Toast.makeText(context, "İsim boş olamaz", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.msg_name_required), Toast.LENGTH_SHORT).show()
                         }
                     }
-                ) { Text("Oluştur") }
+                ) { Text(stringResource(R.string.btn_create)) }
             },
             dismissButton = {
-                TextButton(onClick = { showCreateDialog = false }) { Text("İptal") }
+                TextButton(onClick = { showCreateDialog = false }) { Text(stringResource(R.string.btn_cancel)) }
             }
         )
     }
 
-    // --- TAKIMA KATILMA DIALOGU ---
     if (showJoinDialog) {
         AlertDialog(
             onDismissRequest = { showJoinDialog = false },
-            title = { Text("Takıma Katıl") },
+            title = { Text(stringResource(R.string.team_join_dialog)) },
             text = {
                 Column {
-                    Text("Davet kodunu girin:", fontSize = 14.sp, color = Color.Gray)
+                    Text(stringResource(R.string.team_code_label), fontSize = 14.sp, color = Color.Gray)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = joinTeamId,
                         onValueChange = { joinTeamId = it },
-                        label = { Text("Takım Kodu (ID)") },
+                        label = { Text(stringResource(R.string.team_code_label)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -236,29 +224,27 @@ fun TeamSelectionScreen(
                         if (joinTeamId.isNotBlank()) {
                             viewModel.joinExistingTeam(joinTeamId)
                             showJoinDialog = false
-                            joinTeamId = "" // Temizle
+                            joinTeamId = ""
                         } else {
-                            Toast.makeText(context, "Kod girmelisiniz", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.msg_code_required), Toast.LENGTH_SHORT).show()
                         }
                     }
-                ) { Text("Katıl") }
+                ) { Text(stringResource(R.string.btn_join)) }
             },
             dismissButton = {
-                TextButton(onClick = { showJoinDialog = false }) { Text("İptal") }
+                TextButton(onClick = { showJoinDialog = false }) { Text(stringResource(R.string.btn_cancel)) }
             }
         )
     }
 
-    // --- EKRAN TASARIMI ---
     Scaffold(
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Takımlarım", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.team_my_teams), fontWeight = FontWeight.Bold) },
                 actions = {
-                    // Çıkış butonu (Opsiyonel, profil sayfasına taşımıştık ama burada da kalabilir)
                     IconButton(onClick = onSignOut) {
-                        Icon(Icons.AutoMirrored.Filled.Logout, null, tint = com.example.discbase.ui.theme.StitchDefense)
+                        Icon(Icons.AutoMirrored.Filled.Logout, null, tint = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
@@ -271,14 +257,14 @@ fun TeamSelectionScreen(
                     containerColor = StitchSecondary,
                     contentColor = Color.White,
                     icon = { Icon(Icons.Default.GroupAdd, null) },
-                    text = { Text("Katıl") }
+                    text = { Text(stringResource(R.string.btn_join)) }
                 )
                 ExtendedFloatingActionButton(
                     onClick = { showCreateDialog = true },
                     containerColor = StitchColor.Primary,
                     contentColor = Color.White,
                     icon = { Icon(Icons.Default.Add, null) },
-                    text = { Text("Yeni Takım") }
+                    text = { Text(stringResource(R.string.btn_create_new_team)) }
                 )
             }
         }
@@ -294,13 +280,12 @@ fun TeamSelectionScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Groups, null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
                         Spacer(Modifier.height(16.dp))
-                        Text("Henüz bir takımınız yok.", color = Color.Gray)
+                        Text(stringResource(R.string.team_empty), color = Color.Gray)
                     }
                 }
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     items(userTeamsList) { teamProfile ->
-                        // --- TAKIM KARTI ---
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(20.dp),
@@ -312,7 +297,6 @@ fun TeamSelectionScreen(
                                 modifier = Modifier.padding(20.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Logo Gösterimi
                                 if (teamProfile.logoPath != null) {
                                     AsyncImage(
                                         model = getLogoModel(teamProfile.logoPath), contentDescription = null,
@@ -330,7 +314,7 @@ fun TeamSelectionScreen(
 
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(teamProfile.teamName, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = StitchColor.TextPrimary)
-                                    Text("Kod: ${teamProfile.teamId}", fontSize = 12.sp, color = Color.Gray)
+                                    Text("Code: ${teamProfile.teamId}", fontSize = 12.sp, color = Color.Gray)
                                 }
 
                                 Icon(Icons.Default.ChevronRight, null, tint = Color.Gray)
@@ -346,14 +330,12 @@ fun TeamSelectionScreen(
 @Composable
 fun CreateProfileScreen(
     mainViewModel: MainViewModel = viewModel(),
-    onProfileCreated: () -> Unit // Navigasyon için callback
+    onProfileCreated: () -> Unit
 ) {
     var displayName by remember { mutableStateOf("") }
     val context = LocalContext.current
     val profileState by mainViewModel.profileState.collectAsState()
 
-    // Eğer viewModel profili EXISTS olarak güncellerse (kayıt başarılıysa),
-    // otomatik olarak bir sonraki ekrana git.
     LaunchedEffect(profileState) {
         if (profileState == MainViewModel.UserProfileState.EXISTS) {
             onProfileCreated()
@@ -362,7 +344,7 @@ fun CreateProfileScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Profil Oluştur") })
+            TopAppBar(title = { Text(stringResource(R.string.profile_create_title)) })
         }
     ) { innerPadding ->
         Column(
@@ -374,13 +356,13 @@ fun CreateProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Hoş Geldiniz!",
+                stringResource(R.string.signin_welcome_title),
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(16.dp))
             Text(
-                "Lütfen uygulamada diğer üyelerin göreceği adınızı ve soyadınızı girin.",
+                stringResource(R.string.profile_create_desc),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = Color.Gray
@@ -390,7 +372,7 @@ fun CreateProfileScreen(
             OutlinedTextField(
                 value = displayName,
                 onValueChange = { displayName = it },
-                label = { Text("Adınız Soyadınız") },
+                label = { Text(stringResource(R.string.profile_name_hint)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) }
@@ -400,12 +382,11 @@ fun CreateProfileScreen(
             Button(
                 onClick = {
                     if (displayName.isBlank() || displayName.length < 3) {
-                        Toast.makeText(context, "Lütfen geçerli bir ad girin.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.error_name_required), Toast.LENGTH_SHORT).show()
                     } else {
                         mainViewModel.saveManualProfile(displayName)
                     }
                 },
-                // İsim boşsa veya hala yükleniyorsa butonu kilitle
                 enabled = displayName.isNotBlank() && profileState != MainViewModel.UserProfileState.LOADING,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -414,7 +395,7 @@ fun CreateProfileScreen(
                 if (profileState == MainViewModel.UserProfileState.LOADING) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                 } else {
-                    Text("Kaydet ve Devam Et", fontSize = 16.sp)
+                    Text(stringResource(R.string.btn_save_continue), fontSize = 16.sp)
                 }
             }
         }
@@ -434,35 +415,26 @@ fun ProfileEditScreen(
     allPlayers: List<Player>,
     allTournaments: List<Tournament>
 ) {
-    // --- 1. TEMEL TANIMLAMALAR VE STATE'LER ---
     val context = LocalContext.current
-    val mainViewModel: MainViewModel = viewModel() // ViewModel'e buradan erişiyoruz
+    val mainViewModel: MainViewModel = viewModel()
     val scope = rememberCoroutineScope()
 
-    // ViewModel'den verileri çekiyoruz (Hata alan kısımlar burasıydı)
     val currentProfile by mainViewModel.profile.collectAsState()
     val currentUserRole by mainViewModel.currentUserRole.collectAsState()
     val isAdmin = currentUserRole == "admin"
 
-    // Düzenleme State'leri
     var teamName by remember { mutableStateOf(currentProfile.teamName) }
-    var tempLogoUri by remember { mutableStateOf<Uri?>(null) } // Yeni seçilen logo
+    var tempLogoUri by remember { mutableStateOf<Uri?>(null) }
     var isSaving by remember { mutableStateOf(false) }
 
-    // --- 2. RESİM SEÇME VE KIRPMA MANTIĞI ---
-
-    // Kırpma sonucu buraya düşer
     val cropImageLauncher = rememberLauncherForActivityResult(contract = CropImageContract()) { result ->
         if (result.isSuccessful) {
             tempLogoUri = result.uriContent
         } else {
             val exception = result.error
-            Toast.makeText(context, "Kırpma iptal edildi: ${exception?.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "${context.getString(R.string.btn_cancel)}: ${exception?.message}", Toast.LENGTH_SHORT).show()
         }
     }
-
-    // Galeri açıcı
-    // ProfileEditScreen içindeki photoPickerLauncher kısmı:
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -479,10 +451,8 @@ fun ProfileEditScreen(
                         aspectRatioY = 1,
                         outputCompressFormat = Bitmap.CompressFormat.JPEG,
                         outputCompressQuality = 80,
-                        // --- BU SATIRLARI EKLEYİN ---
-                        activityTitle = "Fotoğrafı Kırp", // Üstte yazacak başlık
-                        cropMenuCropButtonTitle = "Tamam", // Onay butonu yazısı (bazen ikon olur)
-                        // ----------------------------
+                        activityTitle = context.getString(R.string.profile_photo_crop),
+                        cropMenuCropButtonTitle = context.getString(R.string.btn_ok),
                     )
                 )
                 cropImageLauncher.launch(cropOptions)
@@ -490,18 +460,17 @@ fun ProfileEditScreen(
         }
     )
 
-    // --- 3. EKRAN TASARIMI ---
     Scaffold(
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Takım Ayarları", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.team_settings_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     ModernIconButton(
                         icon = Icons.Default.ArrowBack,
                         onClick = { navController.popBackStack() },
                         color = StitchColor.TextPrimary,
-                        contentDescription = "Geri"
+                        contentDescription = stringResource(R.string.desc_back)
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
@@ -517,7 +486,6 @@ fun ProfileEditScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- KART 1: TAKIM PROFİLİ (LOGO & İSİM) ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -528,9 +496,7 @@ fun ProfileEditScreen(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Logo Alanı
                     Box(contentAlignment = Alignment.BottomEnd) {
-                        // Geçici logo varsa onu, yoksa kayıtlıyı göster
                         val logoToShow: Any? = tempLogoUri ?: getLogoModel(currentProfile.logoPath)
 
                         if (logoToShow != null) {
@@ -540,8 +506,7 @@ fun ProfileEditScreen(
                                 modifier = Modifier
                                     .size(100.dp)
                                     .clip(CircleShape)
-                                    .border(2.dp,
-                                        com.example.discbase.ui.theme.StitchPrimary, CircleShape),
+                                    .border(2.dp, com.eyuphanaydin.discbase.ui.theme.StitchPrimary, CircleShape),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
@@ -555,61 +520,52 @@ fun ProfileEditScreen(
                             )
                         }
 
-                        // Düzenleme Butonu (Sadece Admin)
                         if (isAdmin) {
                             Surface(
                                 onClick = {
-                                    // Galeriyi sadece resimler için aç
                                     photoPickerLauncher.launch(
                                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                     )
                                 },
                                 shape = CircleShape,
-                                color = com.example.discbase.ui.theme.StitchPrimary,
+                                color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
                                 modifier = Modifier.size(32.dp)
                             ) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    null,
-                                    tint = Color.White,
-                                    modifier = Modifier.padding(6.dp)
-                                )
+                                Icon(Icons.Default.Edit, null, tint = Color.White, modifier = Modifier.padding(6.dp))
                             }
                         }
                     }
 
                     Spacer(Modifier.height(16.dp))
 
-                    // Takım Adı
                     OutlinedTextField(
                         value = teamName,
                         onValueChange = { teamName = it },
-                        label = { Text("Takım Adı") },
+                        label = { Text(stringResource(R.string.team_name_label)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         enabled = isAdmin,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = com.example.discbase.ui.theme.StitchPrimary,
-                            focusedLabelColor = com.example.discbase.ui.theme.StitchPrimary
+                            focusedBorderColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
+                            focusedLabelColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary
                         )
                     )
 
                     Spacer(Modifier.height(12.dp))
 
-                    // Davet Kodu (Salt Okunur & Kopyalanabilir)
                     OutlinedTextField(
                         value = currentProfile.teamId,
                         onValueChange = {},
-                        label = { Text("Davet Kodu (Kopyala)") },
+                        label = { Text(stringResource(R.string.team_invite_code)) },
                         readOnly = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         trailingIcon = {
                             IconButton(onClick = {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                val clip = android.content.ClipData.newPlainText("Takım Kodu", currentProfile.teamId)
+                                val clip = android.content.ClipData.newPlainText("Team Code", currentProfile.teamId)
                                 clipboard.setPrimaryClip(clip)
-                                Toast.makeText(context, "Kopyalandı!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.msg_copied), Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(Icons.Default.ContentCopy, null, tint = StitchColor.Primary)
                             }
@@ -622,10 +578,8 @@ fun ProfileEditScreen(
                 }
             }
 
-            // --- KART 2: ÜYE YÖNETİMİ (Sadece Admin Görür) ---
             if (isAdmin) {
                 val currentUserId = mainViewModel.currentUser.collectAsState().value?.uid ?: ""
-
                 MemberManagementCard(
                     members = currentProfile.members,
                     userProfiles = allUserProfiles,
@@ -635,32 +589,27 @@ fun ProfileEditScreen(
                 )
             }
 
-            // --- KART 3: İŞLEM BUTONLARI ---
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                // Takım Değiştir
                 OutlinedButton(
                     onClick = onChangeTeam,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, com.example.discbase.ui.theme.StitchPrimary),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = com.example.discbase.ui.theme.StitchPrimary)
-                ) { Text("Takım Değiştir") }
+                    border = BorderStroke(1.dp, com.eyuphanaydin.discbase.ui.theme.StitchPrimary),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
+                ) { Text(stringResource(R.string.btn_switch_team)) }
 
-                // Çıkış Yap
                 Button(
                     onClick = onSignOut,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = com.example.discbase.ui.theme.StitchDefense) // Kırmızı
-                ) { Text("Çıkış Yap") }
+                    colors = ButtonDefaults.buttonColors(containerColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
+                ) { Text(stringResource(R.string.settings_logout)) }
             }
 
-            // --- KAYDET BUTONU (Admin ve değişiklik varsa) ---
-            // Hem isim değişmişse hem de yeni logo seçilmişse aktif olur
             val hasChanges = (teamName != currentProfile.teamName) || (tempLogoUri != null)
 
             if (isAdmin && hasChanges) {
@@ -668,22 +617,16 @@ fun ProfileEditScreen(
                     onClick = {
                         scope.launch {
                             isSaving = true
-
-                            // Logoyu Base64 string'e çevir (Varsa)
                             var base64Logo: String? = null
                             if (tempLogoUri != null) {
-                                // IO Thread'de işlemi yap
                                 base64Logo = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                                     uriToCompressedBase64(context, tempLogoUri!!)
                                 }
                             }
-
-                            // ViewModel üzerinden kaydet
                             mainViewModel.saveProfile(teamName, base64Logo) {
-                                // Başarılı olursa
                                 isSaving = false
                                 navController.popBackStack()
-                                Toast.makeText(context, "Profil güncellendi", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.msg_profile_updated), Toast.LENGTH_SHORT).show()
                             }
                         }
                     },
@@ -697,11 +640,10 @@ fun ProfileEditScreen(
                     if (isSaving) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                     } else {
-                        Text("DEĞİŞİKLİKLERİ KAYDET", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.btn_save_changes), fontWeight = FontWeight.Bold)
                     }
                 }
             }
-
             Spacer(Modifier.height(20.dp))
         }
     }
@@ -711,62 +653,53 @@ fun ProfileEditScreen(
 fun SettingsScreen(
     navController: NavController,
     viewModel: MainViewModel,
-    allPlayers: List<Player>,      // <-- YENİ PARAMETRE
-    tournaments: List<Tournament>  // <-- YENİ PARAMETRE
+    allPlayers: List<Player>,
+    tournaments: List<Tournament>
 ) {
     val context = LocalContext.current
-
-    // State'leri Dinle
+    var showLanguageDialog by remember { mutableStateOf(false) }
     val currentNameFormat by viewModel.nameFormat.collectAsState()
     val keepScreenOn by viewModel.keepScreenOn.collectAsState()
     val vibrationEnabled by viewModel.vibrationEnabled.collectAsState()
     val isLeftHanded by viewModel.isLeftHanded.collectAsState()
     val currentCaptureMode by viewModel.captureMode.collectAsState()
-    val isTimeTrackingEnabled by viewModel.timeTrackingEnabled.collectAsState() // <-- BUNU ÇEKİN
+    val isTimeTrackingEnabled by viewModel.timeTrackingEnabled.collectAsState()
     val isProModeEnabled by viewModel.proModeEnabled.collectAsState()
 
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         if (uri != null) {
-            // HATALI OLAN ESKİ SATIR:
-            // viewModel.importBackupFromJson(context, uri)
-
-            // DOĞRU OLAN YENİ SATIR (Context parametresini sildik):
             viewModel.importBackupFromJson(uri)
         }
     }
 
-    // Örnek İsim Formatı
     val sampleName = "Eyüphan Aydın"
     val formattedSample = when (currentNameFormat) {
         NameFormat.FULL_NAME -> "Eyüphan Aydın"
         NameFormat.FIRST_NAME_LAST_INITIAL -> "Eyüphan A."
         NameFormat.INITIAL_LAST_NAME -> "E. Aydın"
     }
-    // --- YENİ EKLENEN KISIM BAŞLANGICI ---
-    // Dosya Kaydetme Penceresini Açan Launcher
+
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
-        // Kullanıcı bir yer seçip "Kaydet"e bastığında burası çalışır
         if (uri != null) {
             viewModel.saveBackupToUri(uri, allPlayers, tournaments)
         }
     }
-    // --- YENİ EKLENEN KISIM BİTİŞİ ---
 
     Scaffold(
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Ayarlar", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     ModernIconButton(
                         Icons.Default.ArrowBack,
                         { navController.popBackStack() },
                         StitchTextPrimary,
-                        "Geri"
+                        stringResource(R.string.desc_back)
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
@@ -780,9 +713,7 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // --- 1. VERİ KAYIT MODU (YENİ BÖLÜM - EN ÜSTE EKLİYORUZ) ---
-            SettingsSection(title = "MAÇ KAYIT MODU") {
-                // BASİT MOD
+            SettingsSection(title = stringResource(R.string.settings_section_mode)) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -797,14 +728,13 @@ fun SettingsScreen(
                     )
                     Spacer(Modifier.width(8.dp))
                     Column {
-                        Text("Basit Mod", fontWeight = FontWeight.Bold)
-                        Text("Sadece Line, Skor, Gol ve Asist takibi.", fontSize = 12.sp, color = Color.Gray)
+                        Text(stringResource(R.string.settings_simple_mode), fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.settings_simple_desc), fontSize = 12.sp, color = Color.Gray)
                     }
                 }
 
                 Divider(color = Color.LightGray.copy(0.2f), modifier = Modifier.padding(horizontal = 16.dp))
 
-                // GELİŞMİŞ MOD
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -819,103 +749,92 @@ fun SettingsScreen(
                     )
                     Spacer(Modifier.width(8.dp))
                     Column {
-                        Text("Gelişmiş Mod (Önerilen)", fontWeight = FontWeight.Bold)
-                        Text("Pas, Hata, Blok ve detaylı istatistikler.", fontSize = 12.sp, color = Color.Gray)
+                        Text(stringResource(R.string.settings_adv_mode), fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.settings_adv_desc), fontSize = 12.sp, color = Color.Gray)
                     }
                 }
-// --- YENİ: PRO MOD ŞALTERİ (Süre Yönetimi'nin Üstüne) ---
+
                 SettingsSwitchRow(
-                    icon = Icons.Default.Map, // Harita İkonu
-                    title = "Pro Mod",
-                    subtitle = "Saha haritası ve ekstra analiz sekmesini aktifleştirir.",
+                    icon = Icons.Default.Map,
+                    title = stringResource(R.string.settings_pro_mode),
+                    subtitle = stringResource(R.string.settings_pro_desc),
                     checked = isProModeEnabled,
                     onCheckedChange = { viewModel.setProModeEnabled(it) }
                 )
 
-                Divider(color = Color.LightGray.copy(0.2f)) // Araya çizgi
+                Divider(color = Color.LightGray.copy(0.2f))
 
-                // --- YENİ EKLENEN SÜRE BUTONU ---
                 SettingsSwitchRow(
-                    icon = Icons.Default.AccessTime, // Saat İkonu
-                    title = "Süre Yönetimi (Pro)",
-                    subtitle = "Maç kronometresi, mola takibi ve pull süresi ölçümü.",
+                    icon = Icons.Default.AccessTime,
+                    title = stringResource(R.string.settings_time_mgmt),
+                    subtitle = stringResource(R.string.settings_time_desc),
                     checked = isTimeTrackingEnabled,
                     onCheckedChange = { viewModel.setTimeTrackingEnabled(it) }
                 )
             }
 
-            // --- 1. GENEL AYARLAR ---
-            SettingsSection(title = "GENEL") {
+            SettingsSection(title = stringResource(R.string.settings_section_general)) {
                 SettingsRow(
                     icon = Icons.Default.Language,
-                    title = "Dil / Language",
-                    subtitle = "Türkçe (Varsayılan)",
-                    onClick = { /* Dil dialogu eklenebilir */ }
+                    title = stringResource(id = language_option),
+                    subtitle = "Türkçe / English",
+                    onClick = { showLanguageDialog = true }
                 )
                 Divider(color = Color.LightGray.copy(0.2f))
                 SettingsSwitchRow(
                     icon = Icons.Default.Smartphone,
-                    title = "Ekranı Açık Tut",
-                    subtitle = "Maç kaydı sırasında ekran kapanmaz.",
+                    title = stringResource(R.string.settings_keep_screen),
+                    subtitle = stringResource(R.string.settings_keep_screen_desc),
                     checked = keepScreenOn,
                     onCheckedChange = { viewModel.setKeepScreenOn(it) }
                 )
             }
 
-            // --- 2. GÖRÜNÜM ---
-            SettingsSection(title = "GÖRÜNÜM & FORMAT") {
+            SettingsSection(title = stringResource(R.string.settings_section_appearance)) {
                 Text(
-                    "Oyuncu İsim Formatı",
+                    stringResource(R.string.settings_name_format),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
                 Surface(
-                    color = com.example.discbase.ui.theme.StitchPrimary.copy(0.05f),
+                    color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary.copy(0.05f),
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text("Önizleme: ", color = Color.Gray, fontSize = 12.sp)
+                        Text(stringResource(R.string.settings_preview) + " ", color = Color.Gray, fontSize = 12.sp)
                         Text(
                             formattedSample,
                             fontWeight = FontWeight.Bold,
-                            color = com.example.discbase.ui.theme.StitchPrimary,
+                            color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
                             fontSize = 14.sp
                         )
                     }
                 }
                 NameFormatOption(
-                    "İsim + Soyadı Kısaltma",
+                    stringResource(R.string.format_first_last_initial),
                     currentNameFormat == NameFormat.FIRST_NAME_LAST_INITIAL
                 ) { viewModel.updateNameFormat(NameFormat.FIRST_NAME_LAST_INITIAL) }
-                Divider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = Color.LightGray.copy(0.2f)
-                )
+                Divider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.LightGray.copy(0.2f))
                 NameFormatOption(
-                    "Baş Harf + Soyadı",
+                    stringResource(R.string.format_initial_last),
                     currentNameFormat == NameFormat.INITIAL_LAST_NAME
                 ) { viewModel.updateNameFormat(NameFormat.INITIAL_LAST_NAME) }
-                Divider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = Color.LightGray.copy(0.2f)
-                )
+                Divider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.LightGray.copy(0.2f))
                 NameFormatOption(
-                    "Tam İsim",
+                    stringResource(R.string.format_full),
                     currentNameFormat == NameFormat.FULL_NAME
                 ) { viewModel.updateNameFormat(NameFormat.FULL_NAME) }
             }
-            // --- TEMA AYARLARI (YENİ BÖLÜM) ---
+
             val currentTheme by viewModel.appTheme.collectAsState()
 
-            SettingsSection(title = "TEMA") {
+            SettingsSection(title = stringResource(R.string.settings_section_theme)) {
                 Column(Modifier.padding(vertical = 8.dp)) {
-                    // Açık Tema Seçeneği
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -926,18 +845,14 @@ fun SettingsScreen(
                         RadioButton(
                             selected = currentTheme == AppTheme.LIGHT,
                             onClick = null,
-                            colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchPrimary)
+                            colors = RadioButtonDefaults.colors(selectedColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text("Açık Tema (Varsayılan)")
+                        Text(stringResource(R.string.theme_light))
                     }
 
-                    Divider(
-                        color = Color.LightGray.copy(0.2f),
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+                    Divider(color = Color.LightGray.copy(0.2f), modifier = Modifier.padding(horizontal = 16.dp))
 
-                    // Koyu Tema Seçeneği
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -948,18 +863,14 @@ fun SettingsScreen(
                         RadioButton(
                             selected = currentTheme == AppTheme.DARK,
                             onClick = null,
-                            colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchPrimary)
+                            colors = RadioButtonDefaults.colors(selectedColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text("Koyu Tema")
+                        Text(stringResource(R.string.theme_dark))
                     }
 
-                    Divider(
-                        color = Color.LightGray.copy(0.2f),
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+                    Divider(color = Color.LightGray.copy(0.2f), modifier = Modifier.padding(horizontal = 16.dp))
 
-                    // Sistem Teması Seçeneği
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -970,89 +881,118 @@ fun SettingsScreen(
                         RadioButton(
                             selected = currentTheme == AppTheme.SYSTEM,
                             onClick = null,
-                            colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchPrimary)
+                            colors = RadioButtonDefaults.colors(selectedColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text("Sistem Teması")
+                        Text(stringResource(R.string.theme_system))
                     }
                 }
             }
-            // --- 3. KULLANIM ---
-            SettingsSection(title = "KULLANIM KOLAYLIĞI") {
+
+            SettingsSection(title = stringResource(R.string.settings_section_usage)) {
                 SettingsSwitchRow(
                     icon = Icons.Default.Vibration,
-                    title = "Titreşim Geri Bildirimi",
-                    subtitle = "Butonlara basınca telefon titrer.",
+                    title = stringResource(R.string.settings_vibration),
+                    subtitle = stringResource(R.string.settings_vibration_desc),
                     checked = vibrationEnabled,
                     onCheckedChange = { viewModel.setVibrationEnabled(it) }
                 )
                 Divider(color = Color.LightGray.copy(0.2f))
 
-                // --- DÜZELTME: Solak Modu Aktif Edildi ---
                 SettingsSwitchRow(
                     icon = Icons.Default.PanTool,
-                    title = "Solak Modu",
-                    subtitle = "Buton yerleşimini ters çevirir.",
+                    title = stringResource(R.string.settings_left_handed),
+                    subtitle = stringResource(R.string.settings_left_handed_desc),
                     checked = isLeftHanded,
                     onCheckedChange = { viewModel.setLeftHanded(it) },
-                    enabled = true // ARTIK AKTİF
+                    enabled = true
                 )
             }
 
-            // --- 4. VERİ YÖNETİMİ (GÜNCELLENDİ) ---
-            SettingsSection(title = "VERİ YÖNETİMİ") {
-                // YEDEKLEME BUTONU (GÜNCELLENDİ)
+            SettingsSection(title = stringResource(R.string.settings_section_data)) {
                 SettingsActionRow(
                     icon = Icons.Default.Save,
-                    text = "Verileri Yedekle (JSON)",
+                    text = stringResource(R.string.settings_backup),
                     onClick = {
-                        // Dosya adını ve tarihini oluştur
                         val date = java.text.SimpleDateFormat("yyyyMMdd_HHmm", java.util.Locale.getDefault()).format(java.util.Date())
-                        val fileName = "DiscBase_Yedek_$date.json"
-
-                        // Sistem penceresini aç (Dosya adını önerir)
+                        val fileName = "DiscBase_Backup_$date.json"
                         exportLauncher.launch(fileName)
                     }
                 )
                 Divider(color = Color.LightGray.copy(0.2f))
 
-                // GERİ YÜKLEME BUTONU
                 SettingsActionRow(
                     icon = Icons.Default.Restore,
-                    text = "Yedekten Geri Yükle",
+                    text = stringResource(R.string.settings_restore),
                     onClick = {
-                        // Dosya seçiciyi aç (Sadece JSON)
                         importLauncher.launch(arrayOf("application/json"))
                     }
                 )
                 Divider(color = Color.LightGray.copy(0.2f))
 
-                // SIFIRLAMA
                 SettingsActionRow(
                     icon = Icons.Default.DeleteForever,
-                    text = "Tüm Verileri Sıfırla",
-                    color = com.example.discbase.ui.theme.StitchDefense,
+                    text = stringResource(R.string.settings_reset),
+                    color = com.eyuphanaydin.discbase.ui.theme.StitchDefense,
                     onClick = {
-                        // Buraya bir AlertDialog ekleyerek mainViewModel.resetAllData() çağırabilirsiniz.
-                        Toast.makeText(
-                            context,
-                            "Verileri silmek için ViewModel fonksiyonu eklenmeli.",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, "Feature to delete data should be implemented in ViewModel", Toast.LENGTH_SHORT).show()
                     }
                 )
             }
 
-            // Alt Bilgi
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("DiscBase", fontWeight = FontWeight.Bold, color = Color.Gray)
-                Text("Versiyon 1.2.2 • Build 2025", fontSize = 12.sp, color = Color.LightGray)
+                Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text(stringResource(R.string.settings_footer_version, "1.2.2", "2025"), fontSize = 12.sp, color = Color.LightGray)
             }
             Spacer(Modifier.height(32.dp))
         }
+    }
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = {
+                Text(text = stringResource(R.string.dialog_language_title))
+            },
+            text = {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                changeAppLanguage("tr")
+                                showLanguageDialog = false
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "🇹🇷  Türkçe", style = MaterialTheme.typography.bodyLarge)
+                    }
+
+                    Divider()
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                changeAppLanguage("en")
+                                showLanguageDialog = false
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "🇺🇸  English", style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
+        )
     }
 }
 // ==========================================
@@ -1070,13 +1010,12 @@ fun TournamentListScreen(
         containerColor = StitchColor.Background,
         floatingActionButton = {
             if (isAdmin) {
-                // --- GÜNCELLENEN BUTON ---
                 ExtendedFloatingActionButton(
                     onClick = onAddTournament,
                     containerColor = StitchColor.Primary,
                     contentColor = Color.White,
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                    text = { Text("YENİ TURNUVA", fontWeight = FontWeight.Bold) }
+                    text = { Text(stringResource(R.string.tour_create_btn), fontWeight = FontWeight.Bold) }
                 )
             }
         }
@@ -1093,7 +1032,7 @@ fun TournamentListScreen(
                         Icon(Icons.Default.EmojiEvents, null, modifier = Modifier.size(64.dp), tint = Color.LightGray)
                         Spacer(Modifier.height(16.dp))
                         Text(
-                            "Henüz bir turnuva oluşturmadınız.",
+                            stringResource(R.string.tour_empty),
                             color = Color.Gray,
                             textAlign = TextAlign.Center
                         )
@@ -1101,7 +1040,7 @@ fun TournamentListScreen(
                 }
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(bottom = 80.dp), // FAB altında kalmasın
+                    contentPadding = PaddingValues(bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(tournaments) { tournament ->
@@ -1136,7 +1075,6 @@ fun TournamentSetupScreen(
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
-    // Tarih Seçici
     val datePickerDialog = DatePickerDialog(
         context,
         { _, selectedYear, selectedMonth, selectedDay ->
@@ -1149,9 +1087,9 @@ fun TournamentSetupScreen(
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(if (isEditing) "Turnuva Düzenle" else "Yeni Turnuva", fontWeight = FontWeight.Bold) },
+                title = { Text(if (isEditing) stringResource(R.string.tour_setup_edit) else stringResource(R.string.tour_setup_new), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    ModernIconButton(Icons.Default.ArrowBack, { navController.popBackStack() }, StitchTextPrimary, "Geri")
+                    ModernIconButton(Icons.Default.ArrowBack, { navController.popBackStack() }, StitchTextPrimary, stringResource(R.string.desc_back))
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
             )
@@ -1164,7 +1102,6 @@ fun TournamentSetupScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. KART: GENEL BİLGİLER
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -1178,30 +1115,29 @@ fun TournamentSetupScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.EmojiEvents, null, tint = StitchColor.Primary)
                         Spacer(Modifier.width(8.dp))
-                        Text("Turnuva Detayları", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = StitchColor.TextPrimary)
+                        Text(stringResource(R.string.tour_details_header), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = StitchColor.TextPrimary)
                     }
 
                     OutlinedTextField(
                         value = tournamentName,
                         onValueChange = { tournamentName = it },
-                        label = { Text("Turnuva Adı") },
-                        placeholder = { Text("Örn: XI. ODTU UFT") },
+                        label = { Text(stringResource(R.string.tour_name_hint)) },
+                        placeholder = { Text("Ex: XI. ODTU UFT") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = com.example.discbase.ui.theme.StitchPrimary,
-                            focusedLabelColor = com.example.discbase.ui.theme.StitchPrimary
+                            focusedBorderColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
+                            focusedLabelColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary
                         )
                     )
 
-                    // Tarih Kutusu (Tıklanabilir)
                     OutlinedTextField(
                         value = tournamentDate,
                         onValueChange = {},
-                        label = { Text("Tarih") },
-                        placeholder = { Text("Seçmek için tıklayın") },
+                        label = { Text(stringResource(R.string.label_date)) },
+                        placeholder = { Text("Select Date") },
                         readOnly = true,
-                        enabled = false, // Tıklamayı Box yönetecek
+                        enabled = false,
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { datePickerDialog.show() },
@@ -1211,13 +1147,12 @@ fun TournamentSetupScreen(
                             disabledTextColor = StitchColor.TextPrimary,
                             disabledBorderColor = Color.Gray,
                             disabledLabelColor = Color.Gray,
-                            disabledTrailingIconColor = com.example.discbase.ui.theme.StitchPrimary
+                            disabledTrailingIconColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary
                         )
                     )
                 }
             }
 
-            // 2. KART: KADRO SEÇİMİ
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1228,7 +1163,7 @@ fun TournamentSetupScreen(
             ) {
                 Column(Modifier.padding(top = 16.dp)) {
                     Text(
-                        "Turnuva Kadrosu (${selectedPlayerIds.size})",
+                        stringResource(R.string.tour_roster_header, selectedPlayerIds.size),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = StitchColor.TextPrimary,
@@ -1246,7 +1181,7 @@ fun TournamentSetupScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isSelected) com.example.discbase.ui.theme.StitchPrimary.copy(0.1f) else Color.Transparent)
+                                    .background(if (isSelected) com.eyuphanaydin.discbase.ui.theme.StitchPrimary.copy(0.1f) else Color.Transparent)
                                     .clickable {
                                         selectedPlayerIds = if (isSelected) selectedPlayerIds - player.id
                                         else selectedPlayerIds + player.id
@@ -1263,7 +1198,7 @@ fun TournamentSetupScreen(
                                 Checkbox(
                                     checked = isSelected,
                                     onCheckedChange = null,
-                                    colors = CheckboxDefaults.colors(checkedColor = com.example.discbase.ui.theme.StitchPrimary)
+                                    colors = CheckboxDefaults.colors(checkedColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
                                 )
                             }
                         }
@@ -1271,14 +1206,13 @@ fun TournamentSetupScreen(
                 }
             }
 
-            // KAYDET BUTONU
             Button(
                 onClick = {
                     val tournamentData = Tournament(
                         id = tournamentToEdit?.id ?: UUID.randomUUID().toString(),
                         tournamentName = tournamentName,
                         ourTeamName = currentTeamName,
-                        date = tournamentDate.ifBlank { "Tarih Girilmedi" },
+                        date = tournamentDate.ifBlank { "Unknown Date" },
                         rosterPlayerIds = selectedPlayerIds.toList(),
                         matches = tournamentToEdit?.matches ?: emptyList(),
                         presetLines = tournamentToEdit?.presetLines ?: emptyList()
@@ -1290,7 +1224,7 @@ fun TournamentSetupScreen(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary)
             ) {
-                Text(if (isEditing) "GÜNCELLE" else "KAYDET", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(if (isEditing) stringResource(R.string.btn_update) else stringResource(R.string.btn_create_caps), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -1309,26 +1243,24 @@ fun TournamentDetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     val standardMatches = remember(tournament.matches) {
         tournament.matches.filter { it.isProMode == false }
-            .sortedByDescending { /* İstersen tarihe göre sırala */ it.id }
+            .sortedByDescending { it.id }
     }
-    // Turnuva Karnesi
     val wins = standardMatches.count { it.scoreUs > it.scoreThem }
     val losses = standardMatches.count { it.scoreThem > it.scoreUs }
-    val recordText = "$wins Galibiyet - $losses Mağlubiyet"
+    val recordText = "$wins ${stringResource(R.string.pdf_wins)} - $losses ${stringResource(R.string.pdf_losses)}"
 
-    // Silme Dialogu (Aynı)
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Turnuvayı Sil") },
-            text = { Text("Bu turnuva ve tüm maçları silinecek. Emin misiniz?") },
+            title = { Text(stringResource(R.string.match_delete_title)) },
+            text = { Text(stringResource(R.string.match_delete_msg)) },
             confirmButton = {
                 Button(
                     onClick = { onDeleteTournament(); showDeleteDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Evet, Sil") }
+                ) { Text(stringResource(R.string.btn_delete_confirm)) }
             },
-            dismissButton = { Button(onClick = { showDeleteDialog = false }) { Text("İptal") } }
+            dismissButton = { Button(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
 
@@ -1342,7 +1274,7 @@ fun TournamentDetailScreen(
                         icon = Icons.Default.ArrowBack,
                         onClick = { navController.popBackStack() },
                         color = StitchColor.TextPrimary,
-                        contentDescription = "Geri"
+                        contentDescription = stringResource(R.string.desc_back)
                     )
                 },
                 actions = {
@@ -1352,23 +1284,22 @@ fun TournamentDetailScreen(
                     IconButton(onClick = {
                         vm.shareTournamentReport(context, tournament, allPlayers)
                     }) {
-                        Icon(Icons.Default.Share, contentDescription = "Turnuva Raporu", tint = StitchColor.Primary)
+                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.tour_get_report), tint = StitchColor.Primary)
                     }
 
-                    // ---------------------------
                     if (isAdmin) {
                         Row(modifier = Modifier.padding(end = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             ModernIconButton(
                                 icon = Icons.Default.Edit,
                                 onClick = { navController.navigate("tournament_setup?tournamentId=${tournament.id}") },
-                                color = com.example.discbase.ui.theme.StitchPrimary,
-                                contentDescription = "Düzenle"
+                                color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
+                                contentDescription = stringResource(R.string.btn_edit)
                             )
                             ModernIconButton(
                                 icon = Icons.Default.Delete,
                                 onClick = { showDeleteDialog = true },
-                                color = com.example.discbase.ui.theme.StitchDefense,
-                                contentDescription = "Sil"
+                                color = com.eyuphanaydin.discbase.ui.theme.StitchDefense,
+                                contentDescription = stringResource(R.string.btn_delete)
                             )
                         }
                     }
@@ -1393,7 +1324,7 @@ fun TournamentDetailScreen(
                         containerColor = StitchColor.Primary,
                         contentColor = Color.White,
                         icon = { Icon(Icons.Default.Add, null) },
-                        text = { Text("YENİ MAÇ", fontWeight = FontWeight.Bold) }
+                        text = { Text(stringResource(R.string.match_new_title).uppercase(), fontWeight = FontWeight.Bold) }
                     )
                 }
             }
@@ -1405,7 +1336,6 @@ fun TournamentDetailScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            // 1. MODERN HEADER KARTI
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1422,7 +1352,7 @@ fun TournamentDetailScreen(
                         modifier = Modifier
                             .size(64.dp)
                             .clip(RoundedCornerShape(20.dp))
-                            .background(com.example.discbase.ui.theme.StitchPrimary.copy(alpha = 0.1f)),
+                            .background(com.eyuphanaydin.discbase.ui.theme.StitchPrimary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -1450,14 +1380,14 @@ fun TournamentDetailScreen(
                         }
                         Spacer(Modifier.height(8.dp))
                         Surface(
-                            color = if(wins >= losses) StitchOffense.copy(0.1f) else com.example.discbase.ui.theme.StitchDefense.copy(0.1f),
+                            color = if(wins >= losses) StitchOffense.copy(0.1f) else com.eyuphanaydin.discbase.ui.theme.StitchDefense.copy(0.1f),
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
                                 text = recordText,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if(wins >= losses) StitchOffense else com.example.discbase.ui.theme.StitchDefense,
+                                color = if(wins >= losses) StitchOffense else com.eyuphanaydin.discbase.ui.theme.StitchDefense,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
@@ -1465,22 +1395,20 @@ fun TournamentDetailScreen(
                 }
             }
 
-            // 2. MAÇ LİSTESİ (SADECE STANDART MAÇLAR)
             Text(
-                "Fikstür & Sonuçlar (Standart)",
+                stringResource(R.string.pdf_match_results),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = StitchColor.TextPrimary,
                 modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
             )
 
-            // --- DEĞİŞİKLİK: standardMatches KULLANIYORUZ ---
             if (standardMatches.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Sports, null, modifier = Modifier.size(64.dp), tint = Color.LightGray)
                         Spacer(Modifier.height(16.dp))
-                        Text("Henüz standart maç oynanmadı.", color = Color.Gray)
+                        Text(stringResource(R.string.matches_empty), color = Color.Gray)
                     }
                 }
             } else {
@@ -1519,17 +1447,20 @@ fun MatchDetailScreen(
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedPlayerStats by remember { mutableStateOf<AdvancedPlayerStats?>(null) }
-    val tabItems = listOf("Sayı Özeti", "Takım İstatistikleri", "Oyuncu İstatistikleri")
+
+    // TAB BAŞLIKLARI (XML'den)
+    val tabItems = listOf(
+        stringResource(R.string.match_tab_summary), // "Sayı Özeti"
+        stringResource(R.string.match_tab_team),    // "Takım İstatistikleri"
+        stringResource(R.string.match_tab_player)   // "Oyuncu İstatistikleri"
+    )
     val pagerState = rememberPagerState { tabItems.size }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    // İstatistik Hesaplama Mantığı (Değişmedi)
-    // MatchDetailScreen fonksiyonunun İÇİNDEKİ yerel fonksiyon:
-    // MatchDetailScreen içindeki calculateOverallStats fonksiyonunu bununla değiştir:
 
+    // İstatistik Hesaplama (Değişmedi, sadece context korundu)
     fun calculateOverallStats(archive: List<PointData>): List<AdvancedPlayerStats> {
         val overallStatsMap = mutableMapOf<String, AdvancedPlayerStats>()
-        // Başlangıç değerleri
         for (player in rosterAsStats) {
             overallStatsMap[player.id] = AdvancedPlayerStats(
                 basicStats = PlayerStats(playerId = player.id, name = player.name),
@@ -1544,7 +1475,6 @@ fun MatchDetailScreen(
                 val playerId = playerStat.playerId
                 val currentOverall = overallStatsMap[playerId] ?: continue
 
-                // İstatistikleri Topla
                 val updatedBasicStats = currentOverall.basicStats.copy(
                     pointsPlayed = currentOverall.basicStats.pointsPlayed + 1,
                     successfulPass = currentOverall.basicStats.successfulPass + playerStat.successfulPass,
@@ -1561,7 +1491,6 @@ fun MatchDetailScreen(
                         .mapValues { (_, values) -> values.sum() }
                 )
 
-                // --- GÜNCELLENEN FORMÜL (Blok = 1.5 Puan) ---
                 val efficiencyScore = (updatedBasicStats.goal + updatedBasicStats.assist).toDouble() +
                         (updatedBasicStats.block * 1.5) -
                         (updatedBasicStats.throwaway + updatedBasicStats.drop).toDouble() +
@@ -1586,24 +1515,23 @@ fun MatchDetailScreen(
     val overallStats = calculateOverallStats(pointsArchive)
     val teamStats = calculateTeamStatsForMatch(pointsArchive, overallStats)
 
-    // --- SİLME DİALOGU (Değişmedi) ---
+    // SİLME DİALOGU
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Maçı Sil") },
-            text = { Text("Bu maçı ve içindeki tüm istatistikleri kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.") },
+            title = { Text(stringResource(R.string.match_delete_title)) },
+            text = { Text(stringResource(R.string.match_delete_msg)) },
             confirmButton = {
                 Button(
                     onClick = { onDeleteMatch(); showDeleteDialog = false },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text("Evet, Sil") }
+                ) { Text(stringResource(R.string.btn_delete_confirm)) }
             },
-            dismissButton = { Button(onClick = { showDeleteDialog = false }) { Text("İptal") } }
+            dismissButton = { Button(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
 
-    // --- OYUNCU DETAY PENCERESİ (BURASI GÜNCELLENDİ) ---
-    // MatchDetailScreen içinde bu bloğu bul ve değiştir:
+    // OYUNCU DETAY PENCERESİ (GÜNCELLENDİ)
     if (selectedPlayerStats != null) {
         val advancedStats = selectedPlayerStats!!
         val stats = advancedStats.basicStats
@@ -1612,15 +1540,12 @@ fun MatchDetailScreen(
         var showEfficiencyInfo by remember { mutableStateOf(false) }
 
         if (showEfficiencyInfo) {
-            // MainActivity'nin en altındaki global fonksiyonu çağır
             EfficiencyDescriptionDialog(onDismiss = { showEfficiencyInfo = false })
         }
-        // --- YENİ: Bilgi Dialogunu burada çağırıyoruz ---
 
         AlertDialog(
             onDismissRequest = { selectedPlayerStats = null },
             title = {
-                // --- BAŞLIK DÜZENLEMESİ (İsim + Info Butonu) ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -1629,14 +1554,13 @@ fun MatchDetailScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(stats.name, fontWeight = FontWeight.Bold)
                         Text(
-                            "${playerInfo?.position ?: "Oyuncu"} | ${playerInfo?.gender ?: ""}",
+                            "${playerInfo?.position ?: stringResource(R.string.unknown)} | ${playerInfo?.gender ?: ""}",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray
                         )
                     }
-                    // Info Butonu
                     IconButton(onClick = { showEfficiencyInfo = true }) {
-                        Icon(Icons.Default.Info, contentDescription = "Bilgi", tint = com.example.discbase.ui.theme.StitchPrimary)
+                        Icon(Icons.Default.Info, contentDescription = "Info", tint = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
                     }
                 }
             },
@@ -1645,20 +1569,18 @@ fun MatchDetailScreen(
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // 1. GENEL ÖZET (+/- ve Sayılar)
+                    // GENEL ÖZET
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Verimlilik (+/-)", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                            // "Verimlilik (+/-)" -> XML
+                            Text(stringResource(R.string.match_stat_efficiency), style = MaterialTheme.typography.labelMedium, color = Color.Gray)
 
-                            // --- HATANIN DÜZELDİĞİ YER ---
-                            // String.format yerine Kotlin'in format fonksiyonunu kullandık.
                             val formattedScore = "%.1f".format(advancedStats.plusMinus)
                             val displayText = if (advancedStats.plusMinus > 0) "+$formattedScore" else formattedScore
-
                             Text(
                                 text = displayText,
                                 fontSize = 28.sp,
@@ -1667,10 +1589,10 @@ fun MatchDetailScreen(
                                 else if (advancedStats.plusMinus < 0) MaterialTheme.colorScheme.error
                                 else Color.Gray
                             )
-                            // ----------------------------------------
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("Oynanan Sayı", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+                            // "Oynanan Sayı" -> XML
+                            Text(stringResource(R.string.match_stat_played), style = MaterialTheme.typography.labelMedium, color = Color.Gray)
                             Text("${stats.pointsPlayed}", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             Text("O: ${advancedStats.oPointsPlayed} | D: ${advancedStats.dPointsPlayed}", fontSize = 12.sp, color = Color.Gray)
                         }
@@ -1678,7 +1600,6 @@ fun MatchDetailScreen(
 
                     Divider()
 
-                    // --- HESAPLAMALAR ---
                     val totalPassesCompleted = stats.successfulPass + stats.assist
                     val totalPassesAttempted = totalPassesCompleted + stats.throwaway
                     val passSuccessRate = calculateSafePercentage(totalPassesCompleted, totalPassesAttempted)
@@ -1687,30 +1608,35 @@ fun MatchDetailScreen(
                     val totalCatchesAttempted = totalSuccesfulCatches + stats.drop
                     val catchRate = calculateSafePercentage(totalSuccesfulCatches, totalCatchesAttempted)
 
-                    // --- UI BİLEŞENLERİ (Değişmedi) ---
+                    // ATICILIK (THROWING) KARTI
                     val PassingSection = @Composable {
                         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))) {
                             Column(Modifier.padding(12.dp)) {
-                                Text("Pas (Throwing)", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                // "Atış (Throwing)" -> XML
+                                Text(stringResource(R.string.match_stat_throwing), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 Spacer(Modifier.height(8.dp))
-                                PerformanceStatRow("Başarı", passSuccessRate.text, passSuccessRate.ratio, passSuccessRate.progress)
+                                // "Başarı" -> XML
+                                PerformanceStatRow(stringResource(R.string.home_pass_success), passSuccessRate.text, passSuccessRate.ratio, passSuccessRate.progress)
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("Asist: ${stats.assist}")
-                                    Text("Throwaway: ${stats.throwaway}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                                    Text("${stringResource(R.string.action_assist)}: ${stats.assist}")
+                                    Text("${stringResource(R.string.action_turnover)}: ${stats.throwaway}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
                     }
 
+                    // ALICILIK (RECEIVING) KARTI
                     val ReceivingSection = @Composable {
                         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))) {
                             Column(Modifier.padding(12.dp)) {
-                                Text("Yakalama (Receiving)", fontWeight = FontWeight.Bold, color = Color(0xFF009688))
+                                // "Tutuş (Receiving)" -> XML
+                                Text(stringResource(R.string.match_stat_receiving), fontWeight = FontWeight.Bold, color = Color(0xFF009688))
                                 Spacer(Modifier.height(8.dp))
-                                PerformanceStatRow("Başarı", catchRate.text, catchRate.ratio, catchRate.progress, progressColor = Color(0xFF009688))
+                                // "Başarı" -> XML
+                                PerformanceStatRow(stringResource(R.string.home_pass_success), catchRate.text, catchRate.ratio, catchRate.progress, progressColor = Color(0xFF009688))
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("Gol: ${stats.goal}")
-                                    Text("Drop: ${stats.drop}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                                    Text("${stringResource(R.string.action_goal)}: ${stats.goal}")
+                                    Text("${stringResource(R.string.action_drop)}: ${stats.drop}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -1718,16 +1644,18 @@ fun MatchDetailScreen(
 
                     if (isHandler) { PassingSection(); ReceivingSection() } else { ReceivingSection(); PassingSection() }
 
+                    // SAVUNMA KARTI
                     Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))) {
                         Column(Modifier.padding(12.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("Savunma", fontWeight = FontWeight.Bold)
+                                // "Savunma" -> XML
+                                Text(stringResource(R.string.match_stat_defense), fontWeight = FontWeight.Bold)
                             }
                             Spacer(Modifier.height(8.dp))
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("Blok (D):", fontWeight = FontWeight.Bold)
+                                Text("${stringResource(R.string.action_block)} (D):", fontWeight = FontWeight.Bold)
                                 Text("${stats.block}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
                             }
                             Divider(Modifier.padding(vertical = 4.dp))
@@ -1736,11 +1664,11 @@ fun MatchDetailScreen(
                     }
                 }
             },
-            confirmButton = { Button(onClick = { selectedPlayerStats = null }) { Text("Kapat") } }
+            confirmButton = { Button(onClick = { selectedPlayerStats = null }) { Text(stringResource(R.string.btn_ok)) } }
         )
     }
 
-    // --- ANA EKRAN YAPISI (Değişmedi) ---
+    // ANA EKRAN YAPISI
     Scaffold(
         containerColor = StitchColor.Background,
         topBar = {
@@ -1748,37 +1676,24 @@ fun MatchDetailScreen(
                 title = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("$ourTeamName vs $opponentName", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        Text("${match.scoreUs} - ${match.scoreThem}", fontSize = 14.sp, color = if(match.scoreUs > match.scoreThem) StitchOffense else if(match.scoreThem > match.scoreUs) com.example.discbase.ui.theme.StitchDefense else Color.Gray, fontWeight = FontWeight.Bold)
+                        Text("${match.scoreUs} - ${match.scoreThem}", fontSize = 14.sp, color = if(match.scoreUs > match.scoreThem) StitchOffense else if(match.scoreThem > match.scoreUs) com.eyuphanaydin.discbase.ui.theme.StitchDefense else Color.Gray, fontWeight = FontWeight.Bold)
                     }
                 },
                 navigationIcon = {
-                    ModernIconButton(Icons.Default.ArrowBack, onBack, StitchTextPrimary, "Geri")
+                    ModernIconButton(Icons.Default.ArrowBack, onBack, StitchTextPrimary, stringResource(R.string.desc_back))
                 },
                 actions = {
-                    val context = LocalContext.current
-                    // Butona basınca PDF oluşturma fonksiyonunu çağıracağız
-                    // NOT: overallStats değişkeni hesaplandıktan sonra kullanılmalı.
-                    // Bu yüzden bu butonu TopAppBar'ın içine değil de, hesaplamaların yapıldığı yere yakın koymamız lazım
-                    // VEYA overallStats'ı remember ile tutup kullanabiliriz.
-
-                    // overallStats, MatchDetailScreen'in içinde hesaplanıyor.
-                    // Fonksiyonun başında `val overallStats = calculateOverallStats(pointsArchive)` var.
-                    // Bu değişkene erişebiliyoruz.
-
                     IconButton(
-                        onClick = {viewModel.shareMatchReport(context, match, "Maç Raporu", overallStats)
-                        }
+                        onClick = { viewModel.shareMatchReport(context, match, context.getString(R.string.pdf_match_report_title), overallStats) }
                     ) {
-                        // Icon(Icons.Default.PictureAsPdf, contentDescription = "PDF Rapor")
-                        // PictureAsPdf material iconlarda varsayılan olmayabilir, Share kullanabiliriz:
-                        Icon(Icons.Default.Share, contentDescription = "Raporu Paylaş", tint = StitchColor.Primary)
+                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.match_share_report), tint = StitchColor.Primary)
                     }
                     if (isAdmin) {
                         ModernIconButton(Icons.Default.Edit, { navController.navigate("match_playback/$tournamentId/${match.opponentName}?matchId=${match.id}") },
-                            com.example.discbase.ui.theme.StitchPrimary, "Düzenle")
+                            com.eyuphanaydin.discbase.ui.theme.StitchPrimary, stringResource(R.string.btn_edit))
                         Spacer(Modifier.width(8.dp))
                         ModernIconButton(Icons.Default.Delete, { showDeleteDialog = true },
-                            com.example.discbase.ui.theme.StitchDefense, "Sil")
+                            com.eyuphanaydin.discbase.ui.theme.StitchDefense, stringResource(R.string.btn_delete))
                         Spacer(Modifier.width(8.dp))
                     }
                 },
@@ -1787,15 +1702,14 @@ fun MatchDetailScreen(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            // TAB BAR (Sekmeler)
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
                 containerColor = StitchColor.Surface,
-                contentColor = com.example.discbase.ui.theme.StitchPrimary,
+                contentColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
                 indicator = { tabPositions ->
                     androidx.compose.material3.TabRowDefaults.Indicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                        color = com.example.discbase.ui.theme.StitchPrimary,
+                        color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
                         height = 3.dp
                     )
                 }
@@ -1808,27 +1722,23 @@ fun MatchDetailScreen(
                             Text(
                                 title,
                                 fontWeight = if(pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if(pagerState.currentPage == index) com.example.discbase.ui.theme.StitchPrimary else Color.Gray
+                                color = if(pagerState.currentPage == index) com.eyuphanaydin.discbase.ui.theme.StitchPrimary else Color.Gray
                             )
                         }
                     )
                 }
             }
 
-            // İÇERİK
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize().weight(1f)) { pageIndex ->
                 when (pageIndex) {
                     0 -> PointSummaryTab(navController, pointsArchive, tournamentId, match.id, isAdmin, onDeleteLastPoint)
-                    // --- GÜNCELLENEN KISIM ---
                     1 -> TeamStatsTab(
                         teamStats = teamStats,
                         allPlayersStats = overallStats,
                         allPlayers = rosterAsStats,
-                        // Verileri 'match' ve 'pointsArchive' değişkenlerinden geçiriyoruz
                         matchDurationSeconds = match.matchDurationSeconds,
                         pointsArchive = pointsArchive
                     )
-                    // -------------------------
                     2 -> PlayerStatsTab(overallStats, onPlayerClick = { selectedPlayerStats = it })
                 }
             }
@@ -1846,7 +1756,7 @@ private fun PointSummaryTab(
 ) {
     if (pointsArchive.isEmpty()) {
         Text(
-            "Bu maç için kaydedilmiş bir sayı yok.",
+            stringResource(R.string.match_no_points),
             fontStyle = FontStyle.Italic,
             color = Color.Gray,
             textAlign = TextAlign.Center,
@@ -1862,33 +1772,27 @@ private fun PointSummaryTab(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             itemsIndexed(pointsArchive) { index, pointData ->
-                // val isLastPoint artık burada GEREKLİ DEĞİL
                 PointSummaryCard(
                     pointIndex = index,
                     pointData = pointData,
-                    // Admin ise düzenlemeye izin ver, değilse null gönder (veya false)
-                    // Aşağıda PointSummaryCard'ı da güncelleyeceğiz.
                     onViewClick = {
                         navController.navigate("point_detail_summary/$tournamentId/$matchId/$index")
                     },
                     onEditClick = {
                         navController.navigate("edit_point/$tournamentId/$matchId/$index")
                     },
-                    showEditButton = isAdmin // <-- YENİ PARAMETRE OLARAK BUNU EKLEYECEĞİZ
+                    showEditButton = isAdmin
                 )
             }
 
-            // --- YENİ BUTON VE LOGİĞİ BURAYA EKLİYORUZ ---
             if (isAdmin) {
                 item {
-                    // Silme dialog state'i ve Alert'i buraya taşıdık
                     var showDeleteDialog by remember { mutableStateOf(false) }
                     if (showDeleteDialog) {
                         AlertDialog(
                             onDismissRequest = { showDeleteDialog = false },
-                            title = { Text("Son Sayıyı Sil") },
-                            // Mesajı güncelledik (artık pointIndex yok)
-                            text = { Text("Son sayıyı (${pointsArchive.size}. sayı) silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.") },
+                            title = { Text(stringResource(R.string.match_delete_last_title)) },
+                            text = { Text(stringResource(R.string.match_delete_last_msg, pointsArchive.size)) },
                             confirmButton = {
                                 Button(
                                     onClick = {
@@ -1896,43 +1800,40 @@ private fun PointSummaryTab(
                                         showDeleteDialog = false
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                                ) { Text("Evet, Sil") }
+                                ) { Text(stringResource(R.string.btn_delete_confirm)) }
                             },
                             dismissButton = {
-                                Button(onClick = { showDeleteDialog = false }) { Text("İptal") }
+                                Button(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.btn_cancel)) }
                             }
                         )
                     }
 
-                    // Tam genişlikli yeni buton
                     Button(
                         onClick = { showDeleteDialog = true },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp), // Kart ile arasına boşluk
+                            .padding(top = 16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error
                         )
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Son Sayıyı Sil")
+                        Text(stringResource(R.string.btn_delete_last_point))
                     }
                 }
             }
-            // --- YENİ BLOK BİTTİ ---
         }
     }
 }
 @Composable
 fun TeamStatsTab(
     teamStats: AdvancedTeamStats,
-    allPlayersStats: List<AdvancedPlayerStats>, // Bu parametreyi eklemeniz gerekecek (MatchDetailScreen'den geçirin)
-    allPlayers: List<Player>, // Bunu da geçirin
+    allPlayersStats: List<AdvancedPlayerStats>,
+    allPlayers: List<Player>,
     matchDurationSeconds: Long,
     pointsArchive: List<PointData>
 ) {
-    // Temel oranlar
     val holdRate = calculateSafePercentage(teamStats.offensiveHolds, teamStats.totalOffensePoints)
     val breakRate = calculateSafePercentage(teamStats.breakPointsScored, teamStats.totalDefensePoints)
     val passRate = calculateSafePercentage(teamStats.totalPassesCompleted, teamStats.totalPassesAttempted)
@@ -1945,29 +1846,23 @@ fun TeamStatsTab(
     val avgTurnoverPerPoint = if (teamStats.totalPointsPlayed > 0)
         String.format("%.2f", totalTurnovers.toDouble() / teamStats.totalPointsPlayed) else "0.0"
     val cleanHoldRate = calculateSafePercentage(teamStats.cleanHolds, teamStats.totalOffensePoints)
-        // --- YENİ ---
     val teamAvgPullTime = if (teamStats.totalPulls > 0)
         String.format("%.2f sn", teamStats.totalPullTimeSeconds.toDouble() / teamStats.totalPulls)
     else "0.00 sn"
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 1. ZAMAN ANALİZİ (YENİ - EN ÜSTE EKLİYORUZ)
         item {
             TimeAnalysisCard(
                 matchDurationSeconds = matchDurationSeconds,
                 pointsArchive = pointsArchive
             )
         }
-        // 1. Performans
         item { PerformanceCard(holdRate, breakRate, passRate) }
-
-        // 2. Verimlilik
         item { PossessionCard(conversionRate, blockConversionRate,cleanHoldRate) }
-
-        // 3. Detaylı İstatistikler
         item {
             DetailedStatsCard(
                 totalPasses = teamStats.totalPassesAttempted.toString(),
@@ -1982,19 +1877,18 @@ fun TeamStatsTab(
             )
         }
 
-        // 4. YENİ: MAÇ PAS AĞI (Maçın En Çok Pas Yapan Oyuncusu İçin)
         item {
-            Text("Pas Bağlantıları (Top 5)", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = StitchColor.TextPrimary)
+            // DEĞİŞİKLİK: "Pas Bağlantıları (Top 5)" -> XML
+            Text(stringResource(R.string.stats_pass_network_header), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = StitchColor.TextPrimary)
         }
 
-        // En çok pas yapan 5 oyuncuyu listele
         val topPassers = allPlayersStats
             .sortedByDescending { it.basicStats.successfulPass + it.basicStats.assist }
             .take(5)
             .filter { (it.basicStats.successfulPass + it.basicStats.assist) > 0 }
 
         if (topPassers.isEmpty()) {
-            item { Text("Henüz pas verisi yok.", color = Color.Gray) }
+            item { Text(stringResource(R.string.stats_no_pass_data), color = Color.Gray) }
         } else {
             items(topPassers) { playerStat ->
                 ExpandablePassNetworkCard(
@@ -2044,18 +1938,17 @@ fun PointDetailScreen(
     navController: NavController,
     pointIndex: Int?,
     statsForPoint: List<PlayerStats>?,
-    pointDuration: Long = 0L // <-- YENİ PARAMETRE EKLENDİ
+    pointDuration: Long = 0L
 ) {
     if (statsForPoint == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Veri bulunamadı.", color = Color.Gray)
+            Text(stringResource(R.string.no_data), color = Color.Gray)
         }
         return
     }
 
     val playersInPoint = statsForPoint.filter { it.pointsPlayed > 0 }
 
-    // Varsayılan olarak en çok aksiyonu olan oyuncuyu seç
     var selectedPlayerStat by remember {
         mutableStateOf(playersInPoint.maxByOrNull { it.successfulPass + it.assist }
             ?: playersInPoint.firstOrNull())
@@ -2066,17 +1959,16 @@ fun PointDetailScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
-                        if (pointIndex != null) "Sayı ${pointIndex + 1} Detayı" else "Detay",
-                        fontWeight = FontWeight.Bold
-                    )
+                    // "Sayı X Detayı" -> XML
+                    val title = if (pointIndex != null) stringResource(R.string.point_detail_title, pointIndex + 1) else "Detay"
+                    Text(title, fontWeight = FontWeight.Bold)
                 },
                 navigationIcon = {
                     ModernIconButton(
                         Icons.Default.ArrowBack,
                         { navController.popBackStack() },
                         StitchTextPrimary,
-                        "Geri"
+                        stringResource(R.string.desc_back)
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
@@ -2085,9 +1977,9 @@ fun PointDetailScreen(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
 
-            // 1. OYUNCU SEÇİCİ
+            // "Pas Ağını Görmek İçin Oyuncu Seçin" -> XML
             Text(
-                "Pas Ağını Görmek İçin Oyuncu Seçin:",
+                stringResource(R.string.point_detail_select_player),
                 fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
             )
@@ -2109,7 +2001,7 @@ fun PointDetailScreen(
                                 .size(if (isSelected) 56.dp else 48.dp)
                                 .border(
                                     if (isSelected) 2.dp else 0.dp,
-                                    if (isSelected) com.example.discbase.ui.theme.StitchPrimary else Color.Transparent,
+                                    if (isSelected) com.eyuphanaydin.discbase.ui.theme.StitchPrimary else Color.Transparent,
                                     CircleShape
                                 )
                                 .padding(4.dp)
@@ -2125,7 +2017,7 @@ fun PointDetailScreen(
                             p.name.split(" ").first(),
                             fontSize = 11.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) com.example.discbase.ui.theme.StitchPrimary else Color.Gray
+                            color = if (isSelected) com.eyuphanaydin.discbase.ui.theme.StitchPrimary else Color.Gray
                         )
                     }
                 }
@@ -2142,7 +2034,6 @@ fun PointDetailScreen(
                     val totalTurns = playersInPoint.sumOf { it.throwaway + it.drop }
                     val totalBlocks = playersInPoint.sumOf { it.block }
 
-                    // --- ÖZET KARTI (SÜRE EKLENDİ) ---
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
@@ -2150,15 +2041,14 @@ fun PointDetailScreen(
                         elevation = CardDefaults.cardElevation(2.dp)
                     ) {
                         Column(Modifier.padding(16.dp)) {
-                            // Başlık ve Süre Yan Yana
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Sayı Özeti", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = StitchColor.TextPrimary)
+                                // "Sayı Özeti" -> XML
+                                Text(stringResource(R.string.point_summary_title), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = StitchColor.TextPrimary)
 
-                                // SÜRE GÖSTERİMİ
                                 Surface(
                                     color = Color(0xFFE3F2FD),
                                     shape = RoundedCornerShape(8.dp)
@@ -2184,27 +2074,25 @@ fun PointDetailScreen(
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text("$totalPasses", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = StitchOffense)
-                                    Text("Pas", fontSize = 11.sp, color = Color.Gray)
+                                    Text("Pas", fontSize = 11.sp, color = Color.Gray) // XML'de 'Pas' yoksa hardcoded kalabilir veya action_pass eklenmeli
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text("$totalTurns", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = StitchDefense)
-                                    Text("Hata", fontSize = 11.sp, color = Color.Gray)
+                                    Text(stringResource(R.string.action_turnover), fontSize = 11.sp, color = Color.Gray)
                                 }
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text("$totalBlocks", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = StitchColor.Primary)
-                                    Text("Blok", fontSize = 11.sp, color = Color.Gray)
+                                    Text(stringResource(R.string.action_block), fontSize = 11.sp, color = Color.Gray)
                                 }
                             }
                         }
                     }
                 }
-                // ------------------------------
-                // SEÇİLİ OYUNCUNUN PAS AĞI
+
                 if (selectedPlayerStat != null) {
                     val totalAction =
                         selectedPlayerStat!!.successfulPass + selectedPlayerStat!!.assist
                     item {
-                        // --- ÖNEMLİ DÜZELTME: 'key' bloğu grafiğin zorla yenilenmesini sağlar ---
                         androidx.compose.runtime.key(selectedPlayerStat!!.playerId) {
                             Card(
                                 colors = CardDefaults.cardColors(containerColor = StitchColor.Surface),
@@ -2212,8 +2100,9 @@ fun PointDetailScreen(
                                 elevation = CardDefaults.cardElevation(2.dp)
                             ) {
                                 Column(Modifier.padding(16.dp)) {
+                                    // "X Pas Trafiği" -> XML
                                     Text(
-                                        "${selectedPlayerStat!!.name} Pas Trafiği",
+                                        stringResource(R.string.point_pass_traffic, selectedPlayerStat!!.name),
                                         fontWeight = FontWeight.Bold,
                                         color = StitchColor.TextPrimary,
                                         fontSize = 16.sp
@@ -2221,7 +2110,7 @@ fun PointDetailScreen(
 
                                     if (totalAction == 0) {
                                         Text(
-                                            "Bu sayıda pas verisi yok.",
+                                            stringResource(R.string.point_no_pass_data),
                                             fontSize = 12.sp,
                                             color = Color.Gray,
                                             modifier = Modifier.padding(top = 8.dp)
@@ -2248,8 +2137,9 @@ fun PointDetailScreen(
                 }
 
                 item {
+                    // "Tüm Oyuncu İstatistikleri" -> XML
                     Text(
-                        "Tüm Oyuncu İstatistikleri",
+                        stringResource(R.string.point_all_players),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = StitchColor.TextPrimary
@@ -2341,7 +2231,7 @@ fun SettingsSwitchRow(
             enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = com.example.discbase.ui.theme.StitchPrimary
+                checkedTrackColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary
             )
         )
     }
@@ -2359,7 +2249,7 @@ fun NameFormatOption(label: String, selected: Boolean, onClick: () -> Unit) {
         RadioButton(
             selected = selected,
             onClick = null,
-            colors = RadioButtonDefaults.colors(selectedColor = com.example.discbase.ui.theme.StitchPrimary)
+            colors = RadioButtonDefaults.colors(selectedColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
         )
         Spacer(Modifier.width(8.dp))
         Text(label, fontSize = 14.sp)
@@ -2397,12 +2287,11 @@ fun SettingsActionRow(
 @Composable
 fun MemberManagementCard(
     members: Map<String, String>,
-    userProfiles: Map<String, UserProfile>, // <-- YENİ PARAMETREYİ KABUL EDİN
+    userProfiles: Map<String, UserProfile>,
     currentUserId: String,
     onUpdateRole: (uid: String, newRole: String) -> Unit,
     onRemoveMember: (uid: String) -> Unit
 ) {
-    // Üyeleri rollere göre grupla (önce pending, sonra member, sonra admin)
     val sortedMembers = members.toList().sortedWith(
         compareBy {
             when (it.second) {
@@ -2420,29 +2309,23 @@ fun MemberManagementCard(
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
-                "Üye Yönetimi",
+                stringResource(R.string.member_mgmt_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(16.dp))
 
             if (sortedMembers.isEmpty()) {
-                Text("Takımda üye yok.")
+                Text(stringResource(R.string.roster_empty))
             }
 
             sortedMembers.forEach { (uid, role) ->
                 var showRoleMenu by remember { mutableStateOf(false) }
 
-                // Kendi satırımızı (admin) gösterme
                 if (uid != currentUserId) {
-
-                    // --- GÜNCELLENMİŞ KOD BLOĞU ---
-                    // uid'ye karşılık gelen profili 'userProfiles' haritasından bul
                     val userProfile = userProfiles[uid]
-                    // Profil bulunamazsa veya adı yoksa varsayılan metinler kullan
-                    val displayName = userProfile?.displayName ?: "Bilinmeyen Kullanıcı"
-                    val displayEmail =
-                        userProfile?.email ?: uid // E-posta yoksa en azından UID'yi göster
+                    val displayName = userProfile?.displayName ?: stringResource(R.string.unknown)
+                    val displayEmail = userProfile?.email ?: uid
 
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -2450,9 +2333,6 @@ fun MemberManagementCard(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column(Modifier.weight(1f)) {
-                            // ESKİ: Text(uid, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-
-                            // YENİ: İsim ve e-posta/uid göster
                             Text(
                                 text = displayName,
                                 style = MaterialTheme.typography.bodyLarge,
@@ -2463,25 +2343,21 @@ fun MemberManagementCard(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color.Gray
                             )
-
-                            // Rolü göster (stili biraz daha az vurgulu yaptık)
                             Text(
                                 text = when (role) {
-                                    "pending" -> "ONAY BEKLİYOR"
-                                    "member" -> "Üye"
-                                    "admin" -> "Kaptan"
+                                    "pending" -> stringResource(R.string.role_pending)
+                                    "member" -> stringResource(R.string.role_member)
+                                    "admin" -> stringResource(R.string.role_captain)
                                     else -> role
                                 },
-                                style = MaterialTheme.typography.bodyMedium, // Stil değişti
-                                fontWeight = FontWeight.Normal, // Stil değişti
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Normal,
                                 color = if (role == "pending") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                             )
                         }
-                        // --- GÜNCELLEME BİTTİ ---
-                        // Eylem Menüsü
                         Box {
                             IconButton(onClick = { showRoleMenu = true }) {
-                                Icon(Icons.Default.MoreVert, contentDescription = "Rolü Yönet")
+                                Icon(Icons.Default.MoreVert, contentDescription = "Manage Role")
                             }
 
                             androidx.compose.material3.DropdownMenu(
@@ -2490,7 +2366,7 @@ fun MemberManagementCard(
                             ) {
                                 if (role == "pending") {
                                     androidx.compose.material3.DropdownMenuItem(
-                                        text = { Text("Onayla (Üye Yap)") },
+                                        text = { Text(stringResource(R.string.menu_approve)) },
                                         onClick = {
                                             onUpdateRole(uid, "member")
                                             showRoleMenu = false
@@ -2499,7 +2375,7 @@ fun MemberManagementCard(
                                 }
                                 if (role == "member") {
                                     androidx.compose.material3.DropdownMenuItem(
-                                        text = { Text("Kaptan Yap") },
+                                        text = { Text(stringResource(R.string.menu_make_captain)) },
                                         onClick = {
                                             onUpdateRole(uid, "admin")
                                             showRoleMenu = false
@@ -2508,7 +2384,7 @@ fun MemberManagementCard(
                                 }
                                 if (role == "admin") {
                                     androidx.compose.material3.DropdownMenuItem(
-                                        text = { Text("Yetkisini Al (Üye Yap)") },
+                                        text = { Text(stringResource(R.string.menu_revoke)) },
                                         onClick = {
                                             onUpdateRole(uid, "member")
                                             showRoleMenu = false
@@ -2518,7 +2394,7 @@ fun MemberManagementCard(
                                 androidx.compose.material3.DropdownMenuItem(
                                     text = {
                                         Text(
-                                            "Takımdan At / Reddet",
+                                            stringResource(R.string.menu_kick),
                                             color = MaterialTheme.colorScheme.error
                                         )
                                     },
@@ -2536,7 +2412,6 @@ fun MemberManagementCard(
         }
     }
 }
-
 // --- 6. ANA İSKELET (ALT MENÜLÜ) ---
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -2587,7 +2462,7 @@ fun MainAppScaffold(
                         Text(
                             text = when (currentRoute) {
                                 Screen.Roster.route -> "Kadro"
-                                Screen.Tournaments.route -> "Turnuvalar"
+                                Screen.Tournaments.route -> stringResource(R.string.tour_list_title)
                                 else -> teamProfile.teamName
                             },
                             fontWeight = FontWeight.Bold,
@@ -2604,7 +2479,7 @@ fun MainAppScaffold(
                             badge = {
                                 if (hasNotification) {
                                     androidx.compose.material3.Badge(
-                                        containerColor = com.example.discbase.ui.theme.StitchDefense, // Kırmızı renk
+                                        containerColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense, // Kırmızı renk
                                         contentColor = Color.White
                                     ) {
                                         // İstersen sayı da yazdırabilirsin ama şimdilik sadece nokta yeterli
@@ -2617,7 +2492,7 @@ fun MainAppScaffold(
                             ModernIconButton(
                                 icon = Icons.Default.Person,
                                 onClick = { topLevelNavController.navigate("profile_edit") },
-                                color = com.example.discbase.ui.theme.StitchPrimary,
+                                color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
                                 contentDescription = "Profil"
                             )
                         }
@@ -2736,30 +2611,19 @@ fun MainAppScaffold(
 }
 @Composable
 fun TimeAnalysisCard(
-    matchDurationSeconds: Long, // Net Oyun Süresi
+    matchDurationSeconds: Long,
     pointsArchive: List<PointData>
 ) {
-    // --- HESAPLAMALAR ---
-    // 1. Toplam Duraksama Süresi
     val allStoppages = pointsArchive.flatMap { it.stoppages }
     val totalStoppageSeconds = allStoppages.sumOf { it.durationSeconds }
-
-    // 2. Toplam Etkinlik Süresi (Duvar Saati) = Net + Duraksama
     val totalWallClockSeconds = matchDurationSeconds + totalStoppageSeconds
-
-    // 3. Oranlar
     val activeRatio = if (totalWallClockSeconds > 0) matchDurationSeconds.toFloat() / totalWallClockSeconds else 0f
-
-    // 4. Pull İstatistikleri (Sadece 0'dan büyük olanlar)
     val pullTimes = pointsArchive.map { it.pullDurationSeconds }.filter { it > 0 }
     val avgPullTime = if (pullTimes.isNotEmpty()) pullTimes.average() else 0.0
-
-    // 5. Duraksama Türleri Sayısı
     val timeoutCount = allStoppages.count { it.type == StoppageType.TIMEOUT }
     val callCount = allStoppages.count { it.type == StoppageType.CALL }
     val injuryCount = allStoppages.count { it.type == StoppageType.INJURY }
 
-    // Eğer hiç süre verisi yoksa kartı gizle (Eski maçlar için)
     if (totalWallClockSeconds == 0L) return
 
     Card(
@@ -2769,47 +2633,43 @@ fun TimeAnalysisCard(
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            // Başlık
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.AccessTime, null, tint = StitchColor.Primary)
                 Spacer(Modifier.width(8.dp))
-                Text("Zaman Analizi", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = StitchColor.TextPrimary)
+                Text(stringResource(R.string.time_analysis_title), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = StitchColor.TextPrimary)
             }
             Divider(Modifier.padding(vertical = 12.dp).alpha(0.1f))
 
-            // 1. GRAFİK BAR (Net vs Duraksama)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Net Oyun: ${formatSecondsToTime(matchDurationSeconds)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = StitchOffense)
-                Text("Duraksama: ${formatSecondsToTime(totalStoppageSeconds)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = StitchDefense)
+                Text("${stringResource(R.string.time_net_game)}: ${formatSecondsToTime(matchDurationSeconds)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = StitchOffense)
+                Text("${stringResource(R.string.time_stoppage)}: ${formatSecondsToTime(totalStoppageSeconds)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = StitchDefense)
             }
             Spacer(Modifier.height(8.dp))
 
-            // Görsel Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(12.dp)
                     .clip(RoundedCornerShape(50))
-                    .background(StitchDefense) // Arka plan (Duraksama Rengi)
+                    .background(StitchDefense)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(activeRatio)
                         .fillMaxHeight()
-                        .background(StitchOffense) // Ön plan (Net Süre Rengi)
+                        .background(StitchOffense)
                 )
             }
 
             Spacer(Modifier.height(16.dp))
 
-            // 2. PULL SÜRESİ
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Sports, null, modifier = Modifier.size(16.dp), tint = Color.Gray)
                 Spacer(Modifier.width(8.dp))
-                Text("Ortalama Pull Süresi (Hangtime): ", fontSize = 13.sp, color = StitchColor.TextPrimary)
+                Text(stringResource(R.string.time_avg_pull) + " ", fontSize = 13.sp, color = StitchColor.TextPrimary)
                 Text(
                     String.format("%.2f sn", avgPullTime),
                     fontWeight = FontWeight.Bold,
@@ -2819,14 +2679,13 @@ fun TimeAnalysisCard(
 
             Spacer(Modifier.height(12.dp))
 
-            // 3. DURAKSAMA DETAYLARI
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                StoppageCountBadge("Timeout", timeoutCount, Color(0xFFFFA000)) // Amber
-                StoppageCountBadge("Call/Faul", callCount, Color(0xFF5D4037)) // Kahve
-                StoppageCountBadge("Sakatlık", injuryCount, StitchDefense) // Kırmızı
+                StoppageCountBadge(stringResource(R.string.stoppage_timeout), timeoutCount, Color(0xFFFFA000))
+                StoppageCountBadge(stringResource(R.string.stoppage_call), callCount, Color(0xFF5D4037))
+                StoppageCountBadge(stringResource(R.string.stoppage_injury), injuryCount, StitchDefense)
             }
         }
     }
@@ -2837,5 +2696,51 @@ fun StoppageCountBadge(label: String, count: Int, color: Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(count.toString(), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = color)
         Text(label, fontSize = 10.sp, color = Color.Gray)
+    }
+}
+@Composable
+fun LanguageSelector() {
+    // Mevcut dili anlamak için
+    val currentLocale = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+    val isEnglish = currentLocale.contains("en")
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(
+            // Hata almamak için stringResource import edildiğinden emin ol
+            text = stringResource(id = language_option),
+            // Material 3'te h6 yoktur, titleLarge veya titleMedium kullanılır
+            style = MaterialTheme.typography.titleMedium
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row {
+            // TÜRKÇE BUTONU
+            Button(
+                onClick = {
+                    // Utils.kt içindeki fonksiyonu çağırıyoruz
+                    changeAppLanguage("tr")
+                },
+                colors = ButtonDefaults.buttonColors(
+                    // DİKKAT: Material 3'te backgroundColor YERİNE containerColor kullanılır
+                    containerColor = if (!isEnglish) Color.Gray else Color.LightGray
+                ),
+                modifier = Modifier.weight(1f).padding(end = 8.dp)
+            ) {
+                Text("Türkçe", color = Color.White)
+            }
+
+            // İNGİLİZCE BUTONU
+            Button(
+                onClick = {
+                    changeAppLanguage("en")
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isEnglish) Color.Gray else Color.LightGray
+                ),
+                modifier = Modifier.weight(1f).padding(start = 8.dp)
+            ) {
+                Text("English", color = Color.White)
+            }
+        }
     }
 }

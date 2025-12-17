@@ -1,4 +1,4 @@
-package com.example.discbase
+package com.eyuphanaydin.discbase
 
 import android.content.Context
 import android.graphics.Canvas
@@ -943,7 +943,8 @@ class PdfReportGenerator(private val context: Context) {
 
     private fun savePdf(document: PdfDocument, fileNamePrefix: String): File? {
         return try {
-            val file = File(context.cacheDir, "${fileNamePrefix}_Rapor.pdf")
+            val directory = context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOCUMENTS)
+            val file = File(directory, "${fileNamePrefix}_Rapor.pdf")
             val outputStream = FileOutputStream(file)
             document.writeTo(outputStream)
             document.close()

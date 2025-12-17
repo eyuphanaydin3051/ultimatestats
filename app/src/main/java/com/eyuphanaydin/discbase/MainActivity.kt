@@ -1,4 +1,4 @@
-package com.example.discbase
+package com.eyuphanaydin.discbase
 
 // Bu satırları mevcut importların arasına yapıştır:
 // Gerekli importlar
@@ -7,7 +7,7 @@ package com.example.discbase
 import androidx.compose.material3.Surface
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -37,7 +37,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.discbase.ui.theme.IlkuygulamamTheme
+import com.eyuphanaydin.discbase.ui.theme.IlkuygulamamTheme
 import kotlinx.serialization.Serializable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.layout.Box
@@ -48,8 +48,8 @@ import androidx.compose.material.icons.filled.FitnessCenter
 
 // --- İKON IMPORTLARI ---
 import androidx.compose.material.icons.filled.Map
-import com.example.discbase.ui.theme.StitchColor
-import com.example.discbase.ui.theme.StitchPrimary
+import com.eyuphanaydin.discbase.ui.theme.StitchColor
+import com.eyuphanaydin.discbase.ui.theme.StitchPrimary
 
 // ... diğer ikonlar ...
 
@@ -67,7 +67,6 @@ val StitchGradientStart = Color(0xFF3A1078)
 val StitchGradientEnd = Color(0xFF2F58CD)
 
 
-enum class PointStartMode { OFFENSE, DEFENSE }
 
 
 
@@ -76,25 +75,10 @@ enum class PointStartMode { OFFENSE, DEFENSE }
 
 
 
-@Serializable
-data class TeamProfile(
-    val teamName: String = "Takım Adı Giriniz",
-    val logoPath: String? = null,
-    val teamId: String = "", // Davet Kodu olarak kullanılacak
-    // Key = User ID, Value = "admin" veya "member"
-    val members: Map<String, String> = emptyMap()
-)
 
 
-@Serializable
 
-// Sayının o anki durumunun fotoğrafı (Geri alabilmek için)
-data class PointStateSnapshot(
-    val pointStats: List<PlayerStats> = emptyList(),
-    val activePasserId: String? = null, // Pasör kimdi?
-    val gameMode: GameMode = GameMode.IDLE, // Oyun ne durumdaydı? (Offense/Defense)
-    val subbedOutStats: List<PlayerStats> = emptyList() // Kenarda bekleyen sakat oyuncular kimdi?
-)
+
 // YENİ EKLENEN YEDEKLEME VERİ MODELİ
 
 
@@ -109,7 +93,7 @@ data class PointStateSnapshot(
 
 
 // --- 3. ANA UYGULAMA GİRİŞİ ---
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

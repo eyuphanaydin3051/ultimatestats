@@ -12,13 +12,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Ilkuygulamam">
+        android:theme="@style/Theme.DiscBase">
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Ilkuygulamam"
+            android:theme="@style/Theme.DiscBase"
             android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
 
             android:windowSoftInputMode="adjustResize">
@@ -32,13 +32,20 @@
             android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar" />
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.discbase.fileprovider"
+            android:authorities="com.eyuphanaydin.discbase.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
     </application>
 </manifest>

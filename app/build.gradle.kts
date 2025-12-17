@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.discbase"
+    namespace = "com.eyuphanaydin.discbase"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.ilkuygulamam"
+        applicationId = "com.eyuphanaydin.discbase"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -24,7 +24,12 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Kodları karıştırır ve küçültür (Tersine mühendisliği zorlaştırır)
+            isMinifyEnabled = true
+
+            // Kullanılmayan gereksiz kaynak dosyalarını siler (Uygulama boyutunu düşürür)
+            isShrinkResources = true
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -90,7 +95,7 @@ android {
         implementation(libs.firebase.firestore.ktx)
         implementation("com.google.firebase:firebase-storage-ktx")
         implementation(libs.google.play.services.auth) // Google Girişi için
-
+        implementation("androidx.appcompat:appcompat:1.6.1")
 
 
     }

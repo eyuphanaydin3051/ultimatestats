@@ -1,4 +1,4 @@
-package com.example.discbase
+package com.eyuphanaydin.discbase
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -7,7 +7,9 @@ import android.net.Uri
 import android.util.Base64
 import androidx.compose.runtime.Composable
 import java.io.ByteArrayOutputStream
-
+import android.os.LocaleList
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 data class StatPercentage(
     val text: String,
     val ratio: String,
@@ -385,4 +387,8 @@ fun countMatchesPlayedByPlayer(
             point.stats.any { stat -> stat.playerId == playerId && stat.pointsPlayed > 0 }
         }
     }
+}
+fun changeAppLanguage(languageCode: String) {
+    val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(languageCode)
+    AppCompatDelegate.setApplicationLocales(appLocale)
 }

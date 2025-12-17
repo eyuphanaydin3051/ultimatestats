@@ -1,4 +1,4 @@
-package com.example.discbase
+package com.eyuphanaydin.discbase
 
 // Screens_ProMode.kt en üstüne ekleyin:
 import android.content.pm.ActivityInfo // <-- BU IMPORT'U EKLEMEYİ UNUTMA
@@ -40,7 +40,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.discbase.ui.theme.*
+import com.eyuphanaydin.discbase.ui.theme.*
 import java.util.UUID
 import kotlin.math.pow
 import kotlin.math.sqrt
