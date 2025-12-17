@@ -75,6 +75,14 @@
           }
         },
         {
+          "client_id": "860197339001-l5f49joqam8cgonbdb48squj4vhdss5k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.eyuphanaydin.discbase",
+            "certificate_hash": "d1d0e62659d42a3e96e4c73700a7aefd26055a20"
+          }
+        },
+        {
           "client_id": "860197339001-4m2pci2vido0olf43dqp4a8p6eaipjmi.apps.googleusercontent.com",
           "client_type": 3
         }
