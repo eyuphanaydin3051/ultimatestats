@@ -57,7 +57,7 @@ fun HomeScreen(
     tournaments: List<Tournament>
 ) {
     val advancedStats = calculateTeamStatsForFilter(tournaments, "GENEL")
-    val winRate = "${advancedStats.wins}G - ${advancedStats.losses}M"
+    val winRate = "${advancedStats.wins}${stringResource(R.string.W)}- ${advancedStats.losses}${stringResource(R.string.L)}"
     val passRate = calculateSafePercentage(advancedStats.totalPassesCompleted, advancedStats.totalPassesAttempted)
     val totalTurnovers = advancedStats.totalThrowaways + advancedStats.totalDrops
 
@@ -2111,11 +2111,11 @@ fun EfficiencyDescriptionDialog(onDismiss: () -> Unit) {
 fun TempoDescriptionDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Tempo (Ort. Pas Süresi) Nedir?") },
+        title = { Text(stringResource(R.string.dialog_tempo_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    "Bir oyuncunun diski eline aldığı andan elinden çıkarana kadar geçen ortalama süredir.",
+                    stringResource(R.string.dialog_tempo_desc),
                     fontSize = 14.sp
                 )
 
@@ -2124,22 +2124,22 @@ fun TempoDescriptionDialog(onDismiss: () -> Unit) {
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Column(Modifier.padding(12.dp)) {
-                        Text("Formül:", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(stringResource(R.string.label_formula), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         Text(
-                            "Toplam Topa Sahip Olma Süresi / Toplam Pas Sayısı",
+                            stringResource(R.string.dialog_tempo_formula),
                             fontStyle = FontStyle.Italic, fontSize = 14.sp, color = StitchColor.Primary
                         )
                     }
                 }
 
-                Text("Nasıl Yorumlanır?", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.label_interpretation), fontWeight = FontWeight.Bold)
 
                 Row(verticalAlignment = Alignment.Top) {
                     Text("🚀", fontSize = 16.sp)
                     Spacer(Modifier.width(8.dp))
                     Column {
-                        Text("Hızlı Tempo (< 3.0 sn)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                        Text("Oyuncu diski bekletmiyor, oyun akışını hızlandırıyor.", fontSize = 12.sp, color = Color.Gray)
+                        Text(stringResource(R.string.tempo_fast_title), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(stringResource(R.string.tempo_fast_desc), fontSize = 12.sp, color = Color.Gray)
                     }
                 }
 
@@ -2147,13 +2147,13 @@ fun TempoDescriptionDialog(onDismiss: () -> Unit) {
                     Text("🐢", fontSize = 16.sp)
                     Spacer(Modifier.width(8.dp))
                     Column {
-                        Text("Yavaş Tempo (> 7.0 sn)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                        Text("Oyuncu oyunu yavaşlatıyor veya pas kanalı bulmakta zorlanıyor.", fontSize = 12.sp, color = Color.Gray)
+                        Text(stringResource(R.string.tempo_slow_title), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(stringResource(R.string.tempo_slow_desc), fontSize = 12.sp, color = Color.Gray)
                     }
                 }
             }
         },
-        confirmButton = { Button(onClick = onDismiss) { Text("Anlaşıldı") } },
+        confirmButton = { Button(onClick = onDismiss) { Text(stringResource(R.string.btn_understood)) } },
         containerColor = StitchColor.Surface
     )
 }

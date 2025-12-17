@@ -48,6 +48,7 @@ import androidx.compose.material.icons.filled.FitnessCenter
 
 // --- İKON IMPORTLARI ---
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.ui.res.stringResource
 import com.eyuphanaydin.discbase.ui.theme.StitchColor
 import com.eyuphanaydin.discbase.ui.theme.StitchPrimary
 
@@ -178,7 +179,7 @@ fun UltimateStatsApp(
 
         // 1. YÜKLENİYOR EKRANI
         composable(route = "loading") {
-            LoadingScreen("Giriş durumu kontrol ediliyor...")
+            LoadingScreen(text = stringResource(R.string.msg_signing_in))
         }
 
         // 2. GİRİŞ EKRANI

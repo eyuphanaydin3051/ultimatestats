@@ -1012,4 +1012,113 @@ class PdfReportGenerator(private val context: Context) {
             totalPossessions = totalPossessions
         )
     }
+    // ... Sınıfın içine, diğer generate fonksiyonlarının altına ekle ...
+
+    // --- ANTRENMAN RAPORU (YENİ) ---
+    fun generateTrainingReport(
+        training: Training,
+        allPlayers: List<Player> // Katılımcı isimlerini bulmak için gerekli
+    ): File? {
+        val document = PdfDocument()
+        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
+        var page = document.startPage(pageInfo)
+        var canvas = page.canvas
+        var currentY = 0f
+
+        // 1. BAŞLIK
+        drawHeader(canvas, "Antrenman Raporu")
+        currentY = 100f
+
+        // 2. ANTRENMAN DETAYLARI KARTI
+        drawSectionTitle(canvas, "Detaylar", currentY)
+        currentY += 25f
+
+        drawCardBackground(canvas, 20f, currentY, 555f, 100f)
+        val textP = Paint().apply { color = colorTextPrimary; textSize = 12f }
+        val boldP = Paint().apply { color = colorTextPrimary; textSize = 12f; typeface = Typeface.DEFAULT_BOLD }
+
+        var detailsY = currentY + 30f
+        canvas.drawText("Tarih:", 40f, detailsY, boldP)
+        canvas.drawText(training.date, 150f, detailsY, textP)
+
+        detailsY += 25f
+        canvas.drawText("Saat:", 40f, detailsY, boldP)
+        canvas.drawText(training.time, 150f, detailsY, textP)
+
+        detailsY += 25f
+        canvas.drawText("Lokasyon:", 40f, detailsY, boldP)
+        canvas.drawText(training.location, 150f, detailsY, textP)
+
+        currentY += 130f
+
+        // 3. AÇIKLAMA / NOTLAR
+        if (training.description.isNotEmpty() || training.note.isNotEmpty()) {
+            drawSectionTitle(canvas, "Açıklama & Notlar", currentY)
+            currentY += 25f
+            drawCardBackground(canvas, 20f, currentY, 555f, 60f)
+            val desc = if(training.description.isNotEmpty()) training.description else training.note
+            // Basit bir text wrap (çok uzunsa keser, basit tuttum)
+            val cleanDesc = if(desc.length > 80) desc.take(77) + "..." else desc
+            canvas.drawText(cleanDesc, 40f, currentY + 35f, textP)
+            currentY += 90f
+        }
+
+        // 4. KATILIMCI LİSTESİ
+        drawSectionTitle(canvas, "Katılımcılar (${training.attendeeIds.size})", currentY)
+        currentY += 30f
+
+        // Tablo Başlıkları
+        val headerBg = Paint().apply { color = Color.LTGRAY; style = Paint.Style.FILL }
+        canvas.drawRect(20f, currentY, 575f, currentY + 25f, headerBg)
+        val hText = Paint().apply { textSize = 10f; typeface = Typeface.DEFAULT_BOLD; color = Color.BLACK }
+        canvas.drawText("SIRA", 30f, currentY + 16f, hText)
+        canvas.drawText("OYUNCU İSMİ", 80f, currentY + 16f, hText)
+        canvas.drawText("DURUM", 450f, currentY + 16f, hText)
+
+        currentY += 35f
+
+        // Listeyi Yazdır
+        val rowText = Paint().apply { textSize = 11f; color = colorTextPrimary }
+
+        // Katılımcı ID'lerini isme çevir ve sırala
+        val attendees = training.attendeeIds.mapNotNull { id ->
+            allPlayers.find { it.id == id }
+        }.sortedBy { it.name }
+
+        attendees.forEachIndexed { index, player ->
+            // Sayfa Sonu Kontrolü
+            if (currentY > 780f) {
+                document.finishPage(page)
+                page = document.startPage(pageInfo)
+                canvas = page.canvas
+                drawHeader(canvas, "Antrenman Raporu (Devam)")
+                currentY = 100f
+                // Tablo başlığını tekrar çiz
+                canvas.drawRect(20f, currentY, 575f, currentY + 25f, headerBg)
+                canvas.drawText("SIRA", 30f, currentY + 16f, hText)
+                canvas.drawText("OYUNCU İSMİ", 80f, currentY + 16f, hText)
+                canvas.drawText("DURUM", 450f, currentY + 16f, hText)
+                currentY += 35f
+            }
+
+            // Satır Arka Planı (Zebra)
+            if (index % 2 == 1) {
+                val stripePaint = Paint().apply { color = Color.parseColor("#F5F5F5") }
+                canvas.drawRect(20f, currentY - 10f, 575f, currentY + 10f, stripePaint)
+            }
+
+            canvas.drawText("${index + 1}", 35f, currentY, rowText)
+            canvas.drawText(player.name, 80f, currentY, rowText)
+
+            // "Katıldı" işareti
+            val greenP = Paint().apply { color = Color.parseColor("#4CAF50"); textSize=11f; typeface = Typeface.DEFAULT_BOLD }
+            canvas.drawText("KATILDI", 450f, currentY, greenP)
+
+            currentY += 20f
+        }
+
+        drawFooter(canvas)
+        document.finishPage(page)
+        return savePdf(document, "Antrenman_${training.date}")
+    }
 }

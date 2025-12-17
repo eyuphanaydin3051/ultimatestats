@@ -156,7 +156,6 @@
     <string name="stat_goal_assist_desc">Gol, Asist</string>
     <string name="stat_pass_desc">Her Başarılı Pas</string>
     <string name="stat_turnover_desc">Hata (Turnover), Drop</string>
-    <string name="btn_understood">Anlaşıldı</string>
 
     <string name="tempo_dialog_title">Tempo (Ort. Pas Süresi) Nedir?</string>
     <string name="tempo_desc_1">Bir oyuncunun diski eline aldığı andan elinden çıkarana kadar geçen ortalama süredir.</string>
@@ -164,9 +163,7 @@
     <string name="tempo_formula_text">Toplam Topa Sahip Olma Süresi / Toplam Pas Sayısı</string>
     <string name="tempo_interpretation">Nasıl Yorumlanır?</string>
     <string name="tempo_fast">Hızlı Tempo (&lt; 3.0 sn)</string>
-    <string name="tempo_fast_desc">Oyuncu diski bekletmiyor, oyun akışını hızlandırıyor.</string>
     <string name="tempo_slow">Yavaş Tempo (&gt; 7.0 sn)</string>
-    <string name="tempo_slow_desc">Oyuncu oyunu yavaşlatıyor veya pas kanalı bulmakta zorlanıyor.</string>
 
     <string name="label_email_match">E-posta (Eşleştirme)</string>
     <string name="hint_email_select">Listeden seçin veya yazın</string>
@@ -584,11 +581,36 @@
 
     <string name="title_tempo_dialog">Tempo (Ort. Pas Süresi) Nedir?</string>
     <string name="desc_tempo_dialog">Bir oyuncunun diski eline aldığı andan elinden çıkarana kadar geçen ortalama süredir.</string>
-    <string name="label_formula">Formül:</string>
     <string name="desc_tempo_formula">Toplam Topa Sahip Olma Süresi / Toplam Pas Sayısı</string>
     <string name="title_how_to_interpret">Nasıl Yorumlanır?</string>
     <string name="title_fast_tempo">Hızlı Tempo (&lt; 3.0 sn)</string>
     <string name="desc_fast_tempo">Oyuncu diski bekletmiyor, oyun akışını hızlandırıyor.</string>
     <string name="title_slow_tempo">Yavaş Tempo (&gt; 7.0 sn)</string>
     <string name="desc_slow_tempo">Oyuncu oyunu yavaşlatıyor veya pas kanalı bulmakta zorlanıyor.</string>
+
+    <string name="gender_male">Erkek</string>
+    <string name="gender_female">Kadın</string>
+    <string name="pos_handler">Handler (Oyun Kurucu)</string>
+    <string name="pos_cutter">Cutter (Koşucu)</string>
+    <string name="pos_hybrid">Hybrid (Karma)</string>
+
+    <string name="msg_signing_out">Çıkış yapılıyor...</string>
+    <string name="msg_signed_out">Başarıyla çıkış yapıldı.</string>
+    <string name="msg_signing_in">Giriş yapılıyor...</string>
+
+    <string name="dialog_tempo_title">Tempo (Ort. Pas Süresi) Nedir?</string>
+    <string name="dialog_tempo_desc">Bir oyuncunun diski eline aldığı andan elinden çıkarana kadar geçen ortalama süredir.</string>
+    <string name="label_formula">Formül:</string>
+    <string name="dialog_tempo_formula">Toplam Topa Sahip Olma Süresi / Toplam Pas Sayısı</string>
+    <string name="label_interpretation">Nasıl Yorumlanır?</string>
+    <string name="tempo_fast_title">Hızlı Tempo (&lt; 3.0 sn)</string>
+    <string name="tempo_fast_desc">Oyuncu diski bekletmiyor, oyun akışını hızlandırıyor.</string>
+    <string name="tempo_slow_title">Yavaş Tempo (&gt; 7.0 sn)</string>
+    <string name="tempo_slow_desc">Oyuncu oyunu yavaşlatıyor veya pas kanalı bulmakta zorlanıyor.</string>
+    <string name="btn_understood">Anlaşıldı</string>
+
+    <string name="W">G</string>
+    <string name="L">M</string>
+    <string name="D">B</string>
+
 </resources>

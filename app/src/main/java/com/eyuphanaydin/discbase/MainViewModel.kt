@@ -26,7 +26,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
-
+import com.android.billingclient.api.*
 enum class AppTheme { LIGHT, DARK, SYSTEM }
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -155,6 +155,74 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             repository.setProModeEnabled(enabled)
         }
     }
+    private val _isPremium = MutableStateFlow(false)
+    val isPremium = _isPremium.asStateFlow()
+
+    private val billingClient = BillingClient.newBuilder(application)
+        .setListener { billingResult, purchases ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+                // Satın alma başarılı, premium'u aktif et
+                viewModelScope.launch { _isPremium.emit(true) }
+            }
+        }
+        .enablePendingPurchases()
+        .build()
+
+    fun startBillingConnection() {
+        billingClient.startConnection(object : BillingClientStateListener {
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    checkPurchases()
+                }
+            }
+            override fun onBillingServiceDisconnected() {
+                // Tekrar bağlanmayı dene
+            }
+        })
+    }
+
+    private fun checkPurchases() {
+        billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build()
+        ) { result, purchases ->
+            if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                // "advanced_mode_monthly" senin Play Console'da oluşturacağın Ürün Kimliği (Product ID)
+                val hasPremium = purchases.any { it.products.contains("advanced_mode_monthly") && it.purchaseState == Purchase.PurchaseState.PURCHASED }
+                _isPremium.value = hasPremium
+            }
+        }
+    }
+
+    fun launchPurchaseFlow(activity: Activity) {
+        val productList = listOf(
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId("advanced_mode_monthly")
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build()
+        )
+        val params = QueryProductDetailsParams.newBuilder().setProductList(productList).build()
+
+        billingClient.queryProductDetailsAsync(params) { result, productDetailsList ->
+            if (result.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
+                val productDetails = productDetailsList[0]
+                val offerToken = productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken ?: return@queryProductDetailsAsync
+
+                val flowParams = BillingFlowParams.newBuilder()
+                    .setProductDetailsParamsList(
+                        listOf(
+                            BillingFlowParams.ProductDetailsParams.newBuilder()
+                                .setProductDetails(productDetails)
+                                .setOfferToken(offerToken)
+                                .build()
+                        )
+                    )
+                    .build()
+                billingClient.launchBillingFlow(activity, flowParams)
+            }
+        }
+    }
     // INIT
     init {
         // 1. Kullanıcı Giriş Durumu ve Profil Kontrolü (Bunu silmiş olabilirsin, geri ekliyoruz)
@@ -199,6 +267,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _proModeEnabled.value = it
             }
         }
+        startBillingConnection()
     }
 
     // --- FONKSİYONLAR ---
@@ -467,6 +536,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } catch (e: Exception) {
             Log.e("PDF", "Paylaşım hatası", e)
             _userMessage.emit(context.getString(R.string.msg_share_error, e.localizedMessage))
+        }
+    }
+    // ... shareMatchReport vb. fonksiyonların altına ekle ...
+
+    fun shareTrainingReport(context: Context, training: Training) = viewModelScope.launch {
+        _userMessage.emit(context.getString(R.string.msg_preparing_pdf)) // Bu string'i strings.xml'e eklemelisin
+        try {
+            val generator = PdfReportGenerator(context)
+            // allPlayers listesini o anki mevcut oyunculardan alıyoruz
+            val pdfFile = generator.generateTrainingReport(training, players.value)
+
+            if (pdfFile != null) {
+                shareFile(context, pdfFile)
+            } else {
+                _userMessage.emit("PDF oluşturulamadı.")
+            }
+        } catch (e: Exception) {
+            _userMessage.emit("Hata: ${e.localizedMessage}")
         }
     }
 

@@ -14,12 +14,20 @@ android {
         applicationId = "com.eyuphanaydin.discbase"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+    signingConfigs {
+        create("release") {
+            storeFile = file("release.keystore")
+            storePassword = "181.Eyup"
+            keyAlias = "key0"
+            keyPassword = "181.Eyup"
         }
     }
     buildTypes {
@@ -34,6 +42,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -96,6 +105,7 @@ android {
         implementation("com.google.firebase:firebase-storage-ktx")
         implementation(libs.google.play.services.auth) // Google Girişi için
         implementation("androidx.appcompat:appcompat:1.6.1")
+        implementation("com.android.billingclient:billing-ktx:6.1.0")
 
 
     }

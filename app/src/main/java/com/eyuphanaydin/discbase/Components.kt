@@ -7,9 +7,11 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -1051,83 +1053,67 @@ fun ActionButton(
 }
 
 
+
+
+
+// Components.kt dosyasındaki GenderSelector ve PositionSelector fonksiyonlarını bul ve bunlarla değiştir:
+
+@Composable
+fun GenderSelector(
+    selectedGender: String,
+    onGenderSelect: (String) -> Unit,
+    enabled: Boolean = true
+) {
+    // Veritabanı Değeri -> Ekranda Görünecek Resource ID
+    val genderOptions = listOf(
+        "Erkek" to R.string.gender_male,
+        "Kadın" to R.string.gender_female
+    )
+
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        genderOptions.forEach { (dbValue, labelResId) ->
+            FilterChip(
+                selected = selectedGender == dbValue,
+                onClick = { if (enabled) onGenderSelect(dbValue) },
+                label = { Text(stringResource(labelResId)) },
+                enabled = enabled,
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = StitchColor.Primary,
+                    selectedLabelColor = Color.White
+                )
+            )
+        }
+    }
+}
+
 @Composable
 fun PositionSelector(
     selectedPosition: String,
     onPositionSelect: (String) -> Unit,
     enabled: Boolean = true
 ) {
-    val positions = listOf("Handler", "Cutter", "Hybrid")
+    // Veritabanı Değeri -> Ekranda Görünecek Resource ID
+    val positions = listOf(
+        "Handler" to R.string.pos_handler,
+        "Cutter" to R.string.pos_cutter,
+        "Hybrid" to R.string.pos_hybrid
+    )
 
-    Column(Modifier.fillMaxWidth()) {
-        Text("Pozisyon", style = MaterialTheme.typography.labelMedium)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            positions.forEach { position ->
-                Row(
-                    Modifier
-                        .selectable(
-                            selected = (position == selectedPosition),
-                            onClick = { onPositionSelect(position) },
-                            role = Role.RadioButton,
-                            enabled = enabled
-                        )
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = (position == selectedPosition),
-                        onClick = null, // Tıklamayı Row yönetiyor
-                        enabled = enabled
-                    )
-                    Text(
-                        text = position,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun GenderSelector(
-    selectedGender: String,
-    onGenderSelect: (String) -> Unit,
-    enabled: Boolean = true // <-- EKLENDİ
-) {
-    val options = listOf("Erkek", "Kadın")
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        options.forEach { gender ->
-            Row(
-                Modifier
-                    .selectable(
-                        selected = (gender == selectedGender),
-                        onClick = { onGenderSelect(gender) },
-                        role = Role.RadioButton,
-                        enabled = enabled // <-- EKLENDİ
-                    )
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = (gender == selectedGender),
-                    onClick = null,
-                    enabled = enabled // <-- EKLENDİ
+        positions.forEach { (dbValue, labelResId) ->
+            FilterChip(
+                selected = selectedPosition == dbValue,
+                onClick = { if (enabled) onPositionSelect(dbValue) },
+                label = { Text(stringResource(labelResId)) },
+                enabled = enabled,
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = StitchColor.Primary,
+                    selectedLabelColor = Color.White
                 )
-                Text(
-                    text = gender,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
+            )
         }
     }
 }
