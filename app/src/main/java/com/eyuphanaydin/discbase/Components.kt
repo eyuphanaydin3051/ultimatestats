@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -309,7 +310,7 @@ fun PassNetworkChordDiagram(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Pas Bağlantı Ağı", fontWeight = FontWeight.Bold, color = StitchColor.TextPrimary)
+        Text(stringResource(R.string.title_pass_network), fontWeight = FontWeight.Bold, color = StitchColor.TextPrimary)
         Spacer(Modifier.height(16.dp))
 
         // Canvas Boyutu
@@ -414,7 +415,7 @@ fun PassNetworkChordDiagram(
 
         Spacer(Modifier.height(8.dp))
         Text(
-            "Merkez: $mainPlayerName",
+            "${stringResource(R.string.label_center)}: $mainPlayerName",
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray
         )
@@ -526,8 +527,7 @@ fun MatchCard(
     val isWin = match.scoreUs > match.scoreThem
     val isLoss = match.scoreThem > match.scoreUs
     val resultColor = if (isWin) com.eyuphanaydin.discbase.StitchOffense else if (isLoss) StitchDefense else Color.Gray
-    val resultText = if (isWin) "KAZANDIK" else if (isLoss) "KAYBETTİK" else "BERABERE"
-
+    val resultText = if (isWin) stringResource(R.string.match_result_win) else if (isLoss) stringResource(R.string.match_result_loss) else stringResource(R.string.match_result_draw)
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -606,13 +606,13 @@ fun PointSummaryCard(
     showEditButton: Boolean
 ) {
     val startModeLabel = when (pointData.startMode) {
-        PointStartMode.OFFENSE -> "Hücum Başlangıcı"
-        PointStartMode.DEFENSE -> "Defans Başlangıcı"
+        PointStartMode.OFFENSE -> stringResource(R.string.start_mode_offense)
+        PointStartMode.DEFENSE -> stringResource(R.string.start_mode_defense)
         null -> "-"
     }
     val isUs = pointData.whoScored == "US"
     val scoreColor = if (isUs) com.eyuphanaydin.discbase.StitchOffense else StitchDefense
-    val titleText = if (isUs) "BİZİM SAYIMIZ" else "RAKİP SAYI"
+    val titleText = if (isUs) stringResource(R.string.point_ours) else stringResource(R.string.point_theirs)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -643,7 +643,7 @@ fun PointSummaryCard(
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                         modifier = Modifier.height(32.dp)
                     ) {
-                        Text("Detay", fontSize = 12.sp)
+                        Text(stringResource(R.string.btn_detail), fontSize = 12.sp)
                     }
                     if (showEditButton) {
                         Button(
@@ -653,7 +653,7 @@ fun PointSummaryCard(
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                             modifier = Modifier.height(32.dp)
                         ) {
-                            Text("Düzenle", fontSize = 12.sp)
+                            Text(stringResource(R.string.btn_edit), fontSize = 12.sp) // btn_edit zaten vardı
                         }
                     }
                 }

@@ -89,11 +89,8 @@
     <string name="player_name_label">Ad Soyad</string>
     <string name="player_gender_label">Cinsiyet</string>
     <string name="player_position_label">Pozisyon</string>
-    <string name="btn_add_player_caps">OYUNCUYU EKLE</string>
-    <string name="error_name_required">İsim gerekli</string>
 
     <string name="training_title">Antrenman</string>
-    <string name="desc_profile">Profil</string>
     <string name="tab_calendar">Takvim</string>
     <string name="tab_attendance">Katılım Raporu</string>
     <string name="training_empty_month">ayında antrenman yok.</string>
@@ -131,8 +128,6 @@
     <string name="stats_clean_holds">Hatasız Ofans (Clean Holds)</string>
     <string name="stats_dline_conversion">D-Line Conversion</string>
     <string name="suffix_pos_goal">pozisyon gol oldu</string>
-    <string name="suffix_clean_hold">sayı hatasız atıldı</string>
-    <string name="suffix_block_converted">blok değerlendirildi</string>
     <string name="stats_detailed">Detaylı Analiz</string>
     <string name="stats_pass_attempt">Pas den.</string>
     <string name="stats_pass_completed">Baş. Pas</string>
@@ -305,8 +300,6 @@
     <string name="team_code_label">Takım Kodu (ID)</string>
     <string name="btn_join">Katıl</string>
     <string name="btn_create_new_team">Yeni Takım</string>
-    <string name="msg_name_required">İsim boş olamaz</string>
-    <string name="msg_code_required">Kod girmelisiniz</string>
 
     <string name="profile_create_title">Profil Oluştur</string>
     <string name="profile_create_desc">Lütfen uygulamada diğer üyelerin göreceği adınızı ve soyadınızı girin.</string>
@@ -509,4 +502,93 @@
     <string name="calc_mode_total">Toplam</string>
     <string name="calc_mode_per_match">Maç Başı</string>
     <string name="calc_mode_per_point">Sayı Başı</string>
+    <string name="title_pass_network">Pas Bağlantı Ağı</string>
+    <string name="label_center">Merkez</string>
+    <string name="match_result_win">KAZANDIK</string>
+    <string name="match_result_loss">KAYBETTİK</string>
+    <string name="match_result_draw">BERABERE</string>
+    <string name="point_ours">BİZİM SAYIMIZ</string>
+    <string name="point_theirs">RAKİP SAYI</string>
+    <string name="start_mode_offense">Hücum Başlangıcı</string>
+    <string name="start_mode_defense">Defans Başlangıcı</string>
+    <string name="btn_detail">Detay</string>
+
+    <string name="title_event_flow">Olay Akışı</string>
+    <string name="btn_filter">Filtrele</string>
+    <string name="label_select_focus_player">Odaklanacak Oyuncuyu Seç</string>
+    <string name="label_all">Tümü</string>
+    <string name="title_point_detail">Sayı %1$d Detayı</string>
+    <string name="btn_continue_match">MAÇA DEVAM ET</string>
+    <string name="label_event">Olay</string>
+    <string name="label_distance">Mesafe</string>
+    <string name="detail_goal">GOL</string>
+    <string name="detail_assist">ASİST</string>
+    <string name="detail_thrower">ATAN</string>
+    <string name="detail_catcher">TUTAN</string>
+    <string name="title_event_detail">Olay Detayı</string>
+    <string name="title_score_detail">Sayı Detayı</string>
+
+    <string name="msg_finish_match_confirm">Maç kaydedilecek ve detay ekranına gidilecek. Emin misiniz?</string>
+    <string name="msg_delete_point_confirm">Bu sayıyı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="title_delete_point">Sayıyı Sil</string>
+
+    <string name="title_manage_lines">Hazır Line Yönetimi</string>
+    <string name="msg_code_required">Takım kodu gerekli</string>
+    <string name="msg_name_required">Takım ismi gerekli</string>
+    <string name="label_invite_code">Davet Kodu (Code):</string>
+
+    <string name="nav_home">Ana Sayfa</string>
+    <string name="nav_tournaments">Turnuvalar</string>
+    <string name="nav_roster">Kadro</string>
+    <string name="nav_trainings">İdman</string>
+    <string name="nav_pro_mode">Pro Mod</string>
+    <string name="desc_profile">Profil</string>
+    <string name="desc_app_logo">Uygulama Logosu</string>
+
+    <string name="title_add_player">Yeni Oyuncu</string>
+    <string name="label_fullname">Ad Soyad</string>
+    <string name="label_gender">Cinsiyet</string>
+    <string name="label_position">Pozisyon</string>
+    <string name="btn_add_player_caps">OYUNCUYU EKLE</string>
+    <string name="error_name_required">İsim gerekli</string>
+
+    <string name="title_stats_center">İstatistik Merkezi</string>
+    <string name="label_select_filter">Filtre Seç</string>
+    <string name="label_general_stats">Genel İstatistikler</string>
+    <string name="header_team_performance">Takım Performansı</string>
+    <string name="header_efficiency">Verimlilik (Efficiency)</string>
+    <string name="header_detailed_analysis">Detaylı Analiz</string>
+    <string name="stat_hold_percentage">Hold % (Hücum)</string>
+    <string name="stat_break_percentage">Break % (Defans)</string>
+    <string name="stat_pass_success">Pas Başarısı</string>
+    <string name="stat_conversion_rate">Gol Dönüşümü (Conversion)</string>
+    <string name="stat_clean_holds">Hatasız Hücum (Clean Hold)</string>
+    <string name="stat_d_line_conversion">Defans Gol Dönüşümü</string>
+    <string name="stat_turnover_per_match">O. Kayıp/Maç</string>
+    <string name="stat_avg_tempo">Ort. Tempo</string>
+    <string name="stat_avg_pull">Ort. Pull</string>
+    <string name="suffix_goal_converted">pozisyon gol oldu</string>
+    <string name="suffix_clean_hold">sayı hatasız atıldı</string>
+    <string name="suffix_block_converted">blok değerlendirildi</string>
+
+    <string name="title_season_fixtures">Sezon Fikstürü</string>
+    <string name="msg_no_matches_played">Henüz hiç maç oynanmadı.</string>
+    <string name="label_us">BİZ</string>
+
+    <string name="title_stat_leaders">İstatistik Liderleri</string>
+    <string name="filter_tournament">Turnuva Filtrele</string>
+    <string name="filter_match">Maç Filtrele</string>
+    <string name="label_all_season">Tüm Sezon (Genel)</string>
+    <string name="label_all_matches">Tüm Turnuva Maçları</string>
+    <string name="mode_average">Ortalama</string>
+
+    <string name="title_tempo_dialog">Tempo (Ort. Pas Süresi) Nedir?</string>
+    <string name="desc_tempo_dialog">Bir oyuncunun diski eline aldığı andan elinden çıkarana kadar geçen ortalama süredir.</string>
+    <string name="label_formula">Formül:</string>
+    <string name="desc_tempo_formula">Toplam Topa Sahip Olma Süresi / Toplam Pas Sayısı</string>
+    <string name="title_how_to_interpret">Nasıl Yorumlanır?</string>
+    <string name="title_fast_tempo">Hızlı Tempo (&lt; 3.0 sn)</string>
+    <string name="desc_fast_tempo">Oyuncu diski bekletmiyor, oyun akışını hızlandırıyor.</string>
+    <string name="title_slow_tempo">Yavaş Tempo (&gt; 7.0 sn)</string>
+    <string name="desc_slow_tempo">Oyuncu oyunu yavaşlatıyor veya pas kanalı bulmakta zorlanıyor.</string>
 </resources>

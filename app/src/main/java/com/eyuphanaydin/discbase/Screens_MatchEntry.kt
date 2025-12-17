@@ -949,7 +949,7 @@ fun StatEntryScreen(
         AlertDialog(
             onDismissRequest = { showFinishDialog = false },
             title = { Text(stringResource(R.string.match_finish_btn)) },
-            text = { Text("Maç kaydedilecek ve detay ekranına gidilecek. Emin misiniz?") },
+            text = { Text(stringResource(R.string.msg_finish_match_confirm)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -969,8 +969,8 @@ fun StatEntryScreen(
     if (showDeletePointDialog) {
         AlertDialog(
             onDismissRequest = { showDeletePointDialog = false },
-            title = { Text(stringResource(R.string.dialog_delete_point_title)) },
-            text = { Text(stringResource(R.string.dialog_delete_point_msg)) },
+            title = { Text(stringResource(R.string.title_delete_point)) },
+            text = { Text(stringResource(R.string.msg_delete_point_confirm)) },
             confirmButton = {
                 Button(
                     onClick = {

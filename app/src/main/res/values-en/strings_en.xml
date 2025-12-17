@@ -92,11 +92,8 @@
     <string name="player_name_label">Name Surname</string>
     <string name="player_gender_label">Gender</string>
     <string name="player_position_label">Position</string>
-    <string name="btn_add_player_caps">ADD PLAYER</string>
-    <string name="error_name_required">Name is required</string>
 
     <string name="training_title">Training</string>
-    <string name="desc_profile">Profile</string>
     <string name="tab_calendar">Calendar</string>
     <string name="tab_attendance">Attendance Report</string>
     <string name="training_empty_month">No training in this month.</string>
@@ -135,8 +132,6 @@
     <string name="stats_clean_holds">Clean Holds</string>
     <string name="stats_dline_conversion">D-Line Conversion</string>
     <string name="suffix_pos_goal">possessions converted</string>
-    <string name="suffix_clean_hold">clean hold points</string>
-    <string name="suffix_block_converted">blocks converted</string>
     <string name="stats_detailed">Detailed Analysis</string>
     <string name="stats_pass_attempt">Pass Att.</string>
     <string name="stats_pass_completed">Pass Comp.</string>
@@ -306,8 +301,7 @@
     <string name="team_code_label">Team Code (ID)</string>
     <string name="btn_join">Join</string>
     <string name="btn_create_new_team">New Team</string>
-    <string name="msg_name_required">Name cannot be empty</string>
-    <string name="msg_code_required">You must enter a code</string>
+
 
     <string name="profile_create_title">Create Profile</string>
     <string name="profile_create_desc">Please enter your full name as seen by other members.</string>
@@ -510,4 +504,93 @@
     <string name="calc_mode_total">Total</string>
     <string name="calc_mode_per_match">Per Match</string>
     <string name="calc_mode_per_point">Per Point</string>
+    <string name="title_pass_network">Pass Network</string>
+    <string name="label_center">Center</string>
+    <string name="match_result_win">WON</string>
+    <string name="match_result_loss">LOST</string>
+    <string name="match_result_draw">DRAW</string>
+    <string name="point_ours">OUR POINT</string>
+    <string name="point_theirs">OPPONENT POINT</string>
+    <string name="start_mode_offense">Offense Start</string>
+    <string name="start_mode_defense">Defense Start</string>
+    <string name="btn_detail">Detail</string>
+
+    <string name="title_event_flow">Event Log</string>
+    <string name="btn_filter">Filter</string>
+    <string name="label_select_focus_player">Select Player to Focus</string>
+    <string name="label_all">All</string>
+    <string name="title_point_detail">Point %1$d Detail</string>
+    <string name="btn_continue_match">CONTINUE MATCH</string>
+    <string name="label_event">Event</string>
+    <string name="label_distance">Distance</string>
+    <string name="detail_goal">GOAL</string>
+    <string name="detail_assist">ASSIST</string>
+    <string name="detail_thrower">THROWER</string>
+    <string name="detail_catcher">CATCHER</string>
+    <string name="title_event_detail">Event Detail</string>
+    <string name="title_score_detail">Score Detail</string>
+
+    <string name="msg_finish_match_confirm">Match will be saved and you will be redirected to details. Are you sure?</string>
+    <string name="msg_delete_point_confirm">Are you sure you want to delete this point? This cannot be undone.</string>
+    <string name="title_delete_point">Delete Point</string>
+
+    <string name="title_manage_lines">Manage Preset Lines</string>
+    <string name="msg_code_required">Team code is required</string>
+    <string name="msg_name_required">Team name is required</string>
+    <string name="label_invite_code">Invite Code:</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_tournaments">Tournaments</string>
+    <string name="nav_roster">Roster</string>
+    <string name="nav_trainings">Training</string>
+    <string name="nav_pro_mode">Pro Mode</string>
+    <string name="desc_profile">Profile</string>
+    <string name="desc_app_logo">App Logo</string>
+
+    <string name="title_add_player">New Player</string>
+    <string name="label_fullname">Full Name</string>
+    <string name="label_gender">Gender</string>
+    <string name="label_position">Position</string>
+    <string name="btn_add_player_caps">ADD PLAYER</string>
+    <string name="error_name_required">Name is required</string>
+
+    <string name="title_stats_center">Stats Center</string>
+    <string name="label_select_filter">Select Filter</string>
+    <string name="label_general_stats">General Stats</string>
+    <string name="header_team_performance">Team Performance</string>
+    <string name="header_efficiency">Efficiency</string>
+    <string name="header_detailed_analysis">Detailed Analysis</string>
+    <string name="stat_hold_percentage">Hold % (Offense)</string>
+    <string name="stat_break_percentage">Break % (Defense)</string>
+    <string name="stat_pass_success">Pass Success</string>
+    <string name="stat_conversion_rate">Conversion Rate</string>
+    <string name="stat_clean_holds">Clean Holds</string>
+    <string name="stat_d_line_conversion">D-Line Conversion</string>
+    <string name="stat_turnover_per_match">Turn/Match</string>
+    <string name="stat_avg_tempo">Avg. Tempo</string>
+    <string name="stat_avg_pull">Avg. Pull</string>
+    <string name="suffix_goal_converted">possessions converted</string>
+    <string name="suffix_clean_hold">points scored cleanly</string>
+    <string name="suffix_block_converted">blocks converted</string>
+
+    <string name="title_season_fixtures">Season Fixtures</string>
+    <string name="msg_no_matches_played">No matches played yet.</string>
+    <string name="label_us">US</string>
+
+    <string name="title_stat_leaders">Stat Leaders</string>
+    <string name="filter_tournament">Filter Tournament</string>
+    <string name="filter_match">Filter Match</string>
+    <string name="label_all_season">All Season (General)</string>
+    <string name="label_all_matches">All Tournament Matches</string>
+    <string name="mode_average">Average</string>
+
+    <string name="title_tempo_dialog">What is Tempo?</string>
+    <string name="desc_tempo_dialog">The average time a player holds the disc before releasing it.</string>
+    <string name="label_formula">Formula:</string>
+    <string name="desc_tempo_formula">Total Possession Time / Total Passes</string>
+    <string name="title_how_to_interpret">How to Interpret?</string>
+    <string name="title_fast_tempo">Fast Tempo (&lt; 3.0s)</string>
+    <string name="desc_fast_tempo">Player moves the disc quickly, speeding up the flow.</string>
+    <string name="title_slow_tempo">Slow Tempo (&gt; 7.0s)</string>
+    <string name="desc_slow_tempo">Player slows down the game or struggles to find options.</string>
 </resources>

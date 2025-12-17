@@ -48,6 +48,8 @@ import androidx.compose.foundation.lazy.LazyRow // <-- BU EKSİKTİ
 import androidx.compose.foundation.BorderStroke // <-- Border hatası için
 import androidx.compose.material3.FilterChip // <-- Chip hatası için
 import androidx.compose.material3.FilterChipDefaults // <-- Chip renkleri için
+import androidx.compose.ui.res.stringResource
+
 // --- OYUN DURUMU ENUM ---
 private enum class ProGameState {
     LINE_SELECTION, START_SELECTION,
@@ -298,7 +300,7 @@ fun ProMatchHistoryScreen(
                         }
                         Icon(icon, null, tint = color)
                         Spacer(Modifier.width(8.dp))
-                        Text(text = if (isGoal) "Sayı Detayı" else "Olay Detayı", fontWeight = FontWeight.Bold)
+                        Text(text = if (isGoal) stringResource(R.string.title_score_detail) else stringResource(R.string.title_event_detail), fontWeight = FontWeight.Bold)
                     }
                 },
                 text = {
@@ -317,7 +319,7 @@ fun ProMatchHistoryScreen(
                                     }
                                 }
                                 Column {
-                                    Text(if (isGoal) "ASİST" else "ATAN", style = MaterialTheme.typography.labelSmall, color = Color.Gray, fontWeight = FontWeight.Bold)
+                                    Text(if (isGoal) stringResource(R.string.detail_assist) else stringResource(R.string.detail_thrower), style = MaterialTheme.typography.labelSmall, color = Color.Gray, fontWeight = FontWeight.Bold)
                                     Text(throwerPlayer?.name ?: event.throwerName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                                 }
                             }
@@ -338,16 +340,16 @@ fun ProMatchHistoryScreen(
                                     }
                                 }
                                 Column {
-                                    Text(if (isGoal) "GOL" else "TUTAN", style = MaterialTheme.typography.labelSmall, color = if (isGoal) StitchOffense else Color.Gray, fontWeight = FontWeight.Bold)
+                                    Text(if (isGoal) stringResource(R.string.detail_goal) else stringResource(R.string.detail_catcher), style = MaterialTheme.typography.labelSmall, color = if (isGoal) StitchOffense else Color.Gray, fontWeight = FontWeight.Bold)
                                     Text(receiverPlayer?.name ?: event.receiverName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
 
                         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                            Text("Olay: ${event.type}", fontSize = 12.sp, color = Color.Gray)
+                            Text("${stringResource(R.string.label_event)}: ${event.type}", fontSize = 12.sp, color = Color.Gray)
                             if (event.distance > 0) {
-                                Text("Mesafe: ${String.format("%.1f", event.distance)} yd", fontSize = 12.sp, color = Color.Gray)
+                                Text("${stringResource(R.string.label_distance)}: ${String.format("%.1f", event.distance)} yd", fontSize = 12.sp, color = Color.Gray)
                             }
                         }
                     }
@@ -362,7 +364,7 @@ fun ProMatchHistoryScreen(
             containerColor = Color(0xFF121212),
             topBar = {
                 TopAppBar(
-                    title = { Text("Sayı ${selectedPointIndex!! + 1} Detayı", color = Color.White) },
+                    title = { Text(stringResource(R.string.title_point_detail, selectedPointIndex!! + 1), color = Color.White) },
                     navigationIcon = { IconButton(onClick = { selectedPointIndex = null }) { Icon(Icons.Default.ArrowBack, null, tint = Color.White) } },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black.copy(0.4f))
                 )
@@ -493,7 +495,7 @@ fun ProMatchHistoryScreen(
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
-                                "Odaklanacak Oyuncuyu Seç",
+                                stringResource(R.string.label_select_focus_player),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = Color.Gray,
                                 modifier = Modifier.padding(bottom = 8.dp)
@@ -507,7 +509,7 @@ fun ProMatchHistoryScreen(
                                     FilterChip(
                                         selected = isTotalSelected,
                                         onClick = { selectedPlayerFilter = null },
-                                        label = { Text("Tümü") },
+                                        label = { Text(stringResource(R.string.label_all)) },
                                         enabled = true,
                                         leadingIcon = if (isTotalSelected) { { Icon(Icons.Default.Check, null) } } else null,
                                         colors = FilterChipDefaults.filterChipColors(
@@ -575,7 +577,7 @@ fun ProMatchHistoryScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Olay Akışı (${pointData.proEvents.size})", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 16.sp)
+                            Text("${stringResource(R.string.title_event_flow)} (${pointData.proEvents.size})", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 16.sp)
                             Icon(
                                 imageVector = if (isEventListExpanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
                                 contentDescription = null,
@@ -628,7 +630,7 @@ fun ProMatchHistoryScreen(
             },
             floatingActionButton = {
                 ExtendedFloatingActionButton(onClick = onContinueMatch, containerColor = StitchPrimary, contentColor = Color.White) {
-                    Icon(Icons.Default.PlayArrow, null); Spacer(Modifier.width(8.dp)); Text("MAÇA DEVAM ET")
+                    Icon(Icons.Default.PlayArrow, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.btn_continue_match))
                 }
             }
         ) { padding ->

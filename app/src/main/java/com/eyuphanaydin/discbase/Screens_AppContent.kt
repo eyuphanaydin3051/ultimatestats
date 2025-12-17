@@ -559,13 +559,13 @@ fun PlayerAddScreen(
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Yeni Oyuncu", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_add_player), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     ModernIconButton(
                         Icons.Default.ArrowBack,
                         { navController.popBackStack() },
                         StitchTextPrimary,
-                        "Geri"
+                        stringResource(R.string.desc_back)
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
@@ -609,7 +609,7 @@ fun PlayerAddScreen(
                     OutlinedTextField(
                         value = newPlayerName,
                         onValueChange = { newPlayerName = it },
-                        label = { Text("Ad Soyad") },
+                        label = { Text(stringResource(R.string.label_fullname)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         singleLine = true
@@ -619,7 +619,7 @@ fun PlayerAddScreen(
 
                     // Cinsiyet
                     Text(
-                        "Cinsiyet",
+                        stringResource(R.string.label_gender),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Gray
@@ -630,7 +630,7 @@ fun PlayerAddScreen(
 
                     // Pozisyon
                     Text(
-                        "Pozisyon",
+                        stringResource(R.string.label_position),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Gray
@@ -657,14 +657,14 @@ fun PlayerAddScreen(
                             )
                         )
                     } else {
-                        Toast.makeText(context, "İsim gerekli", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.error_name_required), Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary)
             ) {
-                Text("OYUNCUYU EKLE", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.btn_add_player_caps), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -1268,8 +1268,8 @@ fun TeamStatisticsScreen(
     // Filtreleme Mantığı
     val selectedTournament = tournaments.find { it.id == selectedTournamentId }
     val selectedTournamentName =
-        if (selectedTournamentId == "GENEL") "Genel İstatistikler" else selectedTournament?.tournamentName
-            ?: "Genel İstatistikler"
+        if (selectedTournamentId == "GENEL") stringResource(R.string.label_general_stats) else selectedTournament?.tournamentName
+            ?: stringResource(R.string.label_general_stats)
     val advancedStats = calculateTeamStatsForFilter(tournaments, selectedTournamentId)
 
     // İstatistik Hesaplamaları
@@ -1302,12 +1302,12 @@ fun TeamStatisticsScreen(
     if (showDropdown) {
         AlertDialog(
             onDismissRequest = { showDropdown = false },
-            title = { Text("Filtre Seç") },
+            title = { Text(stringResource(R.string.label_select_filter)) },
             text = {
                 LazyColumn {
                     item {
                         Text(
-                            "Genel İstatistikler",
+                            stringResource(R.string.label_general_stats),
                             modifier = Modifier.fillMaxWidth()
                                 .clickable {
                                     selectedTournamentId = "GENEL"; showDropdown = false
@@ -1331,21 +1331,22 @@ fun TeamStatisticsScreen(
     val teamAvgTempo = if (advancedStats.totalPassesAttempted > 0)
         String.format("%.2f sn", advancedStats.totalTempoSeconds.toDouble() / advancedStats.totalPassesAttempted)
     else "0.00 sn"
-    // --- YENİ: PULL SÜRESİ HESAPLAMA ---
+
     val teamAvgPullTime = if (advancedStats.totalPulls > 0)
         String.format("%.2f sn", advancedStats.totalPullTimeSeconds.toDouble() / advancedStats.totalPulls)
     else "0.00 sn"
+
     Scaffold(
         containerColor = StitchColor.Background,
         topBar = {
             TopAppBar(
-                title = { Text("İstatistik Merkezi", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_stats_center), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     ModernIconButton(
                         icon = Icons.Default.ArrowBack,
                         onClick = { navController.popBackStack() },
                         color = StitchColor.TextPrimary,
-                        contentDescription = "Geri"
+                        contentDescription = stringResource(R.string.desc_back)
                     )
                 },
                 actions = {
@@ -1394,7 +1395,6 @@ fun TeamStatisticsScreen(
             PossessionCard(conversionRate, blockConversionRate, cleanHoldRate)
 
             // 3. Detaylı Analiz Kartı
-            // Card içine sarmalamaya gerek yok, DetailedStatsCard zaten kendi tasarımına sahip
             DetailedStatsCard(
                 totalPasses = advancedStats.totalPassesAttempted.toString(),
                 totalCompleted = advancedStats.totalPassesCompleted.toString(),
@@ -1609,33 +1609,30 @@ fun SeasonMatchesScreen(
     navController: NavController,
     tournaments: List<Tournament>
 ) {
-    // 1. ADIM: Triple yerine Quadruple (Dörtlü) yapı veya veri sınıfı kullanarak takım ismini de taşıyalım.
-    // (match, tournamentName, tournamentId, ourTeamName)
     val allMatches = remember(tournaments) {
         tournaments.flatMap { tournament ->
             tournament.matches.map { match ->
-                // Burada tournament.ourTeamName değerini de listeye ekliyoruz
                 MatchDisplayData(
                     match = match,
                     tournamentName = tournament.tournamentName,
                     tournamentId = tournament.id,
-                    ourTeamName = tournament.ourTeamName // <-- Veriyi buradan alıyoruz
+                    ourTeamName = tournament.ourTeamName
                 )
             }
-        }.reversed() // En son oynanan en üstte
+        }.reversed()
     }
 
     Scaffold(
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Sezon Fikstürü", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_season_fixtures), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     ModernIconButton(
                         Icons.Default.ArrowBack,
                         { navController.popBackStack() },
                         StitchTextPrimary,
-                        "Geri"
+                        stringResource(R.string.desc_back)
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
@@ -1647,14 +1644,13 @@ fun SeasonMatchesScreen(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Henüz hiç maç oynanmadı.", color = Color.Gray)
+                Text(stringResource(R.string.msg_no_matches_played), color = Color.Gray)
             }
         } else {
             LazyColumn(
                 modifier = Modifier.padding(innerPadding).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // items içindeki değişkenleri güncelliyoruz
                 items(allMatches) { item ->
                     // Maç Kartı
                     Card(
@@ -1681,14 +1677,12 @@ fun SeasonMatchesScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                // 2. ADIM: "BİZ" YERİNE TAKIM İSMİNİ KULLAN
-                                // item.ourTeamName boş gelirse diye kontrol ekledik
                                 Text(
-                                    item.ourTeamName.ifBlank { "BİZ" }.uppercase(),
+                                    item.ourTeamName.ifBlank { stringResource(R.string.label_us) }.uppercase(),
                                     fontWeight = FontWeight.Bold,
                                     color = if (item.match.scoreUs > item.match.scoreThem) StitchOffense else Color.Gray,
                                     fontSize = 14.sp,
-                                    modifier = Modifier.weight(1f) // İsim uzunsa sığması için
+                                    modifier = Modifier.weight(1f)
                                 )
 
                                 // Skor
@@ -1743,7 +1737,7 @@ fun PlayerLeaderboardScreen(
 
     // --- STATE ---
     var selectedStatType by remember { mutableStateOf(StatType.GOAL) }
-    var calculationMode by remember { mutableStateOf(CalculationMode.TOTAL) } // <-- YENİ MOD SEÇİMİ
+    var calculationMode by remember { mutableStateOf(CalculationMode.TOTAL) }
 
     var showTournamentDropdown by remember { mutableStateOf(false) }
     var showMatchDropdown by remember { mutableStateOf(false) }
@@ -1753,15 +1747,17 @@ fun PlayerLeaderboardScreen(
     var selectedMatchId by remember { mutableStateOf<String?>(null) }
 
     val selectedTournament = tournaments.find { it.id == selectedTournamentId }
-    val selectedTournamentName = selectedTournament?.tournamentName ?: "Tüm Sezon (Genel)"
+    val selectedTournamentName = selectedTournament?.tournamentName ?: stringResource(R.string.label_all_season)
     val selectedMatchName = remember(selectedTournament, selectedMatchId) {
-        if (selectedMatchId == null) "Tüm Maçlar"
+        if (selectedMatchId == null) "All Matches" // Bu metin aşağıdaki stringResource ile ezilecek
         else selectedTournament?.matches?.find { it.id == selectedMatchId }?.let { "vs ${it.opponentName}" } ?: "Bilinmeyen Maç"
     }
+    // Görüntüleme için düzeltme:
+    val selectedMatchNameDisplay = if (selectedMatchId == null) stringResource(R.string.label_all_matches) else selectedMatchName
 
     // --- HESAPLAMA (Sıralama Mantığı) ---
     val rankedPlayers = remember(
-        allPlayers, selectedStatType, calculationMode, // Mod değişince yeniden hesapla
+        allPlayers, selectedStatType, calculationMode,
         selectedTournamentId, selectedMatchId, tournaments
     ) {
         allPlayers.map { player ->
@@ -1838,11 +1834,11 @@ fun PlayerLeaderboardScreen(
     if (showTournamentDropdown) {
         AlertDialog(
             onDismissRequest = { showTournamentDropdown = false },
-            title = { Text("Turnuva Filtrele") },
+            title = { Text(stringResource(R.string.filter_tournament)) },
             text = {
                 LazyColumn {
                     item {
-                        Text("Tüm Sezon (Genel)", modifier = Modifier.fillMaxWidth().clickable { selectedTournamentId = "GENEL"; selectedMatchId = null; showTournamentDropdown = false }.padding(12.dp))
+                        Text(stringResource(R.string.label_all_season), modifier = Modifier.fillMaxWidth().clickable { selectedTournamentId = "GENEL"; selectedMatchId = null; showTournamentDropdown = false }.padding(12.dp))
                     }
                     items(tournaments) { t ->
                         Text(t.tournamentName, modifier = Modifier.fillMaxWidth().clickable { selectedTournamentId = t.id; selectedMatchId = null; showTournamentDropdown = false }.padding(12.dp))
@@ -1855,11 +1851,11 @@ fun PlayerLeaderboardScreen(
     if (showMatchDropdown && selectedTournament != null) {
         AlertDialog(
             onDismissRequest = { showMatchDropdown = false },
-            title = { Text("Maç Filtrele") },
+            title = { Text(stringResource(R.string.filter_match)) },
             text = {
                 LazyColumn {
                     item {
-                        Text("Tüm Turnuva Maçları", fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth().clickable { selectedMatchId = null; showMatchDropdown = false }.padding(12.dp))
+                        Text(stringResource(R.string.label_all_matches), fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth().clickable { selectedMatchId = null; showMatchDropdown = false }.padding(12.dp))
                     }
                     items(selectedTournament.matches) { match ->
                         Text("vs ${match.opponentName}", modifier = Modifier.fillMaxWidth().clickable { selectedMatchId = match.id; showMatchDropdown = false }.padding(12.dp))
@@ -1873,8 +1869,8 @@ fun PlayerLeaderboardScreen(
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("İstatistik Liderleri", fontWeight = FontWeight.Bold) },
-                navigationIcon = { ModernIconButton(Icons.Default.ArrowBack, { navController.popBackStack() }, StitchTextPrimary, "Geri") },
+                title = { Text(stringResource(R.string.title_stat_leaders), fontWeight = FontWeight.Bold) },
+                navigationIcon = { ModernIconButton(Icons.Default.ArrowBack, { navController.popBackStack() }, StitchTextPrimary, stringResource(R.string.desc_back)) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
             )
         }
@@ -1885,14 +1881,13 @@ fun PlayerLeaderboardScreen(
             Row(modifier = Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterButton(text = selectedTournamentName, onClick = { showTournamentDropdown = true }, modifier = Modifier.weight(1f))
                 if (selectedTournamentId != "GENEL") {
-                    FilterButton(text = selectedMatchName, onClick = { showMatchDropdown = true }, modifier = Modifier.weight(0.6f))
+                    FilterButton(text = selectedMatchNameDisplay, onClick = { showMatchDropdown = true }, modifier = Modifier.weight(0.6f))
                 }
             }
 
             Spacer(Modifier.height(12.dp))
 
-            // 2. HESAPLAMA MODU SEÇİCİSİ (YENİ)
-            // Sadece toplanabilir veriler için bu barı göster
+            // 2. HESAPLAMA MODU SEÇİCİSİ
             val isSummable = !listOf(StatType.CATCH_RATE, StatType.PASS_RATE, StatType.TEMPO, StatType.AVG_PULL_TIME, StatType.AVG_PLAYTIME).contains(selectedStatType)
 
             if (isSummable) {
@@ -1944,9 +1939,8 @@ fun PlayerLeaderboardScreen(
             Spacer(Modifier.height(12.dp))
 
             // BAŞLIK VE BİLGİ
-            // BAŞLIK VE BİLGİ
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                val modeText = if (isSummable) stringResource(calculationMode.labelResId) else "Ortalama"
+                val modeText = if (isSummable) stringResource(calculationMode.labelResId) else stringResource(R.string.mode_average)
 
                 Text(
                     text = "${stringResource(selectedStatType.titleResId)} ($modeText)",
@@ -1961,7 +1955,7 @@ fun PlayerLeaderboardScreen(
 
             // 4. SIRALAMA LİSTESİ
             if (rankedPlayers.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Veri bulunamadı.", color = Color.Gray) }
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(stringResource(R.string.no_data), color = Color.Gray) }
             } else {
                 LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     itemsIndexed(rankedPlayers) { index, (player, value, stats) ->
@@ -1972,7 +1966,7 @@ fun PlayerLeaderboardScreen(
                             statType = selectedStatType,
                             navController = navController,
                             advancedStats = stats,
-                            calculationMode = calculationMode // Mod bilgisini de gönderiyoruz
+                            calculationMode = calculationMode
                         )
                     }
                 }

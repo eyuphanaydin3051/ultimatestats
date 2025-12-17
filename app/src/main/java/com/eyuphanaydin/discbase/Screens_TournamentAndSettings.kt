@@ -314,7 +314,7 @@ fun TeamSelectionScreen(
 
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(teamProfile.teamName, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = StitchColor.TextPrimary)
-                                    Text("Code: ${teamProfile.teamId}", fontSize = 12.sp, color = Color.Gray)
+                                    Text("${stringResource(R.string.label_invite_code)} ${teamProfile.teamId}", fontSize = 12.sp, color = Color.Gray)
                                 }
 
                                 Icon(Icons.Default.ChevronRight, null, tint = Color.Gray)
@@ -2430,8 +2430,7 @@ fun MainAppScaffold(
     val currentDestination = navBackStackEntry?.destination
     val currentRoute = currentDestination?.route
     val isProModeEnabled by mainViewModel.proModeEnabled.collectAsState()
-    // Hangi sayfalarda Ana Üst Başlık (Global TopBar) GİZLENSİN?
-    // Home ve Trainings sayfalarının kendi özel başlıkları var, o yüzden burada gizliyoruz.
+
     var isFullScreen by remember { mutableStateOf(false) }
 
     val dynamicBottomNavItems = remember(isProModeEnabled) {
@@ -2442,26 +2441,25 @@ fun MainAppScaffold(
             Screen.Trainings
         )
         if (isProModeEnabled) {
-            items.add(Screen.ProMode) // Sadece açıkken ekle
+            items.add(Screen.ProMode)
         }
         items
     }
-    val isProModeActive = currentRoute == Screen.ProMode.route
 
-    // Hangi sayfalarda Ana Üst Başlık (Global TopBar) GİZLENSİN?
     val hideGlobalTopBar = currentRoute == Screen.Home.route ||
             currentRoute == Screen.Trainings.route ||
-            isFullScreen // <-- Eğer tam ekransa gizle
+            isFullScreen
+
     Scaffold(
-        containerColor = StitchColor.Background, // Tüm sayfaların arka planı
+        containerColor = StitchColor.Background,
         topBar = {
-            // Sadece Kadro ve Turnuvalar sayfasında bu başlık görünür
             if (!hideGlobalTopBar) {
                 CenterAlignedTopAppBar(
                     title = {
+                        // BAŞLIK GÜNCELLEMESİ
                         Text(
                             text = when (currentRoute) {
-                                Screen.Roster.route -> "Kadro"
+                                Screen.Roster.route -> stringResource(R.string.nav_roster)
                                 Screen.Tournaments.route -> stringResource(R.string.tour_list_title)
                                 else -> teamProfile.teamName
                             },
@@ -2470,87 +2468,92 @@ fun MainAppScaffold(
                         )
                     },
                     actions = {
-                        // --- GÜNCELLENMİŞ PROFİL BUTONU (BADGE İLE) ---
-                        // ViewModel'den bildirim durumunu dinle
                         val hasNotification by mainViewModel.hasPendingRequests.collectAsState()
 
-                        // Profil İkonu ve Kırmızı Nokta Kutusu
                         androidx.compose.material3.BadgedBox(
                             badge = {
                                 if (hasNotification) {
                                     androidx.compose.material3.Badge(
-                                        containerColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense, // Kırmızı renk
+                                        containerColor = com.eyuphanaydin.discbase.ui.theme.StitchDefense,
                                         contentColor = Color.White
-                                    ) {
-                                        // İstersen sayı da yazdırabilirsin ama şimdilik sadece nokta yeterli
-                                        // Text("!")
-                                    }
+                                    )
                                 }
                             },
-                            modifier = Modifier.padding(end = 8.dp) // Sağdan biraz boşluk
+                            modifier = Modifier.padding(end = 8.dp)
                         ) {
                             ModernIconButton(
                                 icon = Icons.Default.Person,
                                 onClick = { topLevelNavController.navigate("profile_edit") },
                                 color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
-                                contentDescription = "Profil"
+                                contentDescription = stringResource(R.string.desc_profile)
                             )
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = StitchColor.Background // Arka planla bütünleşik
+                        containerColor = StitchColor.Background
                     )
                 )
             }
         },
         bottomBar = {
-        if (!isFullScreen) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(16.dp, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
-                color = Color.White,
-                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-            ) {
-                NavigationBar(
-                    containerColor = StitchColor.Surface,
-                    tonalElevation = 0.dp,
-                    windowInsets = WindowInsets(0)
+            if (!isFullScreen) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(16.dp, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
+                    color = Color.White,
+                    shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
                 ) {
-                    dynamicBottomNavItems.forEach { screen ->
-                        val isSelected = currentDestination?.route == screen.route
-                        NavigationBarItem(
-                            icon = { Icon(screen.icon, contentDescription = screen.title, modifier = Modifier.size(24.dp)) },
-                            label = { Text(screen.title, fontSize = 10.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium) },
-                            selected = isSelected,
-                            onClick = {
-                                bottomBarNavController.navigate(screen.route) {
-                                    popUpTo(bottomBarNavController.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = StitchPrimary,
-                                selectedTextColor = StitchPrimary,
-                                indicatorColor = StitchPrimary.copy(alpha = 0.1f),
-                                unselectedIconColor = Color.Gray,
-                                unselectedTextColor = Color.Gray
+                    NavigationBar(
+                        containerColor = StitchColor.Surface,
+                        tonalElevation = 0.dp,
+                        windowInsets = WindowInsets(0)
+                    ) {
+                        dynamicBottomNavItems.forEach { screen ->
+                            val isSelected = currentDestination?.route == screen.route
+
+                            // ALT MENÜ ETİKETLERİ GÜNCELLEMESİ
+                            val labelText = when(screen.route) {
+                                Screen.Home.route -> stringResource(R.string.nav_home)
+                                Screen.Tournaments.route -> stringResource(R.string.nav_tournaments)
+                                Screen.Roster.route -> stringResource(R.string.nav_roster)
+                                Screen.Trainings.route -> stringResource(R.string.nav_trainings)
+                                Screen.ProMode.route -> stringResource(R.string.nav_pro_mode)
+                                else -> screen.title
+                            }
+
+                            NavigationBarItem(
+                                icon = { Icon(screen.icon, contentDescription = labelText, modifier = Modifier.size(24.dp)) },
+                                label = { Text(labelText, fontSize = 10.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium) },
+                                selected = isSelected,
+                                onClick = {
+                                    bottomBarNavController.navigate(screen.route) {
+                                        popUpTo(bottomBarNavController.graph.findStartDestination().id) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = StitchPrimary,
+                                    selectedTextColor = StitchPrimary,
+                                    indicatorColor = StitchPrimary.copy(alpha = 0.1f),
+                                    unselectedIconColor = Color.Gray,
+                                    unselectedTextColor = Color.Gray
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
         }
-}
-) { innerPadding ->
-    NavHost(
-        navController = bottomBarNavController,
-        startDestination = Screen.Home.route,
-        modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize()
-    ) {
+    ) { innerPadding ->
+        NavHost(
+            navController = bottomBarNavController,
+            startDestination = Screen.Home.route,
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
             composable(Screen.Home.route) {
                 HomeScreen(
                     navController = topLevelNavController,
@@ -2598,12 +2601,11 @@ fun MainAppScaffold(
             composable(Screen.ProMode.route) {
                 val tournamentsList by mainViewModel.tournaments.collectAsState()
 
-            // BURAYA CALLBACK VERİYORUZ:
                 ProModeHost(
-                mainViewModel = mainViewModel,
-                tournaments = tournamentsList,
-                allPlayers = allPlayers,
-                onFullScreenToggle = { fullScreen -> isFullScreen = fullScreen } // <-- BU YENİ
+                    mainViewModel = mainViewModel,
+                    tournaments = tournamentsList,
+                    allPlayers = allPlayers,
+                    onFullScreenToggle = { fullScreen -> isFullScreen = fullScreen }
                 )
             }
         }
