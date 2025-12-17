@@ -1015,9 +1015,12 @@ class PdfReportGenerator(private val context: Context) {
     // ... Sınıfın içine, diğer generate fonksiyonlarının altına ekle ...
 
     // --- ANTRENMAN RAPORU (YENİ) ---
+    // app/src/main/java/com/eyuphanaydin/discbase/PdfReportGenerator.kt
+
+    // --- TRAINING REPORT (NEW) ---
     fun generateTrainingReport(
         training: Training,
-        allPlayers: List<Player> // Katılımcı isimlerini bulmak için gerekli
+        allPlayers: List<Player>
     ): File? {
         val document = PdfDocument()
         val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
@@ -1025,83 +1028,94 @@ class PdfReportGenerator(private val context: Context) {
         var canvas = page.canvas
         var currentY = 0f
 
-        // 1. BAŞLIK
-        drawHeader(canvas, "Antrenman Raporu")
+        // 1. Header
+        drawHeader(canvas, context.getString(R.string.report_training_title))
         currentY = 100f
 
-        // 2. ANTRENMAN DETAYLARI KARTI
-        drawSectionTitle(canvas, "Detaylar", currentY)
+        // Participation Calculation
+        val totalMembers = allPlayers.size
+        val attendedCount = training.attendeeIds.size
+        val participationRate = if (totalMembers > 0) (attendedCount.toFloat() / totalMembers) else 0f
+        val participationText = "$attendedCount / $totalMembers"
+        val rateText = "%${(participationRate * 100).toInt()}"
+
+        // 2. Overview Section
+        drawSectionTitle(canvas, context.getString(R.string.report_section_overview), currentY)
         currentY += 25f
 
         drawCardBackground(canvas, 20f, currentY, 555f, 100f)
-        val textP = Paint().apply { color = colorTextPrimary; textSize = 12f }
-        val boldP = Paint().apply { color = colorTextPrimary; textSize = 12f; typeface = Typeface.DEFAULT_BOLD }
 
-        var detailsY = currentY + 30f
-        canvas.drawText("Tarih:", 40f, detailsY, boldP)
-        canvas.drawText(training.date, 150f, detailsY, textP)
+        val labelP = Paint().apply { color = Color.GRAY; textSize = 10f }
+        val valP = Paint().apply { color = colorTextPrimary; textSize = 14f; typeface = Typeface.DEFAULT_BOLD }
 
-        detailsY += 25f
-        canvas.drawText("Saat:", 40f, detailsY, boldP)
-        canvas.drawText(training.time, 150f, detailsY, textP)
+        // Date & Time
+        canvas.drawText(context.getString(R.string.label_date), 40f, currentY + 30f, labelP)
+        canvas.drawText(training.date, 40f, currentY + 50f, valP)
 
-        detailsY += 25f
-        canvas.drawText("Lokasyon:", 40f, detailsY, boldP)
-        canvas.drawText(training.location, 150f, detailsY, textP)
+        canvas.drawText(context.getString(R.string.label_time), 180f, currentY + 30f, labelP)
+        canvas.drawText(training.time, 180f, currentY + 50f, valP)
+
+        canvas.drawText(context.getString(R.string.label_location), 320f, currentY + 30f, labelP)
+        val loc = if(training.location.length > 15) training.location.take(12)+"..." else training.location
+        canvas.drawText(loc, 320f, currentY + 50f, valP)
+
+        // Participation Stat
+        val statX = 460f
+        canvas.drawText(context.getString(R.string.label_participation_rate), statX, currentY + 30f, labelP)
+
+        val bigStatP = Paint().apply { color = if(participationRate >= 0.5f) Color.parseColor("#4CAF50") else Color.parseColor("#FF9800"); textSize = 24f; typeface = Typeface.DEFAULT_BOLD }
+        canvas.drawText(rateText, statX, currentY + 60f, bigStatP)
+
+        val smallStatP = Paint().apply { color = Color.DKGRAY; textSize = 12f }
+        canvas.drawText("($participationText)", statX + 60f, currentY + 60f, smallStatP)
 
         currentY += 130f
 
-        // 3. AÇIKLAMA / NOTLAR
+        // 3. Notes Section
         if (training.description.isNotEmpty() || training.note.isNotEmpty()) {
-            drawSectionTitle(canvas, "Açıklama & Notlar", currentY)
+            drawSectionTitle(canvas, context.getString(R.string.report_section_notes), currentY)
             currentY += 25f
             drawCardBackground(canvas, 20f, currentY, 555f, 60f)
             val desc = if(training.description.isNotEmpty()) training.description else training.note
-            // Basit bir text wrap (çok uzunsa keser, basit tuttum)
-            val cleanDesc = if(desc.length > 80) desc.take(77) + "..." else desc
+            val cleanDesc = if(desc.length > 90) desc.take(87) + "..." else desc
+            val textP = Paint().apply { color = colorTextPrimary; textSize = 12f }
             canvas.drawText(cleanDesc, 40f, currentY + 35f, textP)
             currentY += 90f
         }
 
-        // 4. KATILIMCI LİSTESİ
-        drawSectionTitle(canvas, "Katılımcılar (${training.attendeeIds.size})", currentY)
+        // 4. Attendees List
+        drawSectionTitle(canvas, context.getString(R.string.report_section_attendees), currentY)
         currentY += 30f
 
-        // Tablo Başlıkları
         val headerBg = Paint().apply { color = Color.LTGRAY; style = Paint.Style.FILL }
         canvas.drawRect(20f, currentY, 575f, currentY + 25f, headerBg)
         val hText = Paint().apply { textSize = 10f; typeface = Typeface.DEFAULT_BOLD; color = Color.BLACK }
-        canvas.drawText("SIRA", 30f, currentY + 16f, hText)
-        canvas.drawText("OYUNCU İSMİ", 80f, currentY + 16f, hText)
-        canvas.drawText("DURUM", 450f, currentY + 16f, hText)
+
+        canvas.drawText(context.getString(R.string.report_col_no), 30f, currentY + 16f, hText)
+        canvas.drawText(context.getString(R.string.report_col_player), 80f, currentY + 16f, hText)
+        canvas.drawText(context.getString(R.string.report_col_status), 450f, currentY + 16f, hText)
 
         currentY += 35f
-
-        // Listeyi Yazdır
         val rowText = Paint().apply { textSize = 11f; color = colorTextPrimary }
 
-        // Katılımcı ID'lerini isme çevir ve sırala
         val attendees = training.attendeeIds.mapNotNull { id ->
             allPlayers.find { it.id == id }
         }.sortedBy { it.name }
 
         attendees.forEachIndexed { index, player ->
-            // Sayfa Sonu Kontrolü
             if (currentY > 780f) {
                 document.finishPage(page)
                 page = document.startPage(pageInfo)
                 canvas = page.canvas
-                drawHeader(canvas, "Antrenman Raporu (Devam)")
+                drawHeader(canvas, context.getString(R.string.report_training_title_cont))
                 currentY = 100f
-                // Tablo başlığını tekrar çiz
                 canvas.drawRect(20f, currentY, 575f, currentY + 25f, headerBg)
-                canvas.drawText("SIRA", 30f, currentY + 16f, hText)
-                canvas.drawText("OYUNCU İSMİ", 80f, currentY + 16f, hText)
-                canvas.drawText("DURUM", 450f, currentY + 16f, hText)
+                canvas.drawText(context.getString(R.string.report_col_no), 30f, currentY + 16f, hText)
+                canvas.drawText(context.getString(R.string.report_col_player), 80f, currentY + 16f, hText)
+                canvas.drawText(context.getString(R.string.report_col_status), 450f, currentY + 16f, hText)
                 currentY += 35f
             }
 
-            // Satır Arka Planı (Zebra)
             if (index % 2 == 1) {
                 val stripePaint = Paint().apply { color = Color.parseColor("#F5F5F5") }
                 canvas.drawRect(20f, currentY - 10f, 575f, currentY + 10f, stripePaint)
@@ -1110,15 +1124,14 @@ class PdfReportGenerator(private val context: Context) {
             canvas.drawText("${index + 1}", 35f, currentY, rowText)
             canvas.drawText(player.name, 80f, currentY, rowText)
 
-            // "Katıldı" işareti
             val greenP = Paint().apply { color = Color.parseColor("#4CAF50"); textSize=11f; typeface = Typeface.DEFAULT_BOLD }
-            canvas.drawText("KATILDI", 450f, currentY, greenP)
+            canvas.drawText(context.getString(R.string.status_attended), 450f, currentY, greenP)
 
             currentY += 20f
         }
 
         drawFooter(canvas)
         document.finishPage(page)
-        return savePdf(document, "Antrenman_${training.date}")
+        return savePdf(document, "Training_${training.date}")
     }
 }

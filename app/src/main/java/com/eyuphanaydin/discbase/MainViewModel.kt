@@ -16,6 +16,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.FileOutputStream
 import android.app.Activity
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -541,19 +542,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // ... shareMatchReport vb. fonksiyonların altına ekle ...
 
     fun shareTrainingReport(context: Context, training: Training) = viewModelScope.launch {
-        _userMessage.emit(context.getString(R.string.msg_preparing_pdf)) // Bu string'i strings.xml'e eklemelisin
+        _userMessage.emit(context.getString(R.string.msg_preparing_pdf))
         try {
             val generator = PdfReportGenerator(context)
-            // allPlayers listesini o anki mevcut oyunculardan alıyoruz
+            // Mevcut oyuncu listesini state'den alıyoruz
             val pdfFile = generator.generateTrainingReport(training, players.value)
 
             if (pdfFile != null) {
                 shareFile(context, pdfFile)
             } else {
-                _userMessage.emit("PDF oluşturulamadı.")
+                _userMessage.emit(context.getString(R.string.msg_pdf_creation_error))
             }
         } catch (e: Exception) {
-            _userMessage.emit("Hata: ${e.localizedMessage}")
+            _userMessage.emit("Error: ${e.localizedMessage}")
         }
     }
 
@@ -629,6 +630,107 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         chooser.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(chooser)
     }
+    // --- TOPLU YOKLAMA LİSTESİ (EXCEL/CSV) ---
+    fun exportAttendanceToCSV(context: Context, players: List<Player>, trainings: List<Training>) = viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        // Kullanıcıya bilgi ver
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+            Toast.makeText(context, context.getString(R.string.msg_preparing_csv), Toast.LENGTH_SHORT).show()
+        }
+
+        try {
+            // 1. Antrenmanları Tarihe Göre Sırala
+            val sdf = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+            val sortedTrainings = trainings.sortedBy {
+                try { sdf.parse(it.date)?.time ?: 0L } catch (e: Exception) { 0L }
+            }
+
+            // 2. CSV İçeriğini Oluştur
+            val sb = StringBuilder()
+            sb.append("\uFEFF") // Excel Türkçe karakter sorunu için BOM
+
+            // -- BAŞLIK SATIRI --
+            sb.append("${context.getString(R.string.csv_header_name)};")
+            sb.append("${context.getString(R.string.csv_header_rate)};")
+            sb.append("${context.getString(R.string.csv_header_total)}")
+
+            sortedTrainings.forEach { training ->
+                val shortDate = try {
+                    val dateObj = sdf.parse(training.date)
+                    val formatShort = java.text.SimpleDateFormat("dd MMM", java.util.Locale("tr"))
+                    formatShort.format(dateObj!!)
+                } catch (e: Exception) {
+                    training.date
+                }
+                sb.append(";$shortDate")
+            }
+            sb.append("\n")
+
+            // -- OYUNCU SATIRLARI --
+            players.sortedBy { it.name }.forEach { player ->
+                var attendedCount = 0
+                val attendanceStatuses = StringBuilder()
+
+                sortedTrainings.forEach { training ->
+                    val isPresent = training.attendeeIds.contains(player.id)
+                    if (isPresent) {
+                        attendedCount++
+                        attendanceStatuses.append(";${context.getString(R.string.csv_val_present)}")
+                    } else {
+                        attendanceStatuses.append(";${context.getString(R.string.csv_val_absent)}")
+                    }
+                }
+
+                val totalTrainings = sortedTrainings.size
+                val percentage = if (totalTrainings > 0) (attendedCount.toDouble() / totalTrainings) * 100 else 0.0
+                val percentageStr = String.format("%.2f%%", percentage)
+
+                sb.append("${player.name};$percentageStr;$attendedCount$attendanceStatuses\n")
+            }
+
+            // 3. Dosyayı Kaydet
+            val fileName = "Yoklama_Cizelgesi_${System.currentTimeMillis()}.csv"
+            val file = java.io.File(context.cacheDir, fileName)
+            java.io.FileOutputStream(file).use { output ->
+                output.write(sb.toString().toByteArray(java.nio.charset.StandardCharsets.UTF_8))
+            }
+
+            // 4. Paylaş
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                shareFile(context, file, "text/csv") // CSV türü gönderiyoruz
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                Toast.makeText(context, context.getString(R.string.msg_csv_error), Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    // --- GENEL DOSYA PAYLAŞIM FONKSİYONU (GÜNCELLENMİŞ) ---
+    // Bu fonksiyon hem PDF hem CSV paylaşmak için kullanılır.
+    // mimeType parametresi eklendi (varsayılan "application/pdf").
+    private fun shareFile(context: Context, file: java.io.File, mimeType: String = "application/pdf") {
+        try {
+            val authority = "${context.packageName}.fileprovider"
+            val uri = androidx.core.content.FileProvider.getUriForFile(context, authority, file)
+
+            val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = mimeType
+                putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                putExtra(android.content.Intent.EXTRA_SUBJECT, file.name)
+                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            val title = context.getString(R.string.chooser_share_report)
+            val chooser = android.content.Intent.createChooser(shareIntent, title)
+            chooser.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(chooser)
+        } catch (e: Exception) {
+            Log.e("ShareFile", "Hata: ${e.message}")
+            Toast.makeText(context, "Paylaşım hatası: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 }
 
 
@@ -639,6 +741,7 @@ sealed class SignInState {
     object Loading : SignInState()
     data class Success(val message: String) : SignInState()
     data class Error(val message: String) : SignInState()
+
 }
 
 class SignInViewModel : ViewModel() {
@@ -701,6 +804,4 @@ class SignInViewModel : ViewModel() {
         }
     }
 }
-// MainViewModel.kt içine ekleyin
 
-// --- TURNUVA RAPORU PAYLAŞ ---

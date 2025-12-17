@@ -112,9 +112,6 @@
     <string name="training_visibility_label">Show to Members</string>
     <string name="training_visibility_public">Visible to everyone</string>
     <string name="training_visibility_private">Visible only to captains</string>
-    <string name="label_date">Date</string>
-    <string name="label_time">Time</string>
-    <string name="label_location">Location</string>
     <string name="label_notes">Notes</string>
     <string name="training_attendance_list">Attendance List</string>
     <string name="btn_create">Create</string>
@@ -614,4 +611,35 @@
     <string name="W">W</string>
     <string name="L">L</string>
     <string name="D">D</string>
+
+    <string name="report_training_title">Training Report</string>
+    <string name="report_training_title_cont">Training Report (Cont.)</string>
+    <string name="report_section_overview">Overview</string>
+    <string name="report_section_notes">Notes</string>
+    <string name="report_section_attendees">Attendee List</string>
+    <string name="label_date">Date</string>
+    <string name="label_time">Time</string>
+    <string name="label_location">Location</string>
+    <string name="label_participation_rate">Participation Rate</string>
+    <string name="report_col_no">NO</string>
+    <string name="report_col_player">PLAYER</string>
+    <string name="report_col_status">STATUS</string>
+    <string name="status_attended">ATTENDED</string>
+    <string name="msg_pdf_creation_error">Could not create PDF.</string>
+    <string name="msg_premium_active">Premium features activated!</string>
+    <string name="error_billing_unavailable">Billing service unavailable.</string>
+    <string name="sum_training">Total Attempt</string>
+
+    <string name="btn_report">Rapor</string>
+    <string name="desc_share_report">Raporu Paylaş</string>
+
+    <string name="btn_export_excel">Export as Excel/CSV</string>
+    <string name="msg_preparing_csv">Preparing Excel file...</string>
+    <string name="msg_csv_error">Could not create Excel file.</string>
+    <string name="csv_header_name">Name Surname</string>
+    <string name="csv_header_rate">Rate</string>
+    <string name="csv_header_total">Total</string>
+    <string name="csv_val_present">1</string>
+    <string name="csv_val_absent">0</string>
+
 </resources>

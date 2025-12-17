@@ -48,6 +48,8 @@ import com.eyuphanaydin.discbase.ui.theme.*
 import kotlinx.coroutines.launch
 import java.util.*
 import androidx.compose.ui.res.stringResource
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.ui.platform.LocalContext
 // --- 1. ANA SAYFA (HOME SCREEN) ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -682,7 +684,8 @@ fun TrainingScreen(
 ) {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf(stringResource(R.string.tab_calendar), stringResource(R.string.tab_attendance))
-
+    val context = LocalContext.current
+    val viewModel: MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     val calendar = Calendar.getInstance()
     var selectedMonthIndex by remember { mutableStateOf(calendar.get(Calendar.MONTH)) }
 
@@ -803,7 +806,8 @@ fun TrainingScreen(
                                 allPlayers = allPlayers,
                                 isAdmin = isAdmin,
                                 onDelete = { onDeleteTraining(training) },
-                                onEdit = { trainingToEdit = training }
+                                onEdit = { trainingToEdit = training },
+                                onShare = { viewModel.shareTrainingReport(context, training) }
                             )
                         }
                     }
@@ -837,7 +841,8 @@ fun ExpandableTrainingCard(
     allPlayers: List<Player>,
     isAdmin: Boolean,
     onDelete: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onShare: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val attendeeCount = training.attendeeIds.size
@@ -927,9 +932,28 @@ fun ExpandableTrainingCard(
                 Text(stringResource(R.string.training_attendees_label), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                 if (attendees.isEmpty()) Text("-", fontSize = 14.sp)
                 else Text(attendees.joinToString(", ") { it.name }, fontSize = 14.sp, lineHeight = 20.sp)
+                Spacer(Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // RAPOR BUTONU (Herkes görebilsin diye buraya koyduk)
+                    Button(
+                        onClick = onShare,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF607D8B)), // Gri-Mavi tonu (Rapor rengi)
+                        modifier = Modifier.weight(1f).height(40.dp),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(Icons.Default.Share, null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.btn_report))
+                    }
 
+                    // Eğer Admin değilse yan taraf boş kalmasın diye Spacer atabiliriz veya buton tüm genişliği kaplasın diyorsan weight'i ayarlayabilirsin.
+                    // Şimdilik Admin değilse tek buton tüm genişliği kaplasın diye weight kullanıyoruz.
+                }
                 if (isAdmin) {
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Button(
                             onClick = onEdit,
@@ -964,6 +988,10 @@ fun AttendanceReportList(
     trainings: List<Training>
 ) {
     // Seçili oyuncuyu tutmak için state
+    val context = LocalContext.current
+    val viewModel: MainViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+
+    // Seçili oyuncuyu tutmak için state
     var selectedPlayerForDetail by remember { mutableStateOf<Player?>(null) }
 
     val attendanceMap = remember(allPlayers, trainings) {
@@ -977,8 +1005,24 @@ fun AttendanceReportList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
+        Button(
+            onClick = {
+                viewModel.exportAttendanceToCSV(context, allPlayers, trainings)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)), // Excel Yeşili
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.btn_export_excel), color = Color.White, fontWeight = FontWeight.Bold)
+        }
+    }
+        item {
             Text(
-                "Toplam Antrenman: ${trainings.size}",
+                "${stringResource(R.string.sum_training)}: ${trainings.size}",
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp),
                 color = StitchColor.TextPrimary

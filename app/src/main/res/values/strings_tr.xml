@@ -108,9 +108,6 @@
     <string name="training_visibility_label">Üyelere Göster</string>
     <string name="training_visibility_public">Herkes görebilir</string>
     <string name="training_visibility_private">Sadece kaptanlar görebilir</string>
-    <string name="label_date">Tarih</string>
-    <string name="label_time">Saat</string>
-    <string name="label_location">Konum</string>
     <string name="label_notes">Notlar</string>
     <string name="training_attendance_list">Yoklama Listesi</string>
     <string name="btn_create">Oluştur</string>
@@ -612,5 +609,36 @@
     <string name="W">G</string>
     <string name="L">M</string>
     <string name="D">B</string>
+
+    <string name="report_training_title">Antrenman Raporu</string>
+    <string name="report_training_title_cont">Antrenman Raporu (Devam)</string>
+    <string name="report_section_overview">Genel Bakış</string>
+    <string name="report_section_notes">Notlar</string>
+    <string name="report_section_attendees">Katılımcı Listesi</string>
+    <string name="label_date">Tarih</string>
+    <string name="label_time">Saat</string>
+    <string name="label_location">Lokasyon</string>
+    <string name="label_participation_rate">Katılım Oranı</string>
+    <string name="report_col_no">NO</string>
+    <string name="report_col_player">OYUNCU</string>
+    <string name="report_col_status">DURUM</string>
+    <string name="status_attended">KATILDI</string>
+    <string name="msg_pdf_creation_error">PDF oluşturulamadı.</string>
+    <string name="msg_premium_active">Premium özellikler aktif!</string>
+    <string name="error_billing_unavailable">Satın alma servisine ulaşılamıyor.</string>
+    <string name="sum_training">Toplam antrenman</string>
+
+    <string name="btn_report">Rapor</string>
+    <string name="desc_share_report">Raporu Paylaş</string>
+
+    <string name="btn_export_excel">Excel/CSV Olarak İndir</string>
+    <string name="msg_preparing_csv">Excel dosyası hazırlanıyor...</string>
+    <string name="msg_csv_error">Excel oluşturulamadı.</string>
+    <string name="csv_header_name">İsim Soyisim</string>
+    <string name="csv_header_rate">Yüzde</string>
+    <string name="csv_header_total">Toplam</string>
+    <string name="csv_val_present">1</string>
+    <string name="csv_val_absent">0</string>
+
 
 </resources>
