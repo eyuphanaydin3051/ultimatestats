@@ -15,7 +15,7 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 2
-        versionName = "1.0.1"
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -43,6 +43,12 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+        }
+        getByName("debug") {
+            // Debug yaparken de Release anahtarını kullan diyoruz
+            signingConfig = signingConfigs.getByName("release")
+            // Debug modda kodları karıştırmasın ki hatayı rahat görelim
+            isMinifyEnabled = false
         }
     }
 

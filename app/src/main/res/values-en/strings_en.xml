@@ -318,7 +318,7 @@
     <string name="settings_section_mode">MATCH RECORDING MODE</string>
     <string name="settings_simple_mode">Simple Mode</string>
     <string name="settings_simple_desc">Only Line, Score, Goal and Assist tracking.</string>
-    <string name="settings_adv_mode">Advanced Mode (Recommended)</string>
+    <string name="settings_adv_mode">Advanced Mode</string>
     <string name="settings_adv_desc">Pass, Turnover, Block and detailed stats.</string>
     <string name="settings_pro_mode">Pro Mode</string>
     <string name="settings_pro_desc">Enables field map and extra analysis tab.</string>
@@ -641,5 +641,13 @@
     <string name="csv_header_total">Total</string>
     <string name="csv_val_present">1</string>
     <string name="csv_val_absent">0</string>
+
+    <string name="btn_delete_team_danger">Delete Team (Danger Zone)</string>
+    <string name="dialog_delete_team_title">Delete Team</string>
+    <string name="dialog_delete_team_message">Are you sure you want to permanently delete this team and all its data (players, matches)? This action cannot be undone.</string>
+    <string name="btn_confirm_delete">Yes, Delete</string>
+    <string name="msg_team_deleted">Team deleted successfully.</string>
+    <string name="msg_team_delete_error">An error occurred while deleting the team.</string>
+    <string name="label_pro_tag">PRO</string>
 
 </resources>

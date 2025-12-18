@@ -640,5 +640,11 @@
     <string name="csv_val_present">1</string>
     <string name="csv_val_absent">0</string>
 
-
+    <string name="btn_delete_team_danger">Takımı Sil (Danger Zone)</string>
+    <string name="dialog_delete_team_title">Takımı Sil</string>
+    <string name="dialog_delete_team_message">Bu takımı ve takıma ait tüm verileri (oyuncular, maçlar) kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="btn_confirm_delete">Evet, Sil</string>
+    <string name="msg_team_deleted">Takım başarıyla silindi.</string>
+    <string name="msg_team_delete_error">Takım silinirken bir hata oluştu.</string>
+    <string name="label_pro_tag">PRO</string>
 </resources>

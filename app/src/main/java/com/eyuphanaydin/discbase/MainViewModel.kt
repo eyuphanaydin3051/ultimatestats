@@ -190,7 +190,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         ) { result, purchases ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
                 // "advanced_mode_monthly" senin Play Console'da oluşturacağın Ürün Kimliği (Product ID)
-                val hasPremium = purchases.any { it.products.contains("advanced_mode_monthly") && it.purchaseState == Purchase.PurchaseState.PURCHASED }
+                val hasPremium = purchases.any { it.products.contains("discbase_advance_mode") && it.purchaseState == Purchase.PurchaseState.PURCHASED }
                 _isPremium.value = hasPremium
             }
         }
@@ -206,6 +206,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val params = QueryProductDetailsParams.newBuilder().setProductList(productList).build()
 
         billingClient.queryProductDetailsAsync(params) { result, productDetailsList ->
+            // LOG EKLEME (Logcat'ten takip etmek için)
+            Log.d("Billing", "Response Code: ${result.responseCode}, Ürün Sayısı: ${productDetailsList.size}")
+
             if (result.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
                 val productDetails = productDetailsList[0]
                 val offerToken = productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken ?: return@queryProductDetailsAsync
@@ -221,6 +224,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     )
                     .build()
                 billingClient.launchBillingFlow(activity, flowParams)
+            } else {
+                // KULLANICIYA HATA MESAJI GÖSTER
+                viewModelScope.launch {
+                    val errorMsg = "Ödeme Hatası: Ürün bulunamadı. (Hata Kodu: ${result.responseCode})"
+                    _userMessage.emit(errorMsg)
+                }
             }
         }
     }
@@ -729,6 +738,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } catch (e: Exception) {
             Log.e("ShareFile", "Hata: ${e.message}")
             Toast.makeText(context, "Paylaşım hatası: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    // MainViewModel.kt içine eklenen deleteCurrentTeam fonksiyonu
+
+    fun deleteCurrentTeam(onSuccess: () -> Unit) = viewModelScope.launch {
+        val tid = activeTeamId.value ?: return@launch
+        val context = getApplication<Application>() // Context'i al
+
+        if (repository.deleteTeam(tid)) {
+            clearActiveTeam()
+            onSuccess()
+            // GÜNCELLENDİ: Resource'dan string çekiliyor
+            _userMessage.emit(context.getString(R.string.msg_team_deleted))
+        } else {
+            // GÜNCELLENDİ: Resource'dan string çekiliyor
+            _userMessage.emit(context.getString(R.string.msg_team_delete_error))
         }
     }
 }
