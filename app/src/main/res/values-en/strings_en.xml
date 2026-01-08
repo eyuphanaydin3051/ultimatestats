@@ -646,4 +646,14 @@
     <string name="team_delete_confirm_msg">Are you sure you want to delete this team and all its data? This cannot be undone.</string>
     <string name="msg_team_deleted">Team deleted successfully.</string>
 
+    <string name="dashboard_title">DiscBase</string>
+    <string name="dashboard_welcome">Welcome, %1$s!</string>
+    <string name="dashboard_subtitle">Select a mode to continue:</string>
+    <string name="dashboard_opt_teams_title">My Teams</string>
+    <string name="dashboard_opt_teams_desc">Team management, roster, matches, and stats.</string>
+    <string name="dashboard_opt_profile_title">Player Profile</string>
+    <string name="dashboard_opt_profile_desc">Individual stats and career. (Coming Soon)</string>
+    <string name="msg_player_mode_soon">Individual Player Mode Coming Soon!</string>
+    <string name="dashboard_default_user">Athlete</string>
+
 </resources>

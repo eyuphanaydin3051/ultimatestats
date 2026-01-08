@@ -644,5 +644,15 @@
     <string name="team_delete_confirm_msg">Bu takımı ve tüm verilerini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</string>
     <string name="msg_team_deleted">Takım başarıyla silindi.</string>
 
+    <string name="dashboard_title">DiscBase</string>
+    <string name="dashboard_welcome">Hoş Geldin, %1$s!</string>
+    <string name="dashboard_subtitle">Devam etmek için bir mod seçin:</string>
+    <string name="dashboard_opt_teams_title">Takımlarım</string>
+    <string name="dashboard_opt_teams_desc">Takım yönetimi, kadro, maçlar ve istatistikler.</string>
+    <string name="dashboard_opt_profile_title">Oyuncu Profilim</string>
+    <string name="dashboard_opt_profile_desc">Bireysel istatistiklerin ve kariyerin. (Yakında)</string>
+    <string name="msg_player_mode_soon">Bireysel Oyuncu Modu Yakında!</string>
+    <string name="dashboard_default_user">Sporcu</string>
+
 
 </resources>

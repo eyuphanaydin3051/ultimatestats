@@ -2804,3 +2804,117 @@ fun LanguageSelector() {
         }
     }
 }
+// ... Diğer importların yanına veya dosya sonuna ekle
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DashboardSelectionScreen(
+    onNavigateToTeams: () -> Unit,
+    onNavigateToProfile: () -> Unit,
+    onSignOut: () -> Unit,
+    userName: String
+) {
+    Scaffold(
+        containerColor = StitchColor.Background,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(stringResource(R.string.dashboard_title), fontWeight = FontWeight.Bold, fontSize = 24.sp) },
+                actions = {
+                    IconButton(onClick = onSignOut) {
+                        Icon(Icons.AutoMirrored.Filled.Logout, null, tint = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Dinamik isim kullanımı: "Hoş Geldin, %1$s!"
+            Text(
+                text = stringResource(R.string.dashboard_welcome, userName),
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = StitchColor.TextPrimary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.dashboard_subtitle),
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // 1. Seçenek: TAKIMLARIM
+            DashboardOptionCard(
+                title = stringResource(R.string.dashboard_opt_teams_title),
+                description = stringResource(R.string.dashboard_opt_teams_desc),
+                icon = Icons.Default.Groups,
+                color = StitchColor.Primary,
+                onClick = onNavigateToTeams
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 2. Seçenek: OYUNCU PROFİLİ
+            DashboardOptionCard(
+                title = stringResource(R.string.dashboard_opt_profile_title),
+                description = stringResource(R.string.dashboard_opt_profile_desc),
+                icon = Icons.Default.Person,
+                color = StitchSecondary,
+                onClick = onNavigateToProfile
+            )
+        }
+    }
+}
+
+@Composable
+fun DashboardOptionCard(
+    title: String,
+    description: String,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(140.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = StitchColor.Surface),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // İkon Kutusu
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(color.copy(alpha = 0.1f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, null, tint = color, modifier = Modifier.size(32.dp))
+            }
+
+            Spacer(modifier = Modifier.width(20.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = StitchColor.TextPrimary)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(description, fontSize = 12.sp, color = Color.Gray, lineHeight = 16.sp)
+            }
+
+            Icon(Icons.Default.ChevronRight, null, tint = Color.Gray)
+        }
+    }
+}

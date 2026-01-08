@@ -49,7 +49,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _profileState = MutableStateFlow<UserProfileState>(UserProfileState.LOADING)
     val profileState: StateFlow<UserProfileState> = _profileState.asStateFlow()
-
+    private val _currentUserProfile = MutableStateFlow<UserProfile?>(null)
+    val currentUserProfile: StateFlow<UserProfile?> = _currentUserProfile.asStateFlow()
+    // -------------------
     // --- AYARLAR ---
     private val _nameFormat = MutableStateFlow(NameFormat.FIRST_NAME_LAST_INITIAL)
     val nameFormat = _nameFormat.asStateFlow()
@@ -233,12 +235,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     repository.updateUserInfo(user)
                     _profileState.value = UserProfileState.LOADING
                     val p = repository.getUserProfile(user.uid)
+                    _currentUserProfile.value = p
                     _profileState.value = if (p == null || p.displayName.isNullOrBlank())
                         UserProfileState.NEEDS_CREATION
                     else
                         UserProfileState.EXISTS
                 } else {
                     _profileState.value = UserProfileState.UNKNOWN
+                    _currentUserProfile.value = null
                 }
             }
         }

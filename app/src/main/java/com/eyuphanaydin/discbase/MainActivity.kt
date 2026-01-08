@@ -203,10 +203,14 @@ fun UltimateStatsApp(
                 tournaments = tournaments
             )
         }
-        // 3. UYGULAMA KÖKÜ (Profil/Takım Seçimi)
+        // ... (sign_in bloğu yukarıda kalacak)
+
+        // 3. UYGULAMA KÖKÜ (YÖNLENDİRİCİ)
         composable(route = "app_root") {
             val profileState by mainViewModel.profileState.collectAsState()
             val currentActiveTeamId by mainViewModel.activeTeamId.collectAsState()
+            // Kullanıcı ismini al (Dashboard'da göstermek için)
+            val userProfile by mainViewModel.currentUserProfile.collectAsState()
 
             when (profileState) {
                 MainViewModel.UserProfileState.LOADING -> {
@@ -216,7 +220,6 @@ fun UltimateStatsApp(
                     CreateProfileScreen(
                         mainViewModel = mainViewModel,
                         onProfileCreated = {
-                            // Profil oluşunca sayfayı yenilemek için kendine git
                             navController.navigate("app_root") {
                                 popUpTo("app_root") { inclusive = true }
                             }
@@ -224,43 +227,62 @@ fun UltimateStatsApp(
                     )
                 }
                 MainViewModel.UserProfileState.EXISTS -> {
-                    if (currentActiveTeamId == null) {
-                        // Takım seçimi
-                        TeamSelectionScreen(
-                            userTeamsList = userTeamsList,
-                            onTeamSelected = { teamId ->
-                                mainViewModel.selectActiveTeam(teamId)
-                            },
-                            // DÜZELTME BURADA: Çıkış yapma mantığını buraya ekledik
-                            onSignOut = {
-                                mainViewModel.clearActiveTeam()
-                                signInViewModel.signOut(context)
-                            },
-                            viewModel = mainViewModel
-                        )
-                    } else {
-                        // Takım seçiliyse ana iskelete git
+                    // EĞER TAKIM SEÇİLİYSE -> Direkt Ana İskelete (Scaffold) git
+                    if (currentActiveTeamId != null) {
                         LaunchedEffect(Unit) {
                             navController.navigate("main_scaffold") {
                                 popUpTo("app_root") { inclusive = true }
                             }
                         }
+                    } else {
+                        // TAKIM SEÇİLİ DEĞİLSE -> Dashboard (Seçim) Ekranını Göster
+                        DashboardSelectionScreen(
+                            onNavigateToTeams = { navController.navigate("team_selection_flow") },
+                            onNavigateToProfile = {
+                                // Context üzerinden string resource kullanımı
+                                Toast.makeText(context, context.getString(R.string.msg_player_mode_soon), Toast.LENGTH_SHORT).show()
+                            },
+                            onSignOut = {
+                                mainViewModel.clearActiveTeam()
+                                signInViewModel.signOut(context)
+                            },
+                            // Eğer isim null ise varsayılan "Sporcu/Athlete" yazsın
+                            userName = userProfile?.displayName ?: stringResource(R.string.dashboard_default_user)
+                        )
                     }
                 }
                 MainViewModel.UserProfileState.UNKNOWN -> {
                     LoadingScreen("Çıkış yapılıyor...")
                 }
             }
-
-            // Kullanıcı çıkış yaparsa sign_in'e at
-            LaunchedEffect(currentUser) {
-                if (currentUser == null) {
-                    navController.navigate("sign_in") { popUpTo(0) }
-                }
-            }
         }
 
-        // 4. ANA UYGULAMA İSKELETİ (BottomNavigation'lı Ekran)
+        // --- YENİ ROTA: TAKIM SEÇİM AKIŞI ---
+        composable("team_selection_flow") {
+            val userTeamsList by mainViewModel.userTeamsList.collectAsState()
+
+            TeamSelectionScreen(
+                userTeamsList = userTeamsList,
+                onTeamSelected = { teamId ->
+                    mainViewModel.selectActiveTeam(teamId)
+                    // Takım seçilince app_root tetiklenir ve activeTeamId dolu olduğu için main_scaffold'a atar.
+                    // Ancak daha pürüzsüz olması için direkt yönlendirebiliriz veya state'in değişmesini bekleyebiliriz.
+                    navController.navigate("main_scaffold") {
+                        popUpTo("app_root") { inclusive = true }
+                    }
+                },
+                onSignOut = {
+                    // Takım seçiminden geri dönmek isterse Dashboard'a dönsün mü yoksa çıkış mı yapsın?
+                    // Genelde burada "Geri" ikonu olur ama TeamSelectionScreen tasarımında çıkış butonu vardı.
+                    // Şimdilik çıkış olarak bırakalım.
+                    mainViewModel.clearActiveTeam()
+                    signInViewModel.signOut(context)
+                },
+                viewModel = mainViewModel
+            )
+        }
+
+        // 4. ANA UYGULAMA İSKELETİ (Mevcut kod aynen kalıyor)
         composable(route = "main_scaffold") {
             // Güvenlik kontrolleri
             LaunchedEffect(currentUser) {
