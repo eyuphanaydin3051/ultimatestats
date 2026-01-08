@@ -399,7 +399,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val tid = getCurrentTeamId() ?: return@launch
         repository.deleteTraining(tid, id)
     }
+    fun deleteTeam(teamId: String) = viewModelScope.launch {
+        val context = getApplication<Application>()
+        // Eğer silinen takım aktif takımsa, aktif takım seçimini kaldır
+        if (activeTeamId.value == teamId) {
+            clearActiveTeam()
+        }
 
+        if (repository.deleteTeam(teamId)) {
+            _userMessage.emit(context.getString(R.string.msg_team_deleted))
+        } else {
+            _userMessage.emit(context.getString(R.string.error_generic))
+        }
+    }
     // --- PROFILE ---
     fun saveProfile(name: String, logo: String?, onSuccess: () -> Unit) = viewModelScope.launch {
         val tid = getCurrentTeamId() ?: return@launch

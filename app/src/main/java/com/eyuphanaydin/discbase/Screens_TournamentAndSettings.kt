@@ -160,12 +160,48 @@ fun TeamSelectionScreen(
     var showCreateDialog by remember { mutableStateOf(false) }
     var showJoinDialog by remember { mutableStateOf(false) }
 
+    // --- YENİ EKLENEN: Silinecek Takım ID'si için state ---
+    var teamToDeleteId by remember { mutableStateOf<String?>(null) }
+    // ------------------------------------------------------
+
     var newTeamName by remember { mutableStateOf("") }
     var joinTeamId by remember { mutableStateOf("") }
 
     val context = LocalContext.current
 
+    // Şu anki kullanıcı ID'sini al (Admin kontrolü için)
+    val currentUser by viewModel.currentUser.collectAsState()
+    val currentUserId = currentUser?.uid
+
+    // --- YENİ EKLENEN: SİLME ONAY DİALOGU ---
+    if (teamToDeleteId != null) {
+        AlertDialog(
+            onDismissRequest = { teamToDeleteId = null },
+            title = { Text(stringResource(R.string.team_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.team_delete_confirm_msg)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteTeam(teamToDeleteId!!)
+                        teamToDeleteId = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.btn_delete_confirm)) // "Evet, Sil" veya benzeri
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { teamToDeleteId = null }) {
+                    Text(stringResource(R.string.btn_cancel))
+                }
+            }
+        )
+    }
+    // -----------------------------------------
+
+    // ... (Mevcut Create ve Join Dialog kodları aynen kalacak) ...
     if (showCreateDialog) {
+        // ... (Kodun burası değişmedi) ...
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
             title = { Text(stringResource(R.string.team_create_dialog)) },
@@ -202,6 +238,7 @@ fun TeamSelectionScreen(
     }
 
     if (showJoinDialog) {
+        // ... (Kodun burası değişmedi) ...
         AlertDialog(
             onDismissRequest = { showJoinDialog = false },
             title = { Text(stringResource(R.string.team_join_dialog)) },
@@ -238,6 +275,7 @@ fun TeamSelectionScreen(
     }
 
     Scaffold(
+        // ... (Scaffold içeriği aynen kalıyor) ...
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
@@ -276,6 +314,7 @@ fun TeamSelectionScreen(
                 .padding(16.dp)
         ) {
             if (userTeamsList.isEmpty()) {
+                // ... (Boş ekran görünümü aynen kalıyor) ...
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Groups, null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
@@ -297,6 +336,7 @@ fun TeamSelectionScreen(
                                 modifier = Modifier.padding(20.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // Logo Kısmı
                                 if (teamProfile.logoPath != null) {
                                     AsyncImage(
                                         model = getLogoModel(teamProfile.logoPath), contentDescription = null,
@@ -317,7 +357,25 @@ fun TeamSelectionScreen(
                                     Text("${stringResource(R.string.label_invite_code)} ${teamProfile.teamId}", fontSize = 12.sp, color = Color.Gray)
                                 }
 
+                                // --- GÜNCELLENEN KISIM: Silme Butonu ---
+                                // Sadece eğer kullanıcı bu takımın Admin'i ise silme butonunu göster
+                                val isAdmin = currentUserId != null && teamProfile.members[currentUserId] == "admin"
+
+                                if (isAdmin) {
+                                    IconButton(
+                                        onClick = { teamToDeleteId = teamProfile.teamId } // Silme dialogunu tetikler
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete Team",
+                                            tint = com.eyuphanaydin.discbase.ui.theme.StitchDefense // Kırmızımsı renk
+                                        )
+                                    }
+                                }
+
+                                // Sağ ok ikonu
                                 Icon(Icons.Default.ChevronRight, null, tint = Color.Gray)
+                                // ---------------------------------------
                             }
                         }
                     }

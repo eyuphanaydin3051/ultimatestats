@@ -640,5 +640,9 @@
     <string name="csv_val_present">1</string>
     <string name="csv_val_absent">0</string>
 
+    <string name="team_delete_confirm_title">Takımı Sil</string>
+    <string name="team_delete_confirm_msg">Bu takımı ve tüm verilerini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="msg_team_deleted">Takım başarıyla silindi.</string>
+
 
 </resources>
