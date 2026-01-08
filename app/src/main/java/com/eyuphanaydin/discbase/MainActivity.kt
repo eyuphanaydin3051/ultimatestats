@@ -239,8 +239,7 @@ fun UltimateStatsApp(
                         DashboardSelectionScreen(
                             onNavigateToTeams = { navController.navigate("team_selection_flow") },
                             onNavigateToProfile = {
-                                // Context üzerinden string resource kullanımı
-                                Toast.makeText(context, context.getString(R.string.msg_player_mode_soon), Toast.LENGTH_SHORT).show()
+                                navController.navigate("player_mode_home") // ARTIK TOAST YERİNE BURAYA GİDİYORUZ
                             },
                             onSignOut = {
                                 mainViewModel.clearActiveTeam()
@@ -278,6 +277,13 @@ fun UltimateStatsApp(
                     mainViewModel.clearActiveTeam()
                     signInViewModel.signOut(context)
                 },
+                viewModel = mainViewModel
+            )
+        }
+        // --- YENİ ROTA: BİREYSEL OYUNCU PROFİLİ ---
+        composable("player_mode_home") {
+            PlayerCareerScreen(
+                navController = navController,
                 viewModel = mainViewModel
             )
         }

@@ -747,6 +747,123 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             Toast.makeText(context, "Paylaşım hatası: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
+    // --- BİREYSEL OYUNCU MODU (CAREER MODE) ---
+
+    // Bu veri sınıfını MainViewModel sınıfının İÇİNE ekleyin
+    data class TeamCareerData(
+        val teamProfile: TeamProfile,
+        val player: Player,
+        val tournaments: List<Tournament>
+    )
+
+    private val _careerData = MutableStateFlow<List<TeamCareerData>>(emptyList())
+    val careerData = _careerData.asStateFlow()
+
+    private val _isLoadingCareer = MutableStateFlow(false)
+    val isLoadingCareer = _isLoadingCareer.asStateFlow()
+
+    // Kullanıcının e-postasının eşleştiği tüm takımları ve verileri getirir
+    fun loadCareerData() = viewModelScope.launch {
+        val user = currentUser.value ?: return@launch
+        val email = user.email ?: return@launch
+
+        _isLoadingCareer.value = true
+
+        // 1. Kullanıcının üye olduğu takımları al
+        val teams = repository.getUserTeams(user.uid).first()
+
+        val collectedData = mutableListOf<TeamCareerData>()
+
+        teams.forEach { team ->
+            // 2. Her takım için oyuncu listesini çek
+            val teamPlayers = repository.getPlayers(team.teamId).first()
+            // 3. E-postası eşleşen oyuncuyu bul
+            val matchedPlayer = teamPlayers.find { it.email == email }
+
+            if (matchedPlayer != null) {
+                // 4. Takımın turnuvalarını çek
+                val teamTournaments = repository.getTournaments(team.teamId).first()
+                collectedData.add(TeamCareerData(team, matchedPlayer, teamTournaments))
+            }
+        }
+
+        _careerData.value = collectedData
+        _isLoadingCareer.value = false
+    }
+
+    // Filtreleme ve İstatistik Hesaplama
+    fun calculateCareerStats(
+        teamIdFilter: String?,
+        tournamentIdFilter: String?,
+        matchIdFilter: String?
+    ): AdvancedPlayerStats {
+        val dataList = _careerData.value
+
+        // Filtrelenmiş veri seti
+        val filteredData = if (teamIdFilter == "GENEL" || teamIdFilter == null) {
+            dataList
+        } else {
+            dataList.filter { it.teamProfile.teamId == teamIdFilter }
+        }
+
+        // Toplanacak değişkenler
+        var totalGoals = 0
+        var totalAssists = 0
+        var totalBlocks = 0
+        var totalThrowaways = 0
+        var totalDrops = 0
+        var totalCatches = 0
+        var totalPasses = 0
+        var totalPointsPlayed = 0
+        var totalOPoints = 0
+        var totalDPoints = 0
+        var totalSecondsPlayed = 0L
+
+        // Her takım/oyuncu eşleşmesi için hesapla ve topla
+        filteredData.forEach { data ->
+            val stats = calculateGlobalPlayerStats(
+                playerId = data.player.id,
+                filterTournamentId = tournamentIdFilter ?: "GENEL",
+                filterMatchId = matchIdFilter,
+                allTournaments = data.tournaments
+            )
+
+            totalGoals += stats.basicStats.goal
+            totalAssists += stats.basicStats.assist
+            totalBlocks += stats.basicStats.block
+            totalThrowaways += stats.basicStats.throwaway
+            totalDrops += stats.basicStats.drop
+            totalCatches += stats.basicStats.catchStat
+            totalPasses += stats.basicStats.successfulPass
+            totalPointsPlayed += stats.basicStats.pointsPlayed
+            totalOPoints += stats.oPointsPlayed
+            totalDPoints += stats.dPointsPlayed
+            totalSecondsPlayed += stats.basicStats.secondsPlayed
+        }
+
+        val basicStats = PlayerStats(
+            playerId = "CAREER",
+            name = "Career Total", // İsim alanı zorunluysa ekledik
+            goal = totalGoals,
+            assist = totalAssists,
+            block = totalBlocks,
+            throwaway = totalThrowaways,
+            drop = totalDrops,
+            catchStat = totalCatches,
+            successfulPass = totalPasses,
+            pointsPlayed = totalPointsPlayed,
+            secondsPlayed = totalSecondsPlayed
+        )
+
+        val plusMinus = totalGoals + totalAssists + totalBlocks - totalThrowaways - totalDrops
+
+        return AdvancedPlayerStats(
+            basicStats = basicStats,
+            plusMinus = plusMinus.toDouble(),
+            oPointsPlayed = totalOPoints,
+            dPointsPlayed = totalDPoints
+        )
+    }
 }
 
 
@@ -820,4 +937,3 @@ class SignInViewModel : ViewModel() {
         }
     }
 }
-
