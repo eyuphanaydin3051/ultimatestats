@@ -206,10 +206,10 @@ fun UltimateStatsApp(
         // ... (sign_in bloğu yukarıda kalacak)
 
         // 3. UYGULAMA KÖKÜ (YÖNLENDİRİCİ)
+        // 3. UYGULAMA KÖKÜ (YÖNLENDİRİCİ)
         composable(route = "app_root") {
             val profileState by mainViewModel.profileState.collectAsState()
             val currentActiveTeamId by mainViewModel.activeTeamId.collectAsState()
-            // Kullanıcı ismini al (Dashboard'da göstermek için)
             val userProfile by mainViewModel.currentUserProfile.collectAsState()
 
             when (profileState) {
@@ -227,7 +227,6 @@ fun UltimateStatsApp(
                     )
                 }
                 MainViewModel.UserProfileState.EXISTS -> {
-                    // EĞER TAKIM SEÇİLİYSE -> Direkt Ana İskelete (Scaffold) git
                     if (currentActiveTeamId != null) {
                         LaunchedEffect(Unit) {
                             navController.navigate("main_scaffold") {
@@ -235,17 +234,21 @@ fun UltimateStatsApp(
                             }
                         }
                     } else {
-                        // TAKIM SEÇİLİ DEĞİLSE -> Dashboard (Seçim) Ekranını Göster
+                        // TAKIM SEÇİLİ DEĞİLSE -> Dashboard
                         DashboardSelectionScreen(
                             onNavigateToTeams = { navController.navigate("team_selection_flow") },
                             onNavigateToProfile = {
-                                navController.navigate("player_mode_home") // ARTIK TOAST YERİNE BURAYA GİDİYORUZ
+                                navController.navigate("player_mode_home")
                             },
+                            // --- YENİ: AYARLARA YÖNLENDİRME ---
+                            onNavigateToSettings = {
+                                navController.navigate("settings")
+                            },
+                            // ----------------------------------
                             onSignOut = {
                                 mainViewModel.clearActiveTeam()
                                 signInViewModel.signOut(context)
                             },
-                            // Eğer isim null ise varsayılan "Sporcu/Athlete" yazsın
                             userName = userProfile?.displayName ?: stringResource(R.string.dashboard_default_user)
                         )
                     }

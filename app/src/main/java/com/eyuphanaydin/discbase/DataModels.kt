@@ -126,7 +126,8 @@ enum class NameFormat {
 
 data class UserProfile(
     val displayName: String? = null,
-    val email: String? = null
+    val email: String? = null,
+    val photoUrl: String? = null // <-- BU SATIR EKLENDİ
 )
 
 @Serializable

@@ -750,10 +750,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // --- BİREYSEL OYUNCU MODU (CAREER MODE) ---
 
     // Bu veri sınıfını MainViewModel sınıfının İÇİNE ekleyin
+    // MainViewModel içinde (yaklaşık 595. satır civarı olabilir)
     data class TeamCareerData(
         val teamProfile: TeamProfile,
         val player: Player,
-        val tournaments: List<Tournament>
+        val tournaments: List<Tournament>,
+        val allTeamPlayers: List<Player> // <-- YENİ EKLENDİ
     )
 
     private val _careerData = MutableStateFlow<List<TeamCareerData>>(emptyList())
@@ -764,34 +766,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     // Kullanıcının e-postasının eşleştiği tüm takımları ve verileri getirir
     fun loadCareerData() = viewModelScope.launch {
-        val user = currentUser.value ?: return@launch
-        val email = user.email ?: return@launch
+            val user = currentUser.value ?: return@launch
+            val email = user.email ?: return@launch
 
-        _isLoadingCareer.value = true
+            _isLoadingCareer.value = true
 
-        // 1. Kullanıcının üye olduğu takımları al
-        val teams = repository.getUserTeams(user.uid).first()
+            val teams = repository.getUserTeams(user.uid).first()
+            val collectedData = mutableListOf<TeamCareerData>()
 
-        val collectedData = mutableListOf<TeamCareerData>()
+            teams.forEach { team ->
+                // Takım oyuncularını çek
+                val teamPlayers = repository.getPlayers(team.teamId).first()
+                // Kendimizi bul
+                val matchedPlayer = teamPlayers.find { it.email == email }
 
-        teams.forEach { team ->
-            // 2. Her takım için oyuncu listesini çek
-            val teamPlayers = repository.getPlayers(team.teamId).first()
-            // 3. E-postası eşleşen oyuncuyu bul
-            val matchedPlayer = teamPlayers.find { it.email == email }
+                if (matchedPlayer != null) {
+                    val teamTournaments = repository.getTournaments(team.teamId).first()
 
-            if (matchedPlayer != null) {
-                // 4. Takımın turnuvalarını çek
-                val teamTournaments = repository.getTournaments(team.teamId).first()
-                collectedData.add(TeamCareerData(team, matchedPlayer, teamTournaments))
+                    // --- DEĞİŞİKLİK BURADA: teamPlayers listesini de ekliyoruz ---
+                    collectedData.add(TeamCareerData(team, matchedPlayer, teamTournaments, teamPlayers))
+                }
             }
+
+            _careerData.value = collectedData
+            _isLoadingCareer.value = false
         }
-
-        _careerData.value = collectedData
-        _isLoadingCareer.value = false
-    }
-
     // Filtreleme ve İstatistik Hesaplama
+    // MainViewModel.kt içinde güncellenecek fonksiyon:
+    // MainViewModel.kt içine ekle/güncelle:
+
+    // MainViewModel içinde calculateCareerStats fonksiyonunu güncelle:
     fun calculateCareerStats(
         teamIdFilter: String?,
         tournamentIdFilter: String?,
@@ -799,14 +803,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     ): AdvancedPlayerStats {
         val dataList = _careerData.value
 
-        // Filtrelenmiş veri seti
         val filteredData = if (teamIdFilter == "GENEL" || teamIdFilter == null) {
             dataList
         } else {
             dataList.filter { it.teamProfile.teamId == teamIdFilter }
         }
 
-        // Toplanacak değişkenler
+        // Değişkenler
         var totalGoals = 0
         var totalAssists = 0
         var totalBlocks = 0
@@ -819,7 +822,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         var totalDPoints = 0
         var totalSecondsPlayed = 0L
 
-        // Her takım/oyuncu eşleşmesi için hesapla ve topla
+        val combinedPassDistribution = mutableMapOf<String, Int>()
+
         filteredData.forEach { data ->
             val stats = calculateGlobalPlayerStats(
                 playerId = data.player.id,
@@ -839,11 +843,23 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             totalOPoints += stats.oPointsPlayed
             totalDPoints += stats.dPointsPlayed
             totalSecondsPlayed += stats.basicStats.secondsPlayed
+
+            // --- DÜZELTME: ID -> İSİM ÇEVİRİMİ ---
+            // 'receiverKey' muhtemelen bir ID'dir (Örn: "Ab12...").
+            // Takım listesinden (data.allTeamPlayers) bu ID'nin kime ait olduğunu buluyoruz.
+
+            stats.basicStats.passDistribution.forEach { (receiverKey, count) ->
+                // ID ile eşleşen oyuncuyu bul, yoksa olduğu gibi bırak
+                val playerName = data.allTeamPlayers.find { it.id == receiverKey }?.name ?: receiverKey
+
+                val currentCount = combinedPassDistribution[playerName] ?: 0
+                combinedPassDistribution[playerName] = currentCount + count
+            }
         }
 
         val basicStats = PlayerStats(
             playerId = "CAREER",
-            name = "Career Total", // İsim alanı zorunluysa ekledik
+            name = "Kariyer Toplamı",
             goal = totalGoals,
             assist = totalAssists,
             block = totalBlocks,
@@ -852,7 +868,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             catchStat = totalCatches,
             successfulPass = totalPasses,
             pointsPlayed = totalPointsPlayed,
-            secondsPlayed = totalSecondsPlayed
+            secondsPlayed = totalSecondsPlayed,
+            passDistribution = combinedPassDistribution
         )
 
         val plusMinus = totalGoals + totalAssists + totalBlocks - totalThrowaways - totalDrops

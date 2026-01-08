@@ -656,4 +656,12 @@
     <string name="msg_player_mode_soon">Individual Player Mode Coming Soon!</string>
     <string name="dashboard_default_user">Athlete</string>
 
+    <string name="title_player_career">Player Career</string>
+    <string name="filter_team_label">Team Filter</string>
+    <string name="filter_all_teams">All Teams (Career)</string>
+    <string name="stat_career_total">Career Total</string>
+    <string name="msg_no_profile_found">No player profile found matching your email address.\nPlease ensure your team manager has added you with the correct email address.</string>
+    <string name="unknown_team">Unknown Team</string>
+
+
 </resources>

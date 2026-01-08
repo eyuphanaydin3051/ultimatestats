@@ -654,5 +654,12 @@
     <string name="msg_player_mode_soon">Bireysel Oyuncu Modu Yakında!</string>
     <string name="dashboard_default_user">Sporcu</string>
 
+    <string name="title_player_career">Oyuncu Kariyeri</string>
+    <string name="filter_team_label">Takım Filtresi</string>
+    <string name="filter_all_teams">Tüm Takımlar (Kariyer)</string>
+    <string name="stat_career_total">Kariyer Toplamı</string>
+    <string name="msg_no_profile_found">Henüz mail adresinizle eşleşen bir oyuncu profili bulunamadı.\nLütfen takım yöneticinizin sizi doğru mail adresiyle eklediğinden emin olun.</string>
+    <string name="unknown_team">Bilinmeyen Takım</string>
+
 
 </resources>

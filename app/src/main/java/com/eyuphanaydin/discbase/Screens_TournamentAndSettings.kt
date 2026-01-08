@@ -2807,70 +2807,101 @@ fun LanguageSelector() {
 // ... Diğer importların yanına veya dosya sonuna ekle
 
 @OptIn(ExperimentalMaterial3Api::class)
+// MainActivity.kt dosyasının en alt kısımlarında bu fonksiyonu bul ve değiştir:
+
 @Composable
 fun DashboardSelectionScreen(
     onNavigateToTeams: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToSettings: () -> Unit, // <-- YENİ EKLENEN PARAMETRE
     onSignOut: () -> Unit,
     userName: String
 ) {
     Scaffold(
-        containerColor = StitchColor.Background,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.dashboard_title), fontWeight = FontWeight.Bold, fontSize = 24.sp) },
-                actions = {
-                    IconButton(onClick = onSignOut) {
-                        Icon(Icons.AutoMirrored.Filled.Logout, null, tint = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
-            )
-        }
-    ) { innerPadding ->
+        containerColor = StitchBackground
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(padding)
                 .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Dinamik isim kullanımı: "Hoş Geldin, %1$s!"
+            // --- ÜST BAŞLIK ALANI (HEADER) ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.home_welcome), // "Hoş geldin,"
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = userName,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = StitchTextPrimary
+                    )
+                }
+
+                // --- YENİ EKLENEN AYARLAR BUTONU ---
+                IconButton(
+                    onClick = onNavigateToSettings,
+                    modifier = Modifier
+                        .background(Color.White, CircleShape)
+                        .border(1.dp, Color.LightGray.copy(0.3f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Ayarlar",
+                        tint = StitchTextPrimary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // --- SEÇİM KARTLARI ---
             Text(
-                text = stringResource(R.string.dashboard_welcome, userName),
-                fontSize = 22.sp,
+                text = stringResource(R.string.mode_select_title), // "Mod Seçimi"
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = StitchColor.TextPrimary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(R.string.dashboard_subtitle),
-                color = Color.Gray,
-                fontSize = 14.sp
+                modifier = Modifier.align(Alignment.Start)
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 1. Seçenek: TAKIMLARIM
+            // Takım Yönetimi / Antrenör Modu
             DashboardOptionCard(
-                title = stringResource(R.string.dashboard_opt_teams_title),
-                description = stringResource(R.string.dashboard_opt_teams_desc),
-                icon = Icons.Default.Groups,
-                color = StitchColor.Primary,
+                title = stringResource(R.string.team_my_teams), // "Takımlarım"
+                description = "Takım yönetimi, maç kaydı ve analizler.",
+                icon = Icons.Default.People,
+                color = StitchPrimary,
                 onClick = onNavigateToTeams
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 2. Seçenek: OYUNCU PROFİLİ
+            // Oyuncu Modu (Kariyer)
             DashboardOptionCard(
-                title = stringResource(R.string.dashboard_opt_profile_title),
-                description = stringResource(R.string.dashboard_opt_profile_desc),
+                title = stringResource(R.string.title_player_career), // "Oyuncu Kariyeri"
+                description = "Kendi istatistiklerini ve pas ağını görüntüle.",
                 icon = Icons.Default.Person,
-                color = StitchSecondary,
+                color = StitchOffense, // Yeşilimsi renk
                 onClick = onNavigateToProfile
             )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Çıkış Butonu (En altta)
+            TextButton(onClick = onSignOut) {
+                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.settings_logout), color = Color.Gray)
+            }
         }
     }
 }
