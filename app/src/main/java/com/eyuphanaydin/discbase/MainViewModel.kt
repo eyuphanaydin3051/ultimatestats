@@ -182,16 +182,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    checkPurchases() // Eski satın alımları kontrol et
-                    fetchProductPrices()
+                    checkPurchases()
+                    fetchProductPrices() // <--- BUNU EKLEMELİSİNİZ
                 }
             }
             override fun onBillingServiceDisconnected() {
-                // Bağlantı koparsa tekrar dene (basit retry mantığı)
-                viewModelScope.launch {
-                    kotlinx.coroutines.delay(2000)
-                    startBillingConnection()
-                }
+                // Tekrar bağlanmayı dene
             }
         })
     }
@@ -252,10 +248,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             if (result.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
                 val productDetails = productDetailsList[0]
                 val offer = productDetails.subscriptionOfferDetails?.firstOrNull()
-
-                // Fiyatı formatlı şekilde al (Örn: ₺29.99)
+                // Fiyatı alıp değişkene atıyoruz
                 val price = offer?.pricingPhases?.pricingPhaseList?.firstOrNull()?.formattedPrice
-
                 if (price != null) {
                     _monthlyPrice.value = price
                 }
