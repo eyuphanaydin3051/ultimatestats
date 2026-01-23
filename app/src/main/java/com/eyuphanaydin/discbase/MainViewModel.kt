@@ -158,74 +158,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             repository.setProModeEnabled(enabled)
         }
     }
-    private val _isPremium = MutableStateFlow(false)
-    val isPremium = _isPremium.asStateFlow()
-
-    private val billingClient = BillingClient.newBuilder(application)
-        .setListener { billingResult, purchases ->
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-                // Satın alma başarılı, premium'u aktif et
-                viewModelScope.launch { _isPremium.emit(true) }
-            }
-        }
-        .enablePendingPurchases()
-        .build()
-
-    fun startBillingConnection() {
-        billingClient.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(billingResult: BillingResult) {
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    checkPurchases()
-                }
-            }
-            override fun onBillingServiceDisconnected() {
-                // Tekrar bağlanmayı dene
-            }
-        })
-    }
-
-    private fun checkPurchases() {
-        billingClient.queryPurchasesAsync(
-            QueryPurchasesParams.newBuilder()
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build()
-        ) { result, purchases ->
-            if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                // "advanced_mode_monthly" senin Play Console'da oluşturacağın Ürün Kimliği (Product ID)
-                val hasPremium = purchases.any { it.products.contains("advanced_mode_monthly") && it.purchaseState == Purchase.PurchaseState.PURCHASED }
-                _isPremium.value = hasPremium
-            }
-        }
-    }
-
-    fun launchPurchaseFlow(activity: Activity) {
-        val productList = listOf(
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId("advanced_mode_monthly")
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build()
-        )
-        val params = QueryProductDetailsParams.newBuilder().setProductList(productList).build()
-
-        billingClient.queryProductDetailsAsync(params) { result, productDetailsList ->
-            if (result.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
-                val productDetails = productDetailsList[0]
-                val offerToken = productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken ?: return@queryProductDetailsAsync
-
-                val flowParams = BillingFlowParams.newBuilder()
-                    .setProductDetailsParamsList(
-                        listOf(
-                            BillingFlowParams.ProductDetailsParams.newBuilder()
-                                .setProductDetails(productDetails)
-                                .setOfferToken(offerToken)
-                                .build()
-                        )
-                    )
-                    .build()
-                billingClient.launchBillingFlow(activity, flowParams)
-            }
-        }
-    }
     // INIT
     init {
         // 1. Kullanıcı Giriş Durumu ve Profil Kontrolü (Bunu silmiş olabilirsin, geri ekliyoruz)
@@ -880,6 +812,124 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             oPointsPlayed = totalOPoints,
             dPointsPlayed = totalDPoints
         )
+    }
+    // Premium durumu
+    private val _isPremium = MutableStateFlow(false)
+    val isPremium = _isPremium.asStateFlow()
+
+    // Billing Client
+    private val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
+        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+            for (purchase in purchases) {
+                handlePurchase(purchase) // Satın almayı işle ve onayla
+            }
+        } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
+            // Kullanıcı iptal etti
+        } else {
+            // Diğer hatalar
+        }
+    }
+    private val billingClient = BillingClient.newBuilder(application)
+        .setListener(purchasesUpdatedListener) // Listener'ı aşağıda tanımlıyoruz
+        .enablePendingPurchases()
+        .build()
+
+    // 1. Satın Alma Dinleyicisi (Listener)
+
+
+    // Bağlantıyı Başlat
+    fun startBillingConnection() {
+        billingClient.startConnection(object : BillingClientStateListener {
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    checkPurchases() // Eski satın alımları kontrol et
+                }
+            }
+            override fun onBillingServiceDisconnected() {
+                // Bağlantı koparsa tekrar dene (basit retry mantığı)
+                viewModelScope.launch {
+                    kotlinx.coroutines.delay(2000)
+                    startBillingConnection()
+                }
+            }
+        })
+    }
+
+    // 2. Satın Almayı Doğrulama ve Onaylama (EN ÖNEMLİ KISIM)
+    private fun handlePurchase(purchase: Purchase) {
+        // Satın alınan ürün bizim ürün mü?
+        if (purchase.products.contains("advanced_mode_monthly") && purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
+
+            // UI'ı güncelle (Premium aktif)
+            _isPremium.value = true
+
+            // Eğer ürün henüz onaylanmadıysa (Acknowledge), onayla.
+            if (!purchase.isAcknowledged) {
+                val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+                    .setPurchaseToken(purchase.purchaseToken)
+                    .build()
+
+                billingClient.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
+                    if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                        Log.d("Billing", "Satın alma onaylandı/teslim edildi.")
+                    }
+                }
+            }
+        }
+    }
+
+    // Mevcut satın alımları kontrol et (Uygulama açılınca)
+    private fun checkPurchases() {
+        billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build()
+        ) { result, purchases ->
+            if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                // Listede aktif abonelik var mı bak
+                val hasPremium = purchases.any {
+                    it.products.contains("advanced_mode_monthly") && it.purchaseState == Purchase.PurchaseState.PURCHASED
+                }
+                _isPremium.value = hasPremium
+
+                // Varsa ve onaylanmamışsa yine onayla
+                purchases.filter { it.products.contains("advanced_mode_monthly") && !it.isAcknowledged }.forEach { handlePurchase(it) }
+            }
+        }
+    }
+
+    // Satın Alma Ekranını Başlat
+    fun launchPurchaseFlow(activity: Activity) {
+        val productList = listOf(
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId("advanced_mode_monthly")
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build()
+        )
+        val params = QueryProductDetailsParams.newBuilder().setProductList(productList).build()
+
+        billingClient.queryProductDetailsAsync(params) { result, productDetailsList ->
+            if (result.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
+                val productDetails = productDetailsList[0]
+
+                // Abonelik teklif token'ını al
+                val offerToken = productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken ?: return@queryProductDetailsAsync
+
+                val flowParams = BillingFlowParams.newBuilder()
+                    .setProductDetailsParamsList(
+                        listOf(
+                            BillingFlowParams.ProductDetailsParams.newBuilder()
+                                .setProductDetails(productDetails)
+                                .setOfferToken(offerToken)
+                                .build()
+                        )
+                    )
+                    .build()
+                billingClient.launchBillingFlow(activity, flowParams)
+            } else {
+                viewModelScope.launch { _userMessage.emit("Ürün bilgisi alınamadı. Play Console ayarlarını kontrol edin.") }
+            }
+        }
     }
 }
 

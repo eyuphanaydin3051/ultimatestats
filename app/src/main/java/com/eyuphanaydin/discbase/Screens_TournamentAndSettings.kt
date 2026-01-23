@@ -723,7 +723,8 @@ fun SettingsScreen(
     val currentCaptureMode by viewModel.captureMode.collectAsState()
     val isTimeTrackingEnabled by viewModel.timeTrackingEnabled.collectAsState()
     val isProModeEnabled by viewModel.proModeEnabled.collectAsState()
-
+    val isPremium by viewModel.isPremium.collectAsState() // ViewModel'e eklediğini varsayıyorum
+    var showPaywall by remember { mutableStateOf(false) }
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -793,10 +794,17 @@ fun SettingsScreen(
 
                 Divider(color = Color.LightGray.copy(0.2f), modifier = Modifier.padding(horizontal = 16.dp))
 
+                // --- DEĞİŞTİRİLEN KISIM BAŞLANGIÇ ---
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { viewModel.setCaptureMode(CaptureMode.ADVANCED) }
+                        .clickable {
+                            if (isPremium) {
+                                viewModel.setCaptureMode(CaptureMode.ADVANCED)
+                            } else {
+                                showPaywall = true // Premium değilse dialog aç
+                            }
+                        }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -806,11 +814,18 @@ fun SettingsScreen(
                         colors = RadioButtonDefaults.colors(selectedColor = StitchColor.Primary)
                     )
                     Spacer(Modifier.width(8.dp))
-                    Column {
-                        Text(stringResource(R.string.settings_adv_mode), fontWeight = FontWeight.Bold)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.settings_adv_mode), fontWeight = FontWeight.Bold)
+                            // Kilit İkonu (Premium değilse göster)
+                            if (!isPremium) {
+                                Spacer(Modifier.width(8.dp))
+                                Icon(Icons.Default.Lock, contentDescription = "Locked", tint = StitchDefense, modifier = Modifier.size(16.dp))                            }
+                        }
                         Text(stringResource(R.string.settings_adv_desc), fontSize = 12.sp, color = Color.Gray)
                     }
                 }
+                // --- DEĞİŞTİRİLEN KISIM BİTİŞ ---
 
                 SettingsSwitchRow(
                     icon = Icons.Default.Map,
