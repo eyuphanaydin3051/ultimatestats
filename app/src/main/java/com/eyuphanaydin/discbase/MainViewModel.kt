@@ -205,6 +205,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         startBillingConnection()
+        try {
+            startBillingConnection()
+        } catch (e: Exception) {
+            Log.e("BillingError", "Abonelik sistemi başlatılamadı: ${e.message}")
+        }
     }
 
     // --- FONKSİYONLAR ---
