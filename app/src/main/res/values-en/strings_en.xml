@@ -318,7 +318,7 @@
     <string name="settings_section_mode">MATCH RECORDING MODE</string>
     <string name="settings_simple_mode">Simple Mode</string>
     <string name="settings_simple_desc">Only Line, Score, Goal and Assist tracking.</string>
-    <string name="settings_adv_mode">Advanced Mode (Recommended)</string>
+    <string name="settings_adv_mode">Advanced Mode</string>
     <string name="settings_adv_desc">Pass, Turnover, Block and detailed stats.</string>
     <string name="settings_pro_mode">Pro Mode</string>
     <string name="settings_pro_desc">Enables field map and extra analysis tab.</string>
@@ -710,4 +710,41 @@
     <string name="btn_close">Close</string>
     <string name="title_efficiency_score">Efficiency Score</string>
     <string name="label_unknown_date">Unknown Date</string>
+
+    <string name="pdf_label_hold">Hold %</string>
+    <string name="pdf_label_break">Break %</string>
+    <string name="pdf_label_conversion">Conversion</string>
+    <string name="pdf_label_clean_holds">Clean Holds</string>
+    <string name="pdf_label_dline_conv">D-Line Conv.</string>
+    <string name="pdf_label_pass_attempts">Pass Attempts</string>
+    <string name="pdf_label_pass_completed">Completed Pass</string>
+    <string name="pdf_label_avg_tempo">Avg. Tempo</string>
+    <string name="pdf_label_total_turnover">Total Turnovers</string>
+    <string name="pdf_label_turnover_per_match">Turnover / Match</string>
+    <string name="pdf_label_avg_pull">Avg. Pull</string>
+    <string name="pdf_label_pass_rate_10">Pass % (>10 Passes)</string>
+    <string name="pdf_label_total_points_played">Total Points (P)</string>
+    <string name="pdf_label_points_per_match">Points per Match</string>
+    <string name="pdf_label_most_passes">Most Passes</string>
+    <string name="pdf_header_opponent">OPPONENT</string>
+    <string name="pdf_header_result">RESULT</string>
+    <string name="pdf_header_score">SCORE</string>
+    <string name="pdf_header_mvp">MVP</string>
+    <string name="pdf_general_rates">General Rates</string>
+    <string name="pdf_label_passes">Passes</string>
+    <string name="pdf_label_match_duration">Match Duration</string>
+    <string name="pdf_label_blocks">Blocks</string>
+    <string name="pdf_section_player_stats">Player Statistics</string>
+    <string name="pdf_section_career_general">GENERAL CAREER STATISTICS</string>
+    <string name="pdf_career_total">Career Total</string>
+    <string name="pro_our_point">OUR POINT</string>
+    <string name="pro_opponent_point">THEIR POINT</string>
+    <string name="label_event_count">Event</string>
+    <string name="btn_subscribe_format">Subscribe (%1$s)</string>
+    <string name="btn_start_subscription">Start Subscription</string>
+    <string name="msg_purchase_error">Cannot open purchase screen</string>
+    <string name="btn_clear">Clear</string>
+    <string name="msg_checking_profile">Checking profile...</string>
+    <string name="premiumdesc">To use the advanced statistics mode, you must upgrade to a Premium membership.</string>
+
 </resources>
