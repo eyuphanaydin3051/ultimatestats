@@ -663,5 +663,51 @@
     <string name="msg_no_profile_found">No player profile found matching your email address.\nPlease ensure your team manager has added you with the correct email address.</string>
     <string name="unknown_team">Unknown Team</string>
 
+    <string name="label_vs">VS</string>
+    <string name="label_avg_prefix">Avg: %1$s</string>
+    <string name="label_avg_short">Avg: %1$s</string>
+    <string name="label_avg_time_sec">Avg Time: %1$s s</string>
+    <string name="unit_tempo_sec">Tempo (s)</string>
+    <string name="unit_seconds_short">s</string>
+    <string name="unit_player_count">%1$d players</string>
+    <string name="unit_points_lower">points</string>
 
+    <string name="line_preset_empty_title">No preset lines saved.</string>
+    <string name="line_preset_empty_desc">Add with (+) to speed up the game.</string>
+    <string name="desc_add_new_line">Add New Line</string>
+    <string name="line_type_full">Full Line</string>
+    <string name="line_type_handler">Handler Set</string>
+    <string name="line_type_cutter">Cutter Set</string>
+    <string name="title_new_line">New Line</string>
+    <string name="title_edit_line">Edit Line</string>
+    <string name="label_line_name_hint">Line Name (Ex: Offense A)</string>
+    <string name="label_line_type">Line Type:</string>
+    <string name="line_hint_full">7 players recommended (For match start)</string>
+    <string name="line_hint_handler">2-4 players recommended (For handler subs)</string>
+    <string name="line_hint_cutter">3-5 players recommended (For cutter subs)</string>
+    <string name="title_select_players_count">Select Players (%1$d)</string>
+    <string name="msg_line_validation_error">Name and at least 1 player required.</string>
+
+    <string name="stat_played_short">Pld:</string>
+    <string name="stat_offense_short">O:</string>
+    <string name="stat_defense_short">D:</string>
+    <string name="title_game_time_points">Game Time (Points)</string>
+    <string name="label_total">Total</string>
+    <string name="label_offense">Offense</string>
+    <string name="label_defense">Defense</string>
+    <string name="title_receiving_stats">Receiving</string>
+    <string name="title_catch_rate_header">Catch Percentage</string>
+    <string name="title_defense_stats">Defense</string>
+    <string name="title_pull_stats">Pull Stats</string>
+    <string name="label_pull_summary">Total: %1$d (Good: %2$d)</string>
+    <string name="title_pass_performance">Pass Performance</string>
+    <string name="title_success_rate_header">Success Rate</string>
+    <string name="title_pass_network_match">Match Pass Network (Most Active: %1$s)</string>
+    <string name="title_strongest_connections">Strongest Connections:</string>
+    <string name="title_last_5_trainings">Last 5 Trainings</string>
+    <string name="msg_no_trainings_record">No trainings recorded.</string>
+    <string name="title_monthly_performance">Monthly Performance</string>
+    <string name="btn_close">Close</string>
+    <string name="title_efficiency_score">Efficiency Score</string>
+    <string name="label_unknown_date">Unknown Date</string>
 </resources>

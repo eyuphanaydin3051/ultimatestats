@@ -155,7 +155,7 @@ fun Scoreboard(
             )
             Text(text = "$scoreUs", fontSize = 48.sp, fontWeight = FontWeight.Bold)
         }
-        Text(text = "VS", fontSize = 24.sp)
+        Text(text = stringResource(R.string.label_vs), fontSize = 24.sp)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.weight(1f)
@@ -270,7 +270,7 @@ fun PerformanceStatRow(
                     .fillMaxWidth(progress)
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(50))
-                    .background(progressColor) // İstersen buraya Brush (gradyan) verebilirsin
+                    .background(progressColor)
             )
         }
 
@@ -281,7 +281,7 @@ fun PerformanceStatRow(
                 val avgText = "${String.format("%.1f", teamAverage * 100)}%"
                 val isAbove = progress >= teamAverage
                 Text(
-                    "Ort: $avgText",
+                    stringResource(R.string.label_avg_prefix, avgText), // GÜNCELLENDİ: Ort: ...
                     fontSize = 11.sp,
                     color = if (isAbove) com.eyuphanaydin.discbase.StitchOffense else Color.Gray,
                     fontWeight = if (isAbove) FontWeight.Bold else FontWeight.Normal
@@ -728,7 +728,7 @@ fun MatchPassNetworkCard(
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
-                "Maçın Pas Ağı (En Aktif: ${topPasserStats.name})",
+                stringResource(R.string.title_pass_network_match, topPasserStats.name), // GÜNCELLENDİ
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = StitchColor.TextPrimary
@@ -745,7 +745,7 @@ fun MatchPassNetworkCard(
             Spacer(Modifier.height(16.dp))
 
             // En Güçlü 3 Bağlantı
-            Text("En Güçlü Bağlantılar:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+            Text(stringResource(R.string.title_strongest_connections), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray) // GÜNCELLENDİ
             Spacer(Modifier.height(8.dp))
 
             val topConnections = topPasserStats.passDistribution.toList()
@@ -753,13 +753,14 @@ fun MatchPassNetworkCard(
                 .take(3)
 
             topConnections.forEach { (receiverId, count) ->
-                val receiverName = allPlayers.find { it.id == receiverId }?.name ?: "Bilinmeyen"
+                val receiverName = allPlayers.find { it.id == receiverId }?.name ?: stringResource(R.string.unknown) // GÜNCELLENDİ
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("${topPasserStats.name} -> $receiverName", fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                    Text("$count Pas", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StitchPrimary)
+                    // "Pas" kelimesini stat_unit_pass ile değiştirdik
+                    Text("$count ${stringResource(R.string.stat_unit_pass)}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StitchPrimary) // GÜNCELLENDİ
                 }
                 Divider(color = Color.LightGray.copy(0.2f))
             }
@@ -958,12 +959,12 @@ fun PassingStatsCard(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(Modifier.width(8.dp))
-                Text("Pas Performansı", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.title_pass_performance), fontSize = 18.sp, fontWeight = FontWeight.Bold) // GÜNCELLENDİ
             }
             Divider(Modifier.padding(vertical = 12.dp).alpha(0.1f))
 
             PerformanceStatRow(
-                title = "Başarı Yüzdesi",
+                title = stringResource(R.string.title_success_rate_header), // GÜNCELLENDİ
                 percentage = passSuccessRate.text,
                 ratio = passSuccessRate.ratio,
                 progress = passSuccessRate.progress,
@@ -981,20 +982,20 @@ fun PassingStatsCard(
             // 3'lü Grid Haline Getirdik
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StitchStatBox(
-                    "Asist",
+                    stringResource(R.string.stat_unit_assist), // GÜNCELLENDİ
                     stats.assist.toString(),
                     StitchPrimary,
                     Modifier.weight(1f)
                 )
                 StitchStatBox(
-                    "Hata",
+                    stringResource(R.string.match_event_turnover), // GÜNCELLENDİ (Hata/Turnover)
                     stats.throwaway.toString(),
                     StitchDefense,
                     Modifier.weight(1f)
                 )
                 // --- YENİ KUTU ---
                 StitchStatBox(
-                    "Tempo (sn)",
+                    stringResource(R.string.unit_tempo_sec), // GÜNCELLENDİ: Tempo (sn)
                     String.format("%.2f", avgTempo),
                     tempoColor,
                     Modifier.weight(1f)
@@ -1120,6 +1121,7 @@ fun PositionSelector(
 
 
 
+// LineSetupScreen GÜNCELLEMESİ
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LineSetupScreen(
@@ -1131,13 +1133,13 @@ fun LineSetupScreen(
         containerColor = StitchColor.Background,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Hazır Line Yönetimi", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.title_manage_lines), fontWeight = FontWeight.Bold) }, // GÜNCELLENDİ
                 navigationIcon = {
                     ModernIconButton(
                         Icons.Default.ArrowBack,
                         { navController.popBackStack() },
                         StitchTextPrimary,
-                        "Geri"
+                        stringResource(R.string.desc_back) // GÜNCELLENDİ
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
@@ -1150,7 +1152,7 @@ fun LineSetupScreen(
                 contentColor = Color.White,
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Yeni Line Ekle")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.desc_add_new_line)) // GÜNCELLENDİ
             }
         }
     ) { innerPadding ->
@@ -1170,9 +1172,9 @@ fun LineSetupScreen(
                             tint = Color.LightGray
                         )
                         Spacer(Modifier.height(16.dp))
-                        Text("Kayıtlı hazır line yok.", color = Color.Gray)
+                        Text(stringResource(R.string.line_preset_empty_title), color = Color.Gray) // GÜNCELLENDİ
                         Text(
-                            "Oyun hızlandırmak için (+) ile ekleyin.",
+                            stringResource(R.string.line_preset_empty_desc), // GÜNCELLENDİ
                             fontSize = 12.sp,
                             color = Color.Gray
                         )
@@ -1203,17 +1205,17 @@ fun PresetLineCard(
 ) {
     // Line türüne göre renk ve ikon belirle
     val (icon, color, label) = when (line.type) {
-        LineType.FULL -> Triple(Icons.Default.Groups, StitchPrimary, "Tam Kadro")
+        LineType.FULL -> Triple(Icons.Default.Groups, StitchPrimary, stringResource(R.string.line_type_full)) // GÜNCELLENDİ
         LineType.HANDLER_SET -> Triple(
             Icons.Default.PanTool,
             Color(0xFF1976D2),
-            "Handler Seti"
-        ) // Mavi
+            stringResource(R.string.line_type_handler) // GÜNCELLENDİ
+        )
         LineType.CUTTER_SET -> Triple(
             Icons.Default.DirectionsRun,
             Color(0xFF388E3C),
-            "Cutter Seti"
-        ) // Yeşil
+            stringResource(R.string.line_type_cutter) // GÜNCELLENDİ
+        )
     }
 
     Card(
@@ -1263,7 +1265,7 @@ fun PresetLineCard(
                         )
                     }
                     Spacer(Modifier.width(8.dp))
-                    Text("${line.playerIds.size} oyuncu", fontSize = 12.sp, color = Color.Gray)
+                    Text(stringResource(R.string.unit_player_count, line.playerIds.size), fontSize = 12.sp, color = Color.Gray) // GÜNCELLENDİ
                 }
             }
 
@@ -1308,9 +1310,9 @@ fun PresetLineAddScreen(
         .sortedBy { it.name }
 
     val limitText = when (selectedType) {
-        LineType.FULL -> "7 kişi önerilir (Maç başlangıcı için)"
-        LineType.HANDLER_SET -> "2-4 kişi önerilir (Handler değişimi için)"
-        LineType.CUTTER_SET -> "3-5 kişi önerilir (Cutter değişimi için)"
+        LineType.FULL -> stringResource(R.string.line_hint_full) // GÜNCELLENDİ
+        LineType.HANDLER_SET -> stringResource(R.string.line_hint_handler) // GÜNCELLENDİ
+        LineType.CUTTER_SET -> stringResource(R.string.line_hint_cutter) // GÜNCELLENDİ
     }
 
     Scaffold(
@@ -1319,7 +1321,7 @@ fun PresetLineAddScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        if (lineToEdit == null) "Yeni Line" else "Line Düzenle",
+                        if (lineToEdit == null) stringResource(R.string.title_new_line) else stringResource(R.string.title_edit_line), // GÜNCELLENDİ
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -1328,7 +1330,7 @@ fun PresetLineAddScreen(
                         Icons.Default.ArrowBack,
                         { navController.popBackStack() },
                         StitchTextPrimary,
-                        "Geri"
+                        stringResource(R.string.desc_back) // GÜNCELLENDİ
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
@@ -1352,14 +1354,14 @@ fun PresetLineAddScreen(
                     OutlinedTextField(
                         value = lineName,
                         onValueChange = { lineName = it },
-                        label = { Text("Line Adı (Örn: Ofans A)") },
+                        label = { Text(stringResource(R.string.label_line_name_hint)) }, // GÜNCELLENDİ
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     )
 
                     Spacer(Modifier.height(16.dp))
 
-                    Text("Line Türü:", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(stringResource(R.string.label_line_type), fontWeight = FontWeight.Bold, fontSize = 14.sp) // GÜNCELLENDİ
                     Spacer(Modifier.height(8.dp))
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1368,7 +1370,7 @@ fun PresetLineAddScreen(
                         FilterChip(
                             selected = selectedType == LineType.FULL,
                             onClick = { selectedType = LineType.FULL },
-                            label = { Text("Tam Kadro (7)") },
+                            label = { Text(stringResource(R.string.line_type_full)) }, // GÜNCELLENDİ
                             leadingIcon = if (selectedType == LineType.FULL) {
                                 { Icon(Icons.Default.Check, null) }
                             } else null
@@ -1376,7 +1378,7 @@ fun PresetLineAddScreen(
                         FilterChip(
                             selected = selectedType == LineType.HANDLER_SET,
                             onClick = { selectedType = LineType.HANDLER_SET },
-                            label = { Text("Handler Seti") },
+                            label = { Text(stringResource(R.string.line_type_handler)) }, // GÜNCELLENDİ
                             leadingIcon = if (selectedType == LineType.HANDLER_SET) {
                                 { Icon(Icons.Default.Check, null) }
                             } else null
@@ -1384,7 +1386,7 @@ fun PresetLineAddScreen(
                         FilterChip(
                             selected = selectedType == LineType.CUTTER_SET,
                             onClick = { selectedType = LineType.CUTTER_SET },
-                            label = { Text("Cutter Seti") },
+                            label = { Text(stringResource(R.string.line_type_cutter)) }, // GÜNCELLENDİ
                             leadingIcon = if (selectedType == LineType.CUTTER_SET) {
                                 { Icon(Icons.Default.Check, null) }
                             } else null
@@ -1403,7 +1405,7 @@ fun PresetLineAddScreen(
 
             // 2. OYUNCU LİSTESİ
             Text(
-                "Oyuncuları Seç (${selectedPlayerIds.size})",
+                stringResource(R.string.title_select_players_count, selectedPlayerIds.size), // GÜNCELLENDİ
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
             )
@@ -1455,6 +1457,7 @@ fun PresetLineAddScreen(
             Spacer(Modifier.height(16.dp))
 
             // KAYDET BUTONU
+            val errorMsg = stringResource(R.string.msg_line_validation_error)
             Button(
                 onClick = {
                     if (lineName.isNotBlank() && selectedPlayerIds.isNotEmpty()) {
@@ -1476,7 +1479,7 @@ fun PresetLineAddScreen(
                     } else {
                         Toast.makeText(
                             context,
-                            "Ad ve en az 1 oyuncu gerekli.",
+                            errorMsg, // GÜNCELLENDİ
                             Toast.LENGTH_SHORT
                         )
                             .show()
@@ -1485,7 +1488,7 @@ fun PresetLineAddScreen(
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary)
-            ) { Text("Kaydet", fontWeight = FontWeight.Bold, fontSize = 16.sp) }
+            ) { Text(stringResource(R.string.btn_save), fontWeight = FontWeight.Bold, fontSize = 16.sp) } // GÜNCELLENDİ
         }
     }
 }
@@ -1543,9 +1546,9 @@ fun RosterSelectionRow(
                 horizontalAlignment = Alignment.End,
                 modifier = Modifier.padding(end = 8.dp)
             ) {
-                Text("Oyn: ${stats.basicStats.pointsPlayed}", fontSize = 12.sp)
+                Text("${stringResource(R.string.stat_played_short)} ${stats.basicStats.pointsPlayed}", fontSize = 12.sp) // GÜNCELLENDİ: Oyn:
                 Text(
-                    text = "O: ${stats.oPointsPlayed} | D: ${stats.dPointsPlayed}", // Doğrusu bu
+                    text = "${stringResource(R.string.stat_offense_short)} ${stats.oPointsPlayed} | ${stringResource(R.string.stat_defense_short)} ${stats.dPointsPlayed}", // GÜNCELLENDİ: O: | D:
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = StitchPrimary
@@ -1561,7 +1564,6 @@ fun RosterSelectionRow(
         }
     }
 }
-
 
 
 @Composable
@@ -1709,8 +1711,9 @@ fun StatRowWithAverage(
                     color = valueColor
                 )
                 Spacer(Modifier.width(8.dp))
+                // GÜNCELLENDİ: (Ort: 3.5)
                 Text(
-                    text = "(Ort: ${String.format("%.1f", teamAverage)})",
+                    text = "(${stringResource(R.string.label_avg_short, String.format("%.1f", teamAverage))})",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray.copy(alpha = 0.7f)
                 )
@@ -1746,7 +1749,7 @@ fun GameTimeCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Oyun Süresi (Sayı)",
+                    stringResource(R.string.title_game_time_points), // GÜNCELLENDİ
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = StitchColor.TextPrimary
@@ -1769,7 +1772,7 @@ fun GameTimeCard(
                         fontWeight = FontWeight.ExtraBold,
                         color = StitchColor.TextPrimary
                     )
-                    Text("Toplam", fontSize = 12.sp, color = Color.Gray)
+                    Text(stringResource(R.string.label_total), fontSize = 12.sp, color = Color.Gray) // GÜNCELLENDİ
                 }
                 Box(
                     modifier = Modifier.width(1.dp).height(40.dp)
@@ -1786,7 +1789,7 @@ fun GameTimeCard(
                         fontWeight = FontWeight.Bold,
                         color = com.eyuphanaydin.discbase.StitchOffense
                     )
-                    Text("Ofans", fontSize = 12.sp, color = com.eyuphanaydin.discbase.StitchOffense)
+                    Text(stringResource(R.string.label_offense), fontSize = 12.sp, color = com.eyuphanaydin.discbase.StitchOffense) // GÜNCELLENDİ
                 }
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -1798,7 +1801,7 @@ fun GameTimeCard(
                         fontWeight = FontWeight.Bold,
                         color = StitchDefense
                     )
-                    Text("Defans", fontSize = 12.sp, color = StitchDefense)
+                    Text(stringResource(R.string.label_defense), fontSize = 12.sp, color = StitchDefense) // GÜNCELLENDİ
                 }
             }
         }
@@ -1828,7 +1831,7 @@ fun ReceivingStatsCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Yakalama (Receiving)",
+                    stringResource(R.string.title_receiving_stats), // GÜNCELLENDİ
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = StitchColor.TextPrimary
@@ -1837,7 +1840,7 @@ fun ReceivingStatsCard(
             Divider(Modifier.padding(vertical = 12.dp).alpha(0.1f))
 
             PerformanceStatRow(
-                title = "Tutuş Yüzdesi",
+                title = stringResource(R.string.title_catch_rate_header), // GÜNCELLENDİ
                 percentage = catchRate.text,
                 ratio = catchRate.ratio,
                 progress = catchRate.progress,
@@ -1846,14 +1849,14 @@ fun ReceivingStatsCard(
             )
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                StitchStatBox("Gol", stats.goal.toString(), StitchPrimary, Modifier.weight(1f))
+                StitchStatBox(stringResource(R.string.match_event_goal), stats.goal.toString(), StitchPrimary, Modifier.weight(1f)) // GÜNCELLENDİ
                 StitchStatBox(
-                    "Catch",
+                    "Catch", // Catch özel terim kalabilir veya stat_unit_catch eklenebilir
                     stats.catchStat.toString(),
                     com.eyuphanaydin.discbase.StitchOffense,
                     Modifier.weight(1f)
                 )
-                StitchStatBox("Drop", stats.drop.toString(), StitchDefense, Modifier.weight(1f))
+                StitchStatBox(stringResource(R.string.match_event_drop), stats.drop.toString(), StitchDefense, Modifier.weight(1f)) // GÜNCELLENDİ
             }
         }
     }
@@ -1883,7 +1886,7 @@ fun DefenseStatsCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Savunma (Defense)",
+                    stringResource(R.string.title_defense_stats), // GÜNCELLENDİ
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF4A148C)
@@ -1903,20 +1906,20 @@ fun DefenseStatsCard(
                         color = Color(0xFF7B1FA2)
                     )
                     Text(
-                        "Blok (D)",
+                        stringResource(R.string.match_event_block), // GÜNCELLENDİ: Blok (D) yerine Blok
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF7B1FA2)
                     )
                     Text(
-                        "(Ort: ${String.format("%.1f", teamAverages["block"] ?: 0.0)})",
+                        "(${stringResource(R.string.label_avg_short, String.format("%.1f", teamAverages["block"] ?: 0.0))})", // GÜNCELLENDİ: (Ort: 1.2)
                         fontSize = 10.sp,
                         color = Color.Gray
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        "Pull İstatistikleri",
+                        stringResource(R.string.title_pull_stats), // GÜNCELLENDİ
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Gray
@@ -1924,7 +1927,7 @@ fun DefenseStatsCard(
                     Spacer(Modifier.height(4.dp))
 
                     Text(
-                        "Toplam: ${stats.pullAttempts} (Başarılı: ${stats.successfulPulls})",
+                        stringResource(R.string.label_pull_summary, stats.pullAttempts, stats.successfulPulls), // GÜNCELLENDİ: Toplam: x (Başarılı: y)
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -1941,7 +1944,7 @@ fun DefenseStatsCard(
                             )
                             Spacer(Modifier.width(4.dp))
                             Text(
-                                "Ort. Süre: ${String.format("%.2f", avgPullTime)} sn",
+                                stringResource(R.string.label_avg_time_sec, String.format("%.2f", avgPullTime)), // GÜNCELLENDİ: Ort. Süre: ... sn
                                 fontWeight = FontWeight.Bold,
                                 color = StitchColor.Primary,
                                 fontSize = 12.sp
@@ -1961,10 +1964,10 @@ fun PlayerAttendanceDetailDialog(
     allTrainings: List<Training>,
     onDismiss: () -> Unit
 ) {
-    // --- VERİ HESAPLAMA ---
+    // ... (Veri Hesaplama Kısmı Aynı)
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
-    // 1. Tarihe göre sırala (En yeniden en eskiye)
+    // 1. Tarihe göre sırala
     val sortedTrainings = remember(allTrainings) {
         allTrainings.sortedByDescending {
             try {
@@ -1978,14 +1981,15 @@ fun PlayerAttendanceDetailDialog(
     // 2. Son 5 Antrenman
     val last5Trainings = sortedTrainings.take(5)
 
-    // 3. Aylık İstatistikler
+    // 3. Aylık İstatistikler (Locale hardcode "tr" yerine Locale.getDefault() veya ingilizce kaynakları kullanabiliriz ama şimdilik "MMMM yyyy" formatı locale bağlıdır)
     val monthlyStats = remember(sortedTrainings) {
         sortedTrainings.groupBy {
             try {
                 val date = dateFormat.parse(it.date)
-                SimpleDateFormat("MMMM yyyy", Locale("tr")).format(date ?: 0L) // Türkçe Ay Adı
+                SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(date ?: 0L)
             } catch (e: Exception) {
-                "Bilinmeyen Tarih"
+                // Buradaki string de resource olmalı ama context yok, fallback string
+                "Unknown Date"
             }
         }.mapValues { entry ->
             val total = entry.value.size
@@ -1993,16 +1997,17 @@ fun PlayerAttendanceDetailDialog(
             Pair(attended, total)
         }
     }
+    // ...
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = null, // Özel başlık kullanacağız
+        title = null,
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // BAŞLIK: Avatar ve İsim
+                // ... (Avatar Aynı)
                 PlayerAvatar(
                     name = player.name,
                     jerseyNumber = player.jerseyNumber,
@@ -2021,7 +2026,7 @@ fun PlayerAttendanceDetailDialog(
 
                 // BÖLÜM 1: SON 5 ANTRENMAN
                 Text(
-                    "Son 5 Antrenman",
+                    stringResource(R.string.title_last_5_trainings), // GÜNCELLENDİ
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = StitchPrimary,
@@ -2029,6 +2034,7 @@ fun PlayerAttendanceDetailDialog(
                 )
                 Spacer(Modifier.height(8.dp))
 
+                // ... (Liste Döngüsü Aynı)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -2036,10 +2042,10 @@ fun PlayerAttendanceDetailDialog(
                     last5Trainings.forEach { training ->
                         val isAttended = training.attendeeIds.contains(player.id)
                         val datePart =
-                            training.date.split("/").take(2).joinToString("/") // Gün/Ay
+                            training.date.split("/").take(2).joinToString("/")
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            // Durum İkonu
+                            // ... (İkon Kutusu Aynı)
                             Box(
                                 modifier = Modifier
                                     .size(36.dp)
@@ -2065,7 +2071,7 @@ fun PlayerAttendanceDetailDialog(
                 }
 
                 if (last5Trainings.isEmpty()) {
-                    Text("Kayıtlı antrenman yok.", fontSize = 12.sp, color = Color.Gray)
+                    Text(stringResource(R.string.msg_no_trainings_record), fontSize = 12.sp, color = Color.Gray) // GÜNCELLENDİ
                 }
 
                 Spacer(Modifier.height(24.dp))
@@ -2074,7 +2080,7 @@ fun PlayerAttendanceDetailDialog(
 
                 // BÖLÜM 2: AYLIK RAPOR
                 Text(
-                    "Aylık Performans",
+                    stringResource(R.string.title_monthly_performance), // GÜNCELLENDİ
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = StitchPrimary,
@@ -2083,10 +2089,11 @@ fun PlayerAttendanceDetailDialog(
                 Spacer(Modifier.height(8.dp))
 
                 LazyColumn(
-                    modifier = Modifier.heightIn(max = 200.dp), // Yükseklik sınırı
+                    modifier = Modifier.heightIn(max = 200.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(monthlyStats.toList()) { (month, stats) ->
+                        // ... (Aynı)
                         val (attended, total) = stats
                         val ratio = attended.toFloat() / total
 
@@ -2094,14 +2101,14 @@ fun PlayerAttendanceDetailDialog(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Month stringi resource'dan gelmiyor (Dynamic), olduğu gibi kalabilir veya yerelleştirilebilir.
                             Text(
                                 month,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium,
                                 modifier = Modifier.width(100.dp)
                             )
-
-                            // Progress Bar
+                            // ... (Progress Bar Aynı)
                             Box(
                                 modifier = Modifier.weight(1f).height(8.dp)
                                     .clip(RoundedCornerShape(50)).background(Color(0xFFF0F0F0))
@@ -2131,7 +2138,7 @@ fun PlayerAttendanceDetailDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Kapat")
+                Text(stringResource(R.string.btn_close)) // GÜNCELLENDİ
             }
         },
         shape = RoundedCornerShape(24.dp),
@@ -2155,12 +2162,12 @@ fun EfficiencyCard(
     efficiencyScore: Double,
     onInfoClick: () -> Unit
 ) {
-    // Rengi puana göre belirle
+    // ... (Renk Mantığı Aynı)
     val scoreColor = when {
-        efficiencyScore >= 10.0 -> Color(0xFF00C853) // Çok İyi (Koyu Yeşil)
-        efficiencyScore >= 5.0 -> com.eyuphanaydin.discbase.StitchOffense      // İyi (Teal)
-        efficiencyScore >= 0.0 -> StitchPrimary      // Normal (Mor)
-        else -> StitchDefense                        // Kötü (Kırmızı)
+        efficiencyScore >= 10.0 -> Color(0xFF00C853)
+        efficiencyScore >= 5.0 -> com.eyuphanaydin.discbase.StitchOffense
+        efficiencyScore >= 0.0 -> StitchPrimary
+        else -> StitchDefense
     }
 
     Card(
@@ -2179,7 +2186,7 @@ fun EfficiencyCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.BarChart, null, tint = scoreColor)
                     Spacer(Modifier.width(8.dp))
-                    Text("Verimlilik Puanı", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.title_efficiency_score), fontSize = 18.sp, fontWeight = FontWeight.Bold) // GÜNCELLENDİ
                 }
                 IconButton(onClick = onInfoClick) {
                     Icon(Icons.Default.Info, contentDescription = "Bilgi", tint = Color.Gray)
@@ -2197,7 +2204,7 @@ fun EfficiencyCard(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "puan",
+                    text = stringResource(R.string.unit_points_lower), // GÜNCELLENDİ: puan / points
                     fontSize = 14.sp,
                     color = Color.Gray,
                     modifier = Modifier.padding(bottom = 8.dp)
