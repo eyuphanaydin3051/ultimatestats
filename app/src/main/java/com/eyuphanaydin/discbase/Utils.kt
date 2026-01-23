@@ -392,3 +392,12 @@ fun changeAppLanguage(languageCode: String) {
     val appLocale: LocaleListCompat = LocaleListCompat.forLanguageTags(languageCode)
     AppCompatDelegate.setApplicationLocales(appLocale)
 }
+// Context içinden Activity'yi bulan güvenli fonksiyon
+fun android.content.Context.findActivity(): android.app.Activity? {
+    var context = this
+    while (context is android.content.ContextWrapper) {
+        if (context is android.app.Activity) return context
+        context = context.baseContext
+    }
+    return null
+}

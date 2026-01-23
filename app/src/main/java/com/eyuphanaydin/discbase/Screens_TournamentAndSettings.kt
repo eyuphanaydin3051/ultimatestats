@@ -724,6 +724,7 @@ fun SettingsScreen(
     val isTimeTrackingEnabled by viewModel.timeTrackingEnabled.collectAsState()
     val isProModeEnabled by viewModel.proModeEnabled.collectAsState()
     val isPremium by viewModel.isPremium.collectAsState() // ViewModel'e eklediğini varsayıyorum
+    val monthlyPrice by viewModel.monthlyPrice.collectAsState() // <--- YENİ
     var showPaywall by remember { mutableStateOf(false) }
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -802,7 +803,7 @@ fun SettingsScreen(
                             if (isPremium) {
                                 viewModel.setCaptureMode(CaptureMode.ADVANCED)
                             } else {
-                                showPaywall = true // Premium değilse dialog aç
+                                showPaywall = true // Dialogu aç
                             }
                         }
                         .padding(16.dp),
@@ -810,17 +811,30 @@ fun SettingsScreen(
                 ) {
                     RadioButton(
                         selected = currentCaptureMode == CaptureMode.ADVANCED,
-                        onClick = null,
+                        onClick = null, // Tıklamayı Row yönetiyor
                         colors = RadioButtonDefaults.colors(selectedColor = StitchColor.Primary)
                     )
                     Spacer(Modifier.width(8.dp))
+
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(R.string.settings_adv_mode), fontWeight = FontWeight.Bold)
-                            // Kilit İkonu (Premium değilse göster)
+
+                            // --- KİLİT VE FİYAT GÖSTERİMİ ---
                             if (!isPremium) {
                                 Spacer(Modifier.width(8.dp))
-                                Icon(Icons.Default.Lock, contentDescription = "Locked", tint = StitchDefense, modifier = Modifier.size(16.dp))                            }
+                                Icon(Icons.Default.Lock, contentDescription = "Locked", tint = StitchDefense, modifier = Modifier.size(16.dp))
+                                // Fiyat geldiyse göster
+                                if (monthlyPrice.isNotEmpty()) {
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        text = "($monthlyPrice/ay)", // Örn: (₺29.99/ay)
+                                        fontSize = 12.sp,
+                                        color = StitchColor.Primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                         }
                         Text(stringResource(R.string.settings_adv_desc), fontSize = 12.sp, color = Color.Gray)
                     }
@@ -1022,6 +1036,25 @@ fun SettingsScreen(
             }
             Spacer(Modifier.height(32.dp))
         }
+    }
+    // SettingsScreen fonksiyonunun en altındaki kısım:
+    if (showPaywall) {
+        val context = LocalContext.current
+        val activity = remember(context) { context.findActivity() } // Güvenli çevirme
+
+        PremiumRequiredDialog(
+            price = monthlyPrice,
+            onDismiss = { showPaywall = false },
+            onBuyClick = {
+                showPaywall = false
+                if (activity != null) {
+                    viewModel.launchPurchaseFlow(activity)
+                } else {
+                    // Activity bulunamazsa log veya hata mesajı
+                    Toast.makeText(context, "Satın alma ekranı açılamadı", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
     }
     if (showLanguageDialog) {
         AlertDialog(

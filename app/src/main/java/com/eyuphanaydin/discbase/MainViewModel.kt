@@ -161,7 +161,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // --- ABONELİK SİSTEMİ (GÜVENLİ VERSİYON) ---
     private val _isPremium = MutableStateFlow(false)
     val isPremium = _isPremium.asStateFlow()
-
+    // --- YENİ: Fiyat Bilgisi ---
+    private val _monthlyPrice = MutableStateFlow("") // Örn: "₺29.99"
+    val monthlyPrice = _monthlyPrice.asStateFlow()
     // Listener'ı ayrı tanımlamak yerine doğrudan build içinde veriyoruz (En güvenli yöntem)
     private val billingClient = BillingClient.newBuilder(application)
         .setListener { billingResult, purchases ->
@@ -181,6 +183,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     checkPurchases() // Eski satın alımları kontrol et
+                    fetchProductPrices()
                 }
             }
             override fun onBillingServiceDisconnected() {
@@ -232,6 +235,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 // Varsa ve onaylanmamışsa yine onayla
                 purchases.filter { it.products.contains("advanced_mode_monthly") && !it.isAcknowledged }.forEach { handlePurchase(it) }
+            }
+        }
+    }
+    // Fiyatı Play Store'dan öğrenip değişkene kaydeder
+    private fun fetchProductPrices() {
+        val productList = listOf(
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId("advanced_mode_monthly")
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build()
+        )
+        val params = QueryProductDetailsParams.newBuilder().setProductList(productList).build()
+
+        billingClient.queryProductDetailsAsync(params) { result, productDetailsList ->
+            if (result.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
+                val productDetails = productDetailsList[0]
+                val offer = productDetails.subscriptionOfferDetails?.firstOrNull()
+
+                // Fiyatı formatlı şekilde al (Örn: ₺29.99)
+                val price = offer?.pricingPhases?.pricingPhaseList?.firstOrNull()?.formattedPrice
+
+                if (price != null) {
+                    _monthlyPrice.value = price
+                }
             }
         }
     }

@@ -1,35 +1,31 @@
 package com.eyuphanaydin.discbase
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.eyuphanaydin.discbase.ui.theme.StitchColor // Renk teman buradaysa
-// Eğer StitchColor bulunamazsa yerine Color.Blue vb. geçici bir renk koyabilirsin.
+import com.eyuphanaydin.discbase.ui.theme.StitchColor
 
 @Composable
-fun PremiumRequiredDialog (onDismiss: () -> Unit,onBuyClick: () -> Unit) {
+fun PremiumRequiredDialog(
+    price: String, // Fiyat parametresi eklendi
+    onDismiss: () -> Unit,
+    onBuyClick: () -> Unit
+) {
+    val buttonText = if (price.isNotEmpty()) "Abone Ol ($price)" else "Abonelik Başlat"
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Star, contentDescription = null, tint = StitchColor.Primary)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Advanced Mode (Premium)")
+                Text("Advanced Mode")
             }
         },
         text = {
@@ -46,7 +42,7 @@ fun PremiumRequiredDialog (onDismiss: () -> Unit,onBuyClick: () -> Unit) {
                 onClick = onBuyClick,
                 colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary)
             ) {
-                Text("Abonelik Başlat")
+                Text(buttonText)
             }
         },
         dismissButton = {
