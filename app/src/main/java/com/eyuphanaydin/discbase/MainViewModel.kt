@@ -158,24 +158,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             repository.setProModeEnabled(enabled)
         }
     }
+    // --- ABONELİK SİSTEMİ (GÜVENLİ VERSİYON) ---
     private val _isPremium = MutableStateFlow(false)
     val isPremium = _isPremium.asStateFlow()
-
+    // --- YENİ: Fiyat Bilgisi ---
+    private val _monthlyPrice = MutableStateFlow("") // Örn: "₺29.99"
+    val monthlyPrice = _monthlyPrice.asStateFlow()
+    // Listener'ı ayrı tanımlamak yerine doğrudan build içinde veriyoruz (En güvenli yöntem)
     private val billingClient = BillingClient.newBuilder(application)
         .setListener { billingResult, purchases ->
+            // Listener burada güvenli bir şekilde çalışır
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-                // Satın alma başarılı, premium'u aktif et
-                viewModelScope.launch { _isPremium.emit(true) }
+                for (purchase in purchases) {
+                    handlePurchase(purchase)
+                }
             }
         }
         .enablePendingPurchases()
         .build()
 
+    // Bağlantıyı Başlat
     fun startBillingConnection() {
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     checkPurchases()
+                    fetchProductPrices() // <--- BUNU EKLEMELİSİNİZ
                 }
             }
             override fun onBillingServiceDisconnected() {
@@ -184,6 +192,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         })
     }
 
+    // 2. Satın Almayı Doğrulama ve Onaylama (EN ÖNEMLİ KISIM)
+    private fun handlePurchase(purchase: Purchase) {
+        // Satın alınan ürün bizim ürün mü?
+        if (purchase.products.contains("advanced_mode_monthly") && purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
+
+            // UI'ı güncelle (Premium aktif)
+            _isPremium.value = true
+
+            // Eğer ürün henüz onaylanmadıysa (Acknowledge), onayla.
+            if (!purchase.isAcknowledged) {
+                val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+                    .setPurchaseToken(purchase.purchaseToken)
+                    .build()
+
+                billingClient.acknowledgePurchase(acknowledgePurchaseParams) { billingResult ->
+                    if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                        Log.d("Billing", "Satın alma onaylandı/teslim edildi.")
+                    }
+                }
+            }
+        }
+    }
+
+    // Mevcut satın alımları kontrol et (Uygulama açılınca)
     private fun checkPurchases() {
         billingClient.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder()
@@ -191,13 +223,41 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 .build()
         ) { result, purchases ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                // "advanced_mode_monthly" senin Play Console'da oluşturacağın Ürün Kimliği (Product ID)
-                val hasPremium = purchases.any { it.products.contains("advanced_mode_monthly") && it.purchaseState == Purchase.PurchaseState.PURCHASED }
+                // Listede aktif abonelik var mı bak
+                val hasPremium = purchases.any {
+                    it.products.contains("advanced_mode_monthly") && it.purchaseState == Purchase.PurchaseState.PURCHASED
+                }
                 _isPremium.value = hasPremium
+
+                // Varsa ve onaylanmamışsa yine onayla
+                purchases.filter { it.products.contains("advanced_mode_monthly") && !it.isAcknowledged }.forEach { handlePurchase(it) }
+            }
+        }
+    }
+    // Fiyatı Play Store'dan öğrenip değişkene kaydeder
+    private fun fetchProductPrices() {
+        val productList = listOf(
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId("advanced_mode_monthly")
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build()
+        )
+        val params = QueryProductDetailsParams.newBuilder().setProductList(productList).build()
+
+        billingClient.queryProductDetailsAsync(params) { result, productDetailsList ->
+            if (result.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
+                val productDetails = productDetailsList[0]
+                val offer = productDetails.subscriptionOfferDetails?.firstOrNull()
+                // Fiyatı alıp değişkene atıyoruz
+                val price = offer?.pricingPhases?.pricingPhaseList?.firstOrNull()?.formattedPrice
+                if (price != null) {
+                    _monthlyPrice.value = price
+                }
             }
         }
     }
 
+    // Satın Alma Ekranını Başlat
     fun launchPurchaseFlow(activity: Activity) {
         val productList = listOf(
             QueryProductDetailsParams.Product.newBuilder()
@@ -210,6 +270,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         billingClient.queryProductDetailsAsync(params) { result, productDetailsList ->
             if (result.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
                 val productDetails = productDetailsList[0]
+
+                // Abonelik teklif token'ını al
                 val offerToken = productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken ?: return@queryProductDetailsAsync
 
                 val flowParams = BillingFlowParams.newBuilder()
@@ -223,56 +285,64 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     )
                     .build()
                 billingClient.launchBillingFlow(activity, flowParams)
+            } else {
+                viewModelScope.launch { _userMessage.emit("Ürün bilgisi alınamadı. Play Console ayarlarını kontrol edin.") }
             }
         }
     }
     // INIT
+    // INIT BLOĞU (GÜNCELLENMİŞ)
     init {
-        // 1. Kullanıcı Giriş Durumu ve Profil Kontrolü (Bunu silmiş olabilirsin, geri ekliyoruz)
+        // 1. Kullanıcı Giriş Durumu
         viewModelScope.launch {
-            currentUser.collect { user ->
-                if (user != null) {
-                    repository.updateUserInfo(user)
-                    _profileState.value = UserProfileState.LOADING
-                    val p = repository.getUserProfile(user.uid)
-                    _currentUserProfile.value = p
-                    _profileState.value = if (p == null || p.displayName.isNullOrBlank())
-                        UserProfileState.NEEDS_CREATION
-                    else
-                        UserProfileState.EXISTS
-                } else {
-                    _profileState.value = UserProfileState.UNKNOWN
-                    _currentUserProfile.value = null
+            try {
+                currentUser.collect { user ->
+                    if (user != null) {
+                        repository.updateUserInfo(user)
+                        _profileState.value = UserProfileState.LOADING
+                        val p = repository.getUserProfile(user.uid)
+                        _currentUserProfile.value = p
+                        _profileState.value = if (p == null || p.displayName.isNullOrBlank())
+                            UserProfileState.NEEDS_CREATION else UserProfileState.EXISTS
+                    } else {
+                        _profileState.value = UserProfileState.UNKNOWN
+                        _currentUserProfile.value = null
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e("InitError", "Kullanıcı verisi alınırken hata: ${e.message}")
             }
         }
 
-        // 2. Süre Yönetimi Ayarını Dinle (Eklediğimiz özellik)
+        // 2. Diğer Ayarları Dinle
         viewModelScope.launch {
-            repository.getTimeTrackingEnabled().collect {
-                _timeTrackingEnabled.value = it
-            }
+            repository.getTimeTrackingEnabled().collect { _timeTrackingEnabled.value = it }
+        }
+        viewModelScope.launch {
+            repository.getProModeEnabled().collect { _proModeEnabled.value = it }
         }
 
-        // 3. Veri Kayıt Modunu (Simple/Advanced) Dinle (Üzerine yazdığın kısım)
+        // 3. Mod Ayarı (Hata korumalı)
         viewModelScope.launch {
             repository.getCaptureMode().collect { savedMode ->
                 if (savedMode != null) {
                     try {
                         _captureMode.value = CaptureMode.valueOf(savedMode)
-                    } catch (e: Exception) {
-                        // Enum hatası olursa varsayılanda (ADVANCED) kalır, uygulama çökmez.
-                    }
+                    } catch (e: Exception) { /* Enum hatası yutulur */ }
                 }
             }
         }
-        // Pro Mod Ayarını Dinle
-        viewModelScope.launch {
-            repository.getProModeEnabled().collect {
-                _proModeEnabled.value = it
-            }
+
+        // 4. ABONELİK BAŞLATMA (KRİTİK - TRY-CATCH EKLENDİ)
+        // Eğer cihazda Play Store yoksa veya sürümü eskiyse burası çökmeye sebep olabilir.
+        // Try-catch ile uygulamanın kapanmasını engelliyoruz.
+        try {
+            startBillingConnection()
+        } catch (e: Exception) {
+            Log.e("BillingError", "Abonelik sistemi başlatılamadı (CRASH ÖNLENDİ): ${e.message}")
+            // İstersen kullanıcıya Toast mesajı gösterebilirsin:
+            // Toast.makeText(getApplication(), "Ödeme sistemi hazır değil", Toast.LENGTH_SHORT).show()
         }
-        startBillingConnection()
     }
 
     // --- FONKSİYONLAR ---
