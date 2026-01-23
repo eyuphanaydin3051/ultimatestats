@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eyuphanaydin.discbase.ui.theme.StitchColor
@@ -17,8 +18,10 @@ fun PremiumRequiredDialog(
     onDismiss: () -> Unit,
     onBuyClick: () -> Unit
 ) {
-    val buttonText = if (price.isNotEmpty()) "Abone Ol ($price)" else "Abonelik Başlat"
-
+    val buttonText = if (price.isNotEmpty())
+        stringResource(R.string.btn_subscribe_format, price)
+    else
+        stringResource(R.string.btn_start_subscription)
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -30,7 +33,7 @@ fun PremiumRequiredDialog(
         },
         text = {
             Column {
-                Text("Gelişmiş istatistik modunu kullanmak için Premium üyeliğe geçmelisiniz.")
+                Text(stringResource(R.string.premiumdesc))
                 Spacer(modifier = Modifier.height(16.dp))
                 Text("• Detaylı istatistikler (Drop, Turnover, Blok)", fontSize = 14.sp)
                 Text("• PDF Raporlama", fontSize = 14.sp)

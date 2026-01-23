@@ -56,16 +56,16 @@ class PdfReportGenerator(private val context: Context) {
         val valP = Paint().apply { color = Color.BLACK; textSize = 24f; typeface = Typeface.DEFAULT_BOLD; textAlign = Paint.Align.CENTER }
 
         // Toplam Maç
-        canvas.drawText("Toplam Maç", 100f, currentY + 30f, titleP)
+        canvas.drawText(context.getString(R.string.pdf_total_match), 100f, currentY + 30f, titleP)
         canvas.drawText("$totalMatches", 100f, currentY + 60f, valP)
 
         // Galibiyet
-        canvas.drawText("Galibiyet", 297f, currentY + 30f, titleP)
+        canvas.drawText(context.getString(R.string.pdf_wins), 297f, currentY + 30f, titleP)
         valP.color = Color.parseColor("#4CAF50") // Yeşil
         canvas.drawText("$wins", 297f, currentY + 60f, valP)
 
         // Mağlubiyet
-        canvas.drawText("Mağlubiyet", 495f, currentY + 30f, titleP)
+        canvas.drawText(context.getString(R.string.pdf_losses), 495f, currentY + 30f, titleP)
         valP.color = Color.parseColor("#F44336") // Kırmızı
         canvas.drawText("$losses", 495f, currentY + 60f, valP)
 
@@ -74,7 +74,7 @@ class PdfReportGenerator(private val context: Context) {
         // ---------------------------------------------------------
         // 2. TAKIM PERFORMANSI & VERİMLİLİK
         // ---------------------------------------------------------
-        drawSectionTitle(canvas, "Takım Performansı & Verimlilik", currentY)
+        drawSectionTitle(canvas, context.getString(R.string.pdf_team_performance), currentY)
         currentY += 25f
 
         // Hesaplamalar
@@ -89,25 +89,25 @@ class PdfReportGenerator(private val context: Context) {
 
         // Sol Kart: Performans
         drawCardBackground(canvas, 20f, currentY, colWidth, 160f)
-        drawSectionTitleSmall(canvas, "Performans", 35f, currentY + 20f)
+        drawSectionTitleSmall(canvas, context.getString(R.string.pdf_performance), 35f, currentY + 20f)
         var innerY = currentY + 40f
 
-        drawModernStatBar(canvas, 35f, innerY, "Hold %", holdRate.progress, holdRate.text, Color.parseColor("#03DAC5"))
+        drawModernStatBar(canvas, 35f, innerY, context.getString(R.string.pdf_label_hold), holdRate.progress, holdRate.text, Color.parseColor("#03DAC5"))
         innerY += 40f
-        drawModernStatBar(canvas, 35f, innerY, "Break %", breakRate.progress, breakRate.text, Color.parseColor("#FF9800"))
+        drawModernStatBar(canvas, 35f, innerY, context.getString(R.string.pdf_label_break), breakRate.progress, breakRate.text, Color.parseColor("#FF9800"))
         innerY += 40f
-        drawModernStatBar(canvas, 35f, innerY, "Pas Başarısı", passRate.progress, passRate.text, Color.BLUE)
+        drawModernStatBar(canvas, 35f, innerY, context.getString(R.string.pdf_label_pass_completed), passRate.progress, passRate.text, Color.BLUE)
 
         // Sağ Kart: Verimlilik
         drawCardBackground(canvas, 305f, currentY, colWidth, 160f)
         innerY = currentY + 40f
-        drawSectionTitleSmall(canvas, "Verimlilik", 320f, currentY + 20f)
+        drawSectionTitleSmall(canvas, context.getString(R.string.pdf_efficiency), 320f, currentY + 20f)
 
-        drawModernStatBar(canvas, 320f, innerY, "Conversion", conversionRate.progress, conversionRate.text, if(conversionRate.progress>0.5) Color.parseColor("#4CAF50") else Color.parseColor("#F44336"))
+        drawModernStatBar(canvas, 320f, innerY, context.getString(R.string.pdf_label_conversion), conversionRate.progress, conversionRate.text, if(conversionRate.progress>0.5) Color.parseColor("#4CAF50") else Color.parseColor("#F44336"))
         innerY += 40f
-        drawModernStatBar(canvas, 320f, innerY, "Clean Holds", cleanHoldRate.progress, cleanHoldRate.text, Color.parseColor("#00B0FF"))
+        drawModernStatBar(canvas, 320f, innerY, context.getString(R.string.pdf_label_clean_holds), cleanHoldRate.progress, cleanHoldRate.text, Color.parseColor("#00B0FF"))
         innerY += 40f
-        drawModernStatBar(canvas, 320f, innerY, "D-Line Conv.", blockConversionRate.progress, blockConversionRate.text, Color.MAGENTA)
+        drawModernStatBar(canvas, 320f, innerY, context.getString(R.string.pdf_label_dline_conv), blockConversionRate.progress, blockConversionRate.text, Color.MAGENTA)
 
         currentY += 180f
 
@@ -129,15 +129,15 @@ class PdfReportGenerator(private val context: Context) {
         val teamAvgPullTime = if (teamStats.totalPulls > 0) String.format("%.2f sn", teamStats.totalPullTimeSeconds.toDouble() / teamStats.totalPulls) else "0.00 sn"
 
         // Satır 1
-        drawStitchStatBox(canvas, 35f, boxY, boxW, boxH, "Pas Denemesi", "${teamStats.totalPassesAttempted}", Color.DKGRAY)
-        drawStitchStatBox(canvas, 35f + boxW + gap, boxY, boxW, boxH, "Başarılı Pas", "${teamStats.totalPassesCompleted}", Color.parseColor("#4CAF50"))
-        drawStitchStatBox(canvas, 35f + (boxW + gap)*2, boxY, boxW, boxH, "Ort. Tempo", teamAvgTempo, Color.parseColor("#FFC107"))
+        drawStitchStatBox(canvas, 35f, boxY, boxW, boxH, context.getString(R.string.pdf_label_pass_attempts), "${teamStats.totalPassesAttempted}", Color.DKGRAY)
+        drawStitchStatBox(canvas, 35f + boxW + gap, boxY, boxW, boxH, context.getString(R.string.pdf_label_pass_completed), "${teamStats.totalPassesCompleted}", Color.parseColor("#4CAF50"))
+        drawStitchStatBox(canvas, 35f + (boxW + gap)*2, boxY, boxW, boxH, context.getString(R.string.pdf_label_avg_tempo), teamAvgTempo, Color.parseColor("#FFC107"))
 
         // Satır 2
         val row2Y = boxY + boxH + gap
-        drawStitchStatBox(canvas, 35f, row2Y, boxW, boxH, "Toplam Hata", "$totalTurnovers", Color.parseColor("#F44336"))
-        drawStitchStatBox(canvas, 35f + boxW + gap, row2Y, boxW, boxH, "Hata / Maç", avgTurnoverPerMatch, Color.parseColor("#F44336"))
-        drawStitchStatBox(canvas, 35f + (boxW + gap)*2, row2Y, boxW, boxH, "Ort. Pull", teamAvgPullTime, Color.parseColor("#795548"))
+        drawStitchStatBox(canvas, 35f, row2Y, boxW, boxH, context.getString(R.string.pdf_label_total_turnover), "$totalTurnovers", Color.parseColor("#F44336"))
+        drawStitchStatBox(canvas, 35f + boxW + gap, row2Y, boxW, boxH, context.getString(R.string.pdf_label_turnover_per_match), avgTurnoverPerMatch, Color.parseColor("#F44336"))
+        drawStitchStatBox(canvas, 35f + (boxW + gap)*2, row2Y, boxW, boxH, context.getString(R.string.pdf_label_avg_pull), teamAvgPullTime, Color.parseColor("#795548"))
 
         currentY += 150f
 
@@ -150,11 +150,11 @@ class PdfReportGenerator(private val context: Context) {
             document.finishPage(page)
             page = document.startPage(pageInfo)
             canvas = page.canvas
-            drawHeader(canvas, tournament.tournamentName + " (Devam)")
+            drawHeader(canvas, tournament.tournamentName + " (continue)")
             currentY = 100f
         }
 
-        drawSectionTitle(canvas, "Turnuva Liderleri (Top 3)", currentY)
+        drawSectionTitle(canvas, context.getString(R.string.pdf_leaders), currentY)
         currentY += 30f
 
         // --- VERİ HAZIRLIĞI ---
@@ -209,13 +209,13 @@ class PdfReportGenerator(private val context: Context) {
         val cardGap = 15f
 
         // SATIR 1: Gol - Asist - Blok
-        drawLeaderCard(canvas, 20f, currentY, cardW, cardH, "Gol Krallığı", Color.parseColor("#4CAF50"), topGoals) {
+        drawLeaderCard(canvas, 20f, currentY, cardW, cardH, context.getString(R.string.pdf_goals_leader), Color.parseColor("#4CAF50"), topGoals) {
             it.basicStats.goal.toString()
         }
-        drawLeaderCard(canvas, 20f + cardW + cardGap, currentY, cardW, cardH, "Asist Krallığı", Color.BLUE, topAssists) {
+        drawLeaderCard(canvas, 20f + cardW + cardGap, currentY, cardW, cardH, context.getString(R.string.pdf_assists_leader), Color.BLUE, topAssists) {
             it.basicStats.assist.toString()
         }
-        drawLeaderCard(canvas, 20f + (cardW + cardGap)*2, currentY, cardW, cardH, "Blok Lideri", Color.MAGENTA, topBlocks) {
+        drawLeaderCard(canvas, 20f + (cardW + cardGap)*2, currentY, cardW, cardH, context.getString(R.string.pdf_blocks_leader), Color.MAGENTA, topBlocks) {
             it.basicStats.block.toString()
         }
 
@@ -228,11 +228,11 @@ class PdfReportGenerator(private val context: Context) {
             "${String.format("%.1f", rate)}%"
         }
 
-        drawLeaderCard(canvas, 20f + cardW + cardGap, currentY, cardW, cardH, "Toplam Sayı (O)", Color.DKGRAY, topPointsPlayed) {
+        drawLeaderCard(canvas, 20f + cardW + cardGap, currentY, cardW, cardH, context.getString(R.string.pdf_label_total_points_played), Color.DKGRAY, topPointsPlayed) {
             it.basicStats.pointsPlayed.toString()
         }
 
-        drawLeaderCard(canvas, 20f + (cardW + cardGap)*2, currentY, cardW, cardH, "Maç Başı Sayı", Color.parseColor("#FFC107"), topPointsPerMatch) {
+        drawLeaderCard(canvas, 20f + (cardW + cardGap)*2, currentY, cardW, cardH, context.getString(R.string.pdf_label_points_per_match), Color.parseColor("#FFC107"), topPointsPerMatch) {
             val mp = matchesPlayedMap[it.basicStats.playerId] ?: 1
             String.format("%.1f", it.basicStats.pointsPlayed.toDouble() / mp)
         }
@@ -248,7 +248,7 @@ class PdfReportGenerator(private val context: Context) {
         }
         // 3. kutu şimdilik boş veya "En Çok Pas" olabilir (İsteğe bağlı)
         val topPasses = playerStats.filter { it.basicStats.successfulPass > 0 }.sortedByDescending { it.basicStats.successfulPass }.take(3)
-        drawLeaderCard(canvas, 20f + (cardW + cardGap)*2, currentY, cardW, cardH, "En Çok Pas", Color.DKGRAY, topPasses) {
+        drawLeaderCard(canvas, 20f + (cardW + cardGap)*2, currentY, cardW, cardH, context.getString(R.string.pdf_label_most_passes), Color.DKGRAY, topPasses) {
             it.basicStats.successfulPass.toString()
         }
 
@@ -261,15 +261,15 @@ class PdfReportGenerator(private val context: Context) {
             document.finishPage(page)
             page = document.startPage(pageInfo)
             canvas = page.canvas
-            drawHeader(canvas, "Maç Sonuçları")
+            drawHeader(canvas, context.getString(R.string.pdf_match_results))
             currentY = 100f
         } else {
             // Başlık atmadan devam et veya ayır
-            drawSectionTitle(canvas, "Maç Sonuçları", currentY)
+            drawSectionTitle(canvas, context.getString(R.string.pdf_match_results), currentY)
             currentY += 30f
         }
 
-        val headers = listOf("RAKİP", "SONUÇ", "SKOR", "MVP")
+        val headers = listOf(context.getString(R.string.pdf_header_opponent), context.getString(R.string.pdf_header_result), context.getString(R.string.pdf_header_score), context.getString(R.string.pdf_header_mvp))
         val colX = floatArrayOf(30f, 250f, 350f, 450f)
 
         val headerBg = Paint().apply { color = Color.LTGRAY; style = Paint.Style.FILL }
@@ -298,7 +298,7 @@ class PdfReportGenerator(private val context: Context) {
             }
 
             val isWin = match.scoreUs > match.scoreThem
-            val resultText = if (isWin) "G" else if (match.scoreUs < match.scoreThem) "M" else "B"
+            val resultText = if (isWin) context.getString(R.string.W) else if (match.scoreUs < match.scoreThem) context.getString(R.string.L) else context.getString(R.string.D)
             val resultColor = if (isWin) Color.parseColor("#4CAF50") else if (match.scoreUs < match.scoreThem) Color.parseColor("#F44336") else Color.GRAY
 
             // 1. Rakip
@@ -354,7 +354,7 @@ class PdfReportGenerator(private val context: Context) {
         currentY += 110f
 
         // 3. TAKIM PERFORMANSI (Modern Grid Yapısı)
-        drawSectionTitle(canvas, "Takım Performansı", currentY)
+        drawSectionTitle(canvas, context.getString(R.string.pdf_team_performance), currentY)
         currentY += 25f
 
         val teamStats = calculateTeamStatsForMatch(match.pointsArchive, playerStats)
@@ -366,18 +366,18 @@ class PdfReportGenerator(private val context: Context) {
         // Sol Kart: Oranlar
         drawCardBackground(canvas, 20f, currentY, 270f, 160f)
         var innerY = currentY + 40f
-        drawSectionTitleSmall(canvas, "Genel Oranlar", 35f, currentY + 20f)
-        drawModernStatBar(canvas, 35f, innerY, "Hold %", holdRate.progress, holdRate.text, Color.parseColor("#03DAC5"))
+        drawSectionTitleSmall(canvas, context.getString(R.string.pdf_general_rates), 35f, currentY + 20f)
+        drawModernStatBar(canvas, 35f, innerY, context.getString(R.string.pdf_label_hold), holdRate.progress, holdRate.text, Color.parseColor("#03DAC5"))
         innerY += 40f
-        drawModernStatBar(canvas, 35f, innerY, "Break %", breakRate.progress, breakRate.text, Color.parseColor("#FF9800"))
+        drawModernStatBar(canvas, 35f, innerY, context.getString(R.string.pdf_label_break), breakRate.progress, breakRate.text, Color.parseColor("#FF9800"))
         innerY += 40f
-        drawModernStatBar(canvas, 35f, innerY, "Pas Başarısı", passRate.progress, passRate.text, colorPrimary)
+        drawModernStatBar(canvas, 35f, innerY, context.getString(R.string.pdf_pass_success), passRate.progress, passRate.text, colorPrimary)
 
         // Sağ Kart: Verimlilik
         drawCardBackground(canvas, 305f, currentY, 270f, 160f)
         innerY = currentY + 40f
-        drawSectionTitleSmall(canvas, "Verimlilik", 320f, currentY + 20f)
-        drawModernStatBar(canvas, 320f, innerY, "Conversion", conversionRate.progress, conversionRate.text, if(conversionRate.progress>0.5) colorOffense else colorDefense)
+        drawSectionTitleSmall(canvas, context.getString(R.string.pdf_efficiency), 320f, currentY + 20f)
+        drawModernStatBar(canvas, 320f, innerY, context.getString(R.string.pdf_label_conversion), conversionRate.progress, conversionRate.text, if(conversionRate.progress>0.5) colorOffense else colorDefense)
 
         val detailP = Paint().apply { textSize = 12f; color = colorTextPrimary }
         val totalTurnovers = teamStats.totalThrowaways + teamStats.totalDrops
@@ -388,14 +388,14 @@ class PdfReportGenerator(private val context: Context) {
         // 4. DETAYLI KUTULAR
         val boxW = 125f; val gap = 15f
         drawStitchStatBox(canvas, 20f, currentY, boxW, 50f, "Paslar", "${teamStats.totalPassesCompleted}/${teamStats.totalPassesAttempted}", Color.DKGRAY)
-        drawStitchStatBox(canvas, 20f+boxW+gap, currentY, boxW, 50f, "Oynanan Sayı", "${teamStats.totalPointsPlayed}", Color.GRAY)
-        drawStitchStatBox(canvas, 20f+(boxW+gap)*2, currentY, boxW, 50f, "Maç Süresi", "${match.matchDurationSeconds/60} dk", colorAmber)
-        drawStitchStatBox(canvas, 20f+(boxW+gap)*3, currentY, boxW, 50f, "Bloklar", "${teamStats.totalBlocks}", colorSecondary)
+        drawStitchStatBox(canvas, 20f+boxW+gap, currentY, boxW, 50f, context.getString(R.string.pdf_total_match), "${teamStats.totalPointsPlayed}", Color.GRAY)
+        drawStitchStatBox(canvas, 20f+(boxW+gap)*2, currentY, boxW, 50f, context.getString(R.string.pdf_label_match_duration), "${match.matchDurationSeconds/60} dk", colorAmber)
+        drawStitchStatBox(canvas, 20f+(boxW+gap)*3, currentY, boxW, 50f, context.getString(R.string.pdf_label_blocks), "${teamStats.totalBlocks}", colorSecondary)
         currentY += 80f
 
         // 5. OYUNCU TABLOSU
         if (currentY > 750f) { document.finishPage(page); page = document.startPage(pageInfo); canvas = page.canvas; currentY = 50f }
-        drawSectionTitle(canvas, "Oyuncu İstatistikleri", currentY)
+        drawSectionTitle(canvas, context.getString(R.string.pdf_section_player_stats), currentY)
         currentY += 30f
         drawPlayerTable(canvas, currentY, playerStats)
 
@@ -427,7 +427,7 @@ class PdfReportGenerator(private val context: Context) {
         currentY = 140f
 
         // 1.2. GENEL KARİYER İSTATİSTİKLERİ
-        drawSectionTitle(canvas, "GENEL KARİYER İSTATİSTİKLERİ", currentY)
+        drawSectionTitle(canvas, context.getString(R.string.pdf_section_career_general), currentY)
         currentY += 30f
 
         // 2. DEĞİŞİKLİK: createDummyRosterFromStats YERİNE allPlayers KULLANILIYOR
@@ -444,7 +444,7 @@ class PdfReportGenerator(private val context: Context) {
         }
 
         // 1.3. TURNUVA BAZLI İSTATİSTİKLER
-        drawSectionTitle(canvas, "TURNUVA DETAYLARI", currentY)
+        drawSectionTitle(canvas, context.getString(R.string.tour_detail_title), currentY)
         currentY += 30f
 
         allTournaments.forEach { tournament ->
@@ -454,7 +454,7 @@ class PdfReportGenerator(private val context: Context) {
                 page = document.startPage(pageInfo)
                 canvas = page.canvas
                 currentY = 50f
-                drawSectionTitle(canvas, "TURNUVA DETAYLARI (Devam)", currentY)
+                drawSectionTitle(canvas, context.getString(R.string.tour_detail_title), currentY)
                 currentY += 30f
             }
 

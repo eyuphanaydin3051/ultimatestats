@@ -53,7 +53,7 @@
     <string name="pdf_total_match">Toplam Maç</string>
     <string name="pdf_wins">Galibiyet</string>
     <string name="pdf_losses">Mağlubiyet</string>
-    <string name="pdf_team_performance">Takım Performansı &amp; Verimlilik</string>
+    <string name="pdf_team_performance">Takım Performansı</string>
     <string name="pdf_performance">Performans</string>
     <string name="pdf_efficiency">Verimlilik</string>
     <string name="pdf_pass_success">Pas Başarısı</string>
@@ -707,5 +707,41 @@
     <string name="btn_close">Kapat</string>
     <string name="title_efficiency_score">Verimlilik Puanı</string>
     <string name="label_unknown_date">Bilinmeyen Tarih</string>
+    <string name="pdf_label_hold">Hold %</string>
+    <string name="pdf_label_break">Break %</string>
+    <string name="pdf_label_conversion">Conversion</string>
+    <string name="pdf_label_clean_holds">Clean Holds</string>
+    <string name="pdf_label_dline_conv">D-Line Conv.</string>
+    <string name="pdf_label_pass_attempts">Pas Denemesi</string>
+    <string name="pdf_label_pass_completed">Başarılı Pas</string>
+    <string name="pdf_label_avg_tempo">Ort. Tempo</string>
+    <string name="pdf_label_total_turnover">Toplam Hata</string>
+    <string name="pdf_label_turnover_per_match">Hata / Maç</string>
+    <string name="pdf_label_avg_pull">Ort. Pull</string>
+    <string name="pdf_label_pass_rate_10">Pas % (>10 Pas)</string>
+    <string name="pdf_label_total_points_played">Toplam Sayı (O)</string>
+    <string name="pdf_label_points_per_match">Maç Başı Sayı</string>
+    <string name="pdf_label_most_passes">En Çok Pas</string>
+    <string name="pdf_header_opponent">RAKİP</string>
+    <string name="pdf_header_result">SONUÇ</string>
+    <string name="pdf_header_score">SKOR</string>
+    <string name="pdf_header_mvp">MVP</string>
+    <string name="pdf_general_rates">Genel Oranlar</string>
+    <string name="pdf_label_passes">Paslar</string>
+    <string name="pdf_label_match_duration">Maç Süresi</string>
+    <string name="pdf_label_blocks">Bloklar</string>
+    <string name="pdf_section_player_stats">Oyuncu İstatistikleri</string>
+    <string name="pdf_section_career_general">GENEL KARİYER İSTATİSTİKLERİ</string>
+    <string name="pdf_career_total">Kariyer Toplamı</string>
+
+    <string name="pro_our_point">BİZİM SAYI</string>
+    <string name="pro_opponent_point">RAKİP SAYI</string>
+    <string name="label_event_count">Olay</string>
+    <string name="btn_subscribe_format">Abone Ol (%1$s)</string>
+    <string name="btn_start_subscription">Abonelik Başlat</string>
+    <string name="msg_purchase_error">Satın alma ekranı açılamadı</string>
+    <string name="btn_clear">Temizle</string>
+    <string name="msg_checking_profile">Profil kontrol ediliyor...</string>
+    <string name="premiumdesc">Gelişmiş istatistik modunu kullanmak için Premium üyeliğe geçmelisiniz.</string>
 
 </resources>
