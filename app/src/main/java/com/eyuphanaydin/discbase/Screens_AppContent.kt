@@ -1783,12 +1783,22 @@ fun SeasonMatchesScreen(
 fun PlayerLeaderboardScreen(
     navController: NavController,
     allPlayers: List<Player>,
-    tournaments: List<Tournament>
+    tournaments: List<Tournament>,
+    viewModel: MainViewModel
 ) {
     var showEfficiencyInfo by remember { mutableStateOf(false) }
     var showTempoInfo by remember { mutableStateOf(false) }
 
-    if (showEfficiencyInfo) EfficiencyDescriptionDialog(onDismiss = { showEfficiencyInfo = false })
+    // 1. KRİTERLERİ DİNLEME (Canlı Güncelleme İçin)
+    val efficiencyCriteria by viewModel.efficiencyCriteria.collectAsState()
+
+    // 2. DİALOGA KRİTERLERİ GÖNDERME (Bilgi ekranında doğru görünmesi için)
+    if (showEfficiencyInfo) {
+        EfficiencyDescriptionDialog(
+            onDismiss = { showEfficiencyInfo = false },
+            criteria = efficiencyCriteria // <--- EKLENDİ
+        )
+    }
     if (showTempoInfo) TempoDescriptionDialog(onDismiss = { showTempoInfo = false })
 
     // --- STATE ---
@@ -1805,24 +1815,25 @@ fun PlayerLeaderboardScreen(
     val selectedTournament = tournaments.find { it.id == selectedTournamentId }
     val selectedTournamentName = selectedTournament?.tournamentName ?: stringResource(R.string.label_all_season)
     val selectedMatchName = remember(selectedTournament, selectedMatchId) {
-        if (selectedMatchId == null) "All Matches" // Bu metin aşağıdaki stringResource ile ezilecek
+        if (selectedMatchId == null) "All Matches"
         else selectedTournament?.matches?.find { it.id == selectedMatchId }?.let { "vs ${it.opponentName}" } ?: "Bilinmeyen Maç"
     }
-    // Görüntüleme için düzeltme:
     val selectedMatchNameDisplay = if (selectedMatchId == null) stringResource(R.string.label_all_matches) else selectedMatchName
 
-    // --- HESAPLAMA (Sıralama Mantığı) ---
+    // --- HESAPLAMA (GÜNCELLENEN KISIM) ---
     val rankedPlayers = remember(
         allPlayers, selectedStatType, calculationMode,
-        selectedTournamentId, selectedMatchId, tournaments
+        selectedTournamentId, selectedMatchId, tournaments,
+        efficiencyCriteria // <--- REMEMBER KEY EKLENDİ (Kriter değişirse yeniden hesapla)
     ) {
         allPlayers.map { player ->
-            // 1. Temel İstatistikleri Çek
+            // 3. HESAPLAMA FONKSİYONUNA KRİTERLERİ GÖNDERME
             val stats = calculateGlobalPlayerStats(
                 playerId = player.id,
                 filterTournamentId = selectedTournamentId,
                 filterMatchId = selectedMatchId,
-                allTournaments = tournaments
+                allTournaments = tournaments,
+                criteria = efficiencyCriteria // <--- KRİTİK: Utils.kt'ye iletiyoruz
             )
 
             // 2. Ham Değeri Al (Toplam Değer)
@@ -1834,7 +1845,7 @@ fun PlayerLeaderboardScreen(
                 StatType.THROWAWAY -> stats.basicStats.throwaway.toDouble()
                 StatType.DROP -> stats.basicStats.drop.toDouble()
                 StatType.PLUS_MINUS -> stats.plusMinus
-                StatType.PASS_COUNT -> (stats.basicStats.successfulPass + stats.basicStats.assist).toDouble()
+                StatType.PASS_COUNT -> (stats.basicStats.successfulPass + stats.basicStats.assist+ stats.basicStats.throwaway).toDouble()
                 StatType.POINTS_PLAYED -> stats.basicStats.pointsPlayed.toDouble()
                 StatType.PLAYTIME -> stats.basicStats.secondsPlayed.toDouble()
                 StatType.CATCH_RATE -> {
@@ -2100,68 +2111,128 @@ fun LeaderboardItem(
     }
 }
 @Composable
-fun EfficiencyDescriptionDialog(onDismiss: () -> Unit) {
+fun EfficiencyDescriptionDialog(
+    onDismiss: () -> Unit,
+    criteria: List<EfficiencyCriterion> = emptyList() // Varsayılan boş liste
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.efficiency_dialog_title)) },
         text = {
-            Column {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Text(
                     stringResource(R.string.efficiency_dialog_desc),
                     fontSize = 14.sp
                 )
                 Spacer(Modifier.height(16.dp))
-                // --- CALLAHAN ---
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Stars, null, tint = Color(0xFFFFC107), modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.stat_callahan_points), fontWeight = FontWeight.Bold, color = Color(0xFFFFC107))
-                    Text(stringResource(R.string.stat_callahan_desc))
-                }
-                Spacer(Modifier.height(8.dp))
 
-                // BLOK
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Shield, null, tint = com.eyuphanaydin.discbase.ui.theme.StitchPrimary, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.stat_block_points), fontWeight = FontWeight.Bold, color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
-                    Text(stringResource(R.string.stat_block_desc))
-                }
+                if (criteria.isEmpty()) {
+                    // --- VARSAYILAN (STANDART) GÖRÜNÜM ---
+                    // Sizin orijinal kodunuz burasıdır:
 
-                Spacer(Modifier.height(8.dp))
+                    // CALLAHAN
+                    EfficiencyRow(
+                        icon = Icons.Default.Stars,
+                        color = Color(0xFFFFC107),
+                        title = stringResource(R.string.stat_callahan_points),
+                        desc = stringResource(R.string.stat_callahan_desc)
+                    )
 
-                // GOL/ASİST
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.AddCircle, null, tint = StitchOffense, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.stat_goal_points), fontWeight = FontWeight.Bold, color = StitchOffense)
-                    Text(stringResource(R.string.stat_goal_assist_desc))
-                }
+                    // BLOK
+                    EfficiencyRow(
+                        icon = Icons.Default.Shield,
+                        color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
+                        title = stringResource(R.string.stat_block_points),
+                        desc = stringResource(R.string.stat_block_desc)
+                    )
 
-                Spacer(Modifier.height(8.dp))
+                    // GOL/ASİST
+                    EfficiencyRow(
+                        icon = Icons.Default.AddCircle,
+                        color = StitchOffense,
+                        title = stringResource(R.string.stat_goal_points),
+                        desc = stringResource(R.string.stat_goal_assist_desc)
+                    )
 
-                // PAS
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.TrendingUp, null, tint = Color.Gray, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.stat_pass_points), fontWeight = FontWeight.Bold, color = Color.Gray)
-                    Text(stringResource(R.string.stat_pass_desc))
-                }
+                    // PAS
+                    EfficiencyRow(
+                        icon = Icons.Default.TrendingUp,
+                        color = Color.Gray,
+                        title = stringResource(R.string.stat_pass_points),
+                        desc = stringResource(R.string.stat_pass_desc)
+                    )
 
-                Spacer(Modifier.height(8.dp))
+                    // HATA
+                    EfficiencyRow(
+                        icon = Icons.Default.TrendingDown,
+                        color = com.eyuphanaydin.discbase.ui.theme.StitchDefense,
+                        title = stringResource(R.string.stat_turnover_points),
+                        desc = stringResource(R.string.stat_turnover_desc)
+                    )
 
-                // HATA
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.TrendingDown, null, tint = com.eyuphanaydin.discbase.ui.theme.StitchDefense, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.stat_turnover_points), fontWeight = FontWeight.Bold, color = com.eyuphanaydin.discbase.ui.theme.StitchDefense)
-                    Text(stringResource(R.string.stat_turnover_desc))
+                } else {
+                    // --- DİNAMİK (KAPTAN AYARLI) GÖRÜNÜM ---
+                    Text(
+                        text = "Takım Özel Puanlaması", // İsterseniz strings.xml'e ekleyin
+                        fontWeight = FontWeight.Bold,
+                        color = StitchColor.TextPrimary,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    Divider(modifier = Modifier.padding(bottom = 8.dp))
+
+                    criteria.forEach { item ->
+                        // İstatistik tipine göre ikon ve renk belirleme
+                        val (icon, color) = when (item.statType) {
+                            "CALLAHAN" -> Icons.Default.Stars to Color(0xFFFFC107)
+                            "BLOCK" -> Icons.Default.Shield to com.eyuphanaydin.discbase.ui.theme.StitchPrimary
+                            "GOAL", "ASSIST" -> Icons.Default.AddCircle to StitchOffense
+                            "THROWAWAY", "DROP" -> Icons.Default.TrendingDown to com.eyuphanaydin.discbase.ui.theme.StitchDefense
+                            "PASS_COUNT" -> Icons.Default.TrendingUp to Color.Gray
+                            else -> Icons.Default.Circle to Color.Gray
+                        }
+
+                        // Puan formatı (Örn: +1.5 veya -1.0)
+                        val sign = if (item.points > 0) "+" else ""
+                        val pointsText = "$sign${item.points} Puan" // "Puan" kelimesini stringResource yapabilirsiniz
+
+                        EfficiencyRow(
+                            icon = icon,
+                            color = color,
+                            title = "${item.name} ($pointsText)",
+                            desc = "" // Dinamik kısımda açıklama boş geçilebilir veya statType yazılabilir
+                        )
+                    }
                 }
             }
         },
-        confirmButton = { Button(onClick = onDismiss) { Text(stringResource(R.string.btn_understood)) } },
+        confirmButton = {
+            Button(onClick = onDismiss, colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary)) {
+                Text(stringResource(R.string.btn_understood))
+            }
+        },
         containerColor = StitchColor.Surface
     )
+}
+
+// Kod tekrarını önlemek için yardımcı bir Composable
+@Composable
+private fun EfficiencyRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    color: Color,
+    title: String,
+    desc: String
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+        Icon(icon, null, tint = color, modifier = Modifier.size(24.dp))
+        Spacer(Modifier.width(12.dp))
+        Column {
+            Text(title, fontWeight = FontWeight.Bold, color = color, fontSize = 14.sp)
+            if (desc.isNotEmpty()) {
+                Text(desc, fontSize = 12.sp, color = Color.Gray)
+            }
+        }
+    }
 }
 @Composable
 fun TempoDescriptionDialog(onDismiss: () -> Unit) {
@@ -2228,6 +2299,10 @@ fun PlayerEditScreen(
     // --- STATE TANIMLARI ---
     val scope = rememberCoroutineScope()
     val mainViewModel: MainViewModel = viewModel()
+
+    // 1. KRİTERLERİ ÇEKİYORUZ
+    val efficiencyCriteria by mainViewModel.efficiencyCriteria.collectAsState()
+
     val currentProfile by mainViewModel.profile.collectAsState()
     val allUserProfiles by mainViewModel.allUserProfiles.collectAsState()
     var isSaving by remember { mutableStateOf(false) }
@@ -2301,12 +2376,14 @@ fun PlayerEditScreen(
     var selectedMatchId by remember { mutableStateOf<String?>(null) }
     val selectedTournament = allTournaments.find { it.id == selectedTournamentId }
 
-    // --- İSTATİSTİK HESAPLAMALARI ---
+    // --- İSTATİSTİK HESAPLAMALARI (GÜNCELLENDİ) ---
+    // Criteria parametresi eklendi
     val advancedStats = calculateGlobalPlayerStats(
         playerId = player.id,
         filterTournamentId = selectedTournamentId,
         filterMatchId = selectedMatchId,
-        allTournaments = allTournaments
+        allTournaments = allTournaments,
+        criteria = efficiencyCriteria // <--- KRİTERLER BURADA
     )
     val stats = advancedStats.basicStats
 
@@ -2318,8 +2395,9 @@ fun PlayerEditScreen(
     val totalCatchesAttempted = totalSuccesfulCatches + stats.drop
     val catchRate = calculateSafePercentage(totalSuccesfulCatches, totalCatchesAttempted)
 
-    // --- TAKIM ORTALAMALARI ---
-    val teamAverages = remember(allPlayers, selectedTournamentId, selectedMatchId, allTournaments) {
+    // --- TAKIM ORTALAMALARI (GÜNCELLENDİ) ---
+    // Criteria buradaki döngüye de eklendi
+    val teamAverages = remember(allPlayers, selectedTournamentId, selectedMatchId, allTournaments, efficiencyCriteria) {
         var totalGoals = 0
         var totalAssists = 0
         var totalBlocks = 0
@@ -2335,7 +2413,8 @@ fun PlayerEditScreen(
                 playerId = p.id,
                 filterTournamentId = selectedTournamentId,
                 filterMatchId = selectedMatchId,
-                allTournaments = allTournaments
+                allTournaments = allTournaments,
+                criteria = efficiencyCriteria // <--- BURAYA DA EKLENDİ
             ).basicStats
 
             if (pStats.pointsPlayed > 0) {
@@ -2378,10 +2457,13 @@ fun PlayerEditScreen(
             .associateBy { it.jerseyNumber!! }
     }
 
+    // ... (Dialoglar ve UI Kodlarının geri kalanı aynı) ...
+    // Sadece EfficiencyDescriptionDialog kısmında güncelleme var
+
     if (showNumberPickerDialog) {
         AlertDialog(
             onDismissRequest = { showNumberPickerDialog = false },
-            title = { Text(stringResource(R.string.jersey_title)) }, // "Forma Numaraları"
+            title = { Text(stringResource(R.string.jersey_title)) },
             text = {
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 60.dp),
@@ -2399,7 +2481,7 @@ fun PlayerEditScreen(
                                 modifier = Modifier.height(60.dp).fillMaxWidth(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(stringResource(R.string.jersey_empty), fontWeight = FontWeight.Bold) // "Yok/Boş"
+                                Text(stringResource(R.string.jersey_empty), fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -2526,8 +2608,13 @@ fun PlayerEditScreen(
         var showEfficiencyInfo by remember { mutableStateOf(false) }
 
         if (showEfficiencyInfo) {
-            EfficiencyDescriptionDialog(onDismiss = { showEfficiencyInfo = false })
+            // KRİTERLER DİYALOGA GÖNDERİLDİ
+            EfficiencyDescriptionDialog(
+                onDismiss = { showEfficiencyInfo = false },
+                criteria = efficiencyCriteria
+            )
         }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -2536,6 +2623,8 @@ fun PlayerEditScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // ... (Profil Kartı ve Düzenleme Alanı aynı kalacak) ...
+
             // --- 1. YENİ PROFİL KARTI ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -2919,6 +3008,7 @@ fun PlayerEditScreen(
                         Spacer(Modifier.height(8.dp))
                     }
 
+                    // ... (Akış Oranları Kartı - Değişmedi) ...
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(24.dp),

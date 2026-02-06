@@ -35,7 +35,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = TournamentRepository(application.applicationContext)
     private val auth = Firebase.auth
-
+    val currentUserId: String? get() = com.google.firebase.ktx.Firebase.auth.currentUser?.uid
     // UI Mesajları
     private val _userMessage = MutableSharedFlow<String>(replay = 1)
     val userMessage: SharedFlow<String> = _userMessage.asSharedFlow()
@@ -87,7 +87,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val profile: StateFlow<TeamProfile> = activeTeamId.flatMapLatest { teamId ->
         if (teamId != null) repository.getProfile(teamId) else flowOf(TeamProfile())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TeamProfile())
-
+    val efficiencyCriteria: StateFlow<List<EfficiencyCriterion>> = profile
+        .map { it.efficiencyCriteria }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
     // Roller ve İstekler
     val currentUserRole: StateFlow<String?> = combine(currentUser, profile) { user, teamProfile ->
         user?.uid?.let { teamProfile.members[it] }
@@ -492,6 +498,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val newProfile = profile.value.copy(teamName = name, logoPath = logo ?: profile.value.logoPath)
         if (repository.saveProfile(tid, newProfile)) onSuccess()
     }
+    fun updateEfficiencyCriteria(newCriteria: List<EfficiencyCriterion>) = viewModelScope.launch {
+        val tid = activeTeamId.value ?: return@launch
+        val updatedProfile = profile.value.copy(efficiencyCriteria = newCriteria)
+        repository.saveProfile(tid, updatedProfile)
+    }
     fun updateMemberRole(uid: String, role: String) = viewModelScope.launch {
         val tid = getCurrentTeamId() ?: return@launch
         repository.updateMemberRole(tid, uid, role)
@@ -827,7 +838,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val tournaments: List<Tournament>,
         val allTeamPlayers: List<Player> // <-- YENİ EKLENDİ
     )
-
     private val _careerData = MutableStateFlow<List<TeamCareerData>>(emptyList())
     val careerData = _careerData.asStateFlow()
 

@@ -235,7 +235,8 @@ data class TeamProfile(
     val teamId: String = "",
     val teamName: String = "",
     val members: Map<String, String> = emptyMap(), // uid -> role
-    val logoPath: String? = null
+    val logoPath: String? = null,
+    val efficiencyCriteria: List<EfficiencyCriterion> = emptyList() // Bu satırı ekleyin
 )
 // DataModels.kt dosyasının en altına ekleyin
 
@@ -245,4 +246,11 @@ data class PointStateSnapshot(
     val activePasserId: String? = null,
     val gameMode: GameMode = GameMode.IDLE,
     val subbedOutStats: List<PlayerStats> = emptyList()
+)
+@Serializable
+data class EfficiencyCriterion(
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val name: String = "",
+    val statType: String = "GOAL",
+    val points: Double = 0.0
 )

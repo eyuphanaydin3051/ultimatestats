@@ -756,4 +756,10 @@
     <string name="kendi_istatistik">View your own statistics and passing network.</string>
     <string name="premium_price_per_month">%1$s/month</string>
 
+    <string name="eff_dialog_title">New Efficiency Criterion</string>
+    <string name="eff_label_name">Criterion Name (Ex: Defense Score)</string>
+    <string name="eff_label_stat">Select Statistic</string>
+    <string name="eff_label_points">Point Value (Ex: 1.5 or -2.0)</string>
+    <string name="eff_btn_add">Add</string>
+
 </resources>

@@ -29,7 +29,8 @@ fun calculateGlobalPlayerStats(
     playerId: String,
     filterTournamentId: String,
     filterMatchId: String? = null, // Varsayılan değer null
-    allTournaments: List<Tournament>
+    allTournaments: List<Tournament>,
+    criteria: List<EfficiencyCriterion> = emptyList() // <--- YENİ PARAMETRE
 ): AdvancedPlayerStats {
     val tournamentsToScan = if (filterTournamentId == "GENEL") {
         allTournaments
@@ -45,14 +46,21 @@ fun calculateGlobalPlayerStats(
     }
 
     val allPointsArchive = relevantMatches.flatMap { it.pointsArchive }
-    return calculateStatsFromPoints(playerId, allPointsArchive)
+    return calculateStatsFromPoints(playerId, allPointsArchive, criteria)
 }
-fun calculateStatsFromPoints(playerId: String, pointsArchive: List<PointData>): AdvancedPlayerStats {
+// Utils.kt dosyasında:
+
+fun calculateStatsFromPoints(
+    playerId: String,
+    pointsArchive: List<PointData>,
+    criteria: List<EfficiencyCriterion> = emptyList() // Varsayılan boş
+): AdvancedPlayerStats {
     var totalStats = PlayerStats(playerId = playerId)
     var oPointsPlayed = 0
     var dPointsPlayed = 0
     val aggregatedPassMap = mutableMapOf<String, Int>()
 
+    // --- 1. İSTATİSTİKLERİ TOPLAMA (Burası aynı kalıyor) ---
     for (pointData in pointsArchive) {
         val playerStat = pointData.stats.find { it.playerId == playerId }
         if (playerStat != null) {
@@ -67,7 +75,7 @@ fun calculateStatsFromPoints(playerId: String, pointsArchive: List<PointData>): 
                 pullAttempts = totalStats.pullAttempts + playerStat.pullAttempts,
                 successfulPulls = totalStats.successfulPulls + playerStat.successfulPulls,
                 block = totalStats.block + playerStat.block,
-                callahan = totalStats.callahan + playerStat.callahan, // <-- BU SATIRI EKLEYİN
+                callahan = totalStats.callahan + playerStat.callahan,
                 secondsPlayed = totalStats.secondsPlayed + playerStat.secondsPlayed,
                 totalTempoSeconds = totalStats.totalTempoSeconds + playerStat.totalTempoSeconds,
                 totalPullTimeSeconds = totalStats.totalPullTimeSeconds + playerStat.totalPullTimeSeconds
@@ -82,14 +90,36 @@ fun calculateStatsFromPoints(playerId: String, pointsArchive: List<PointData>): 
     }
     totalStats = totalStats.copy(passDistribution = aggregatedPassMap)
 
-    // --- GÜNCELLENEN FORMÜL (Blok = 1.5 Puan) ---
-    // Formül: (Gol + Asist) + (Blok * 1.5) - (Hata + Drop) + (Pas * 0.05)+(callahan * 2)
-    val efficiencyScore = ((totalStats.goal - totalStats.callahan) * 1.0) + // Callahan harici Goller
-            (totalStats.assist * 1.0) +
-            ((totalStats.block - totalStats.callahan) * 1.5) + // Callahan harici Bloklar
-            (totalStats.callahan * 3.5) - // Callahan'ın Toplam Değeri
-            ((totalStats.throwaway + totalStats.drop) * 1.0) +
-            (totalStats.successfulPass * 0.05)
+    // --- 2. HESAPLAMA (DÜZELTİLEN KISIM) ---
+
+    val efficiencyScore: Double = if (criteria.isNotEmpty()) {
+        // SENARYO A: Kriterler VAR. Sadece bunları hesapla.
+        var customScore = 0.0
+        criteria.forEach { criterion ->
+            val statValue = when (criterion.statType) {
+                "GOAL" -> (totalStats.goal - totalStats.callahan).toDouble()
+                "ASSIST" -> totalStats.assist.toDouble()
+                "BLOCK" -> (totalStats.block - totalStats.callahan).toDouble()
+                "THROWAWAY" -> totalStats.throwaway.toDouble()
+                "DROP" -> totalStats.drop.toDouble()
+                "CALLAHAN" -> totalStats.callahan.toDouble()
+                "PASS_COUNT" -> totalStats.successfulPass.toDouble()
+                "POINTS_PLAYED" -> totalStats.pointsPlayed.toDouble()
+                else -> 0.0
+            }
+            customScore += (statValue * criterion.points)
+        }
+        customScore // Sadece bu değeri döndür
+
+    } else {
+        // SENARYO B: Kriter YOK (Liste boş). Varsayılan formülü kullan.
+        ((totalStats.goal - totalStats.callahan) * 1.0) +
+                (totalStats.assist * 1.0) +
+                ((totalStats.block - totalStats.callahan) * 1.5) +
+                (totalStats.callahan * 3.5) -
+                ((totalStats.throwaway + totalStats.drop) * 1.0) +
+                (totalStats.successfulPass * 0.05)
+    }
 
     return AdvancedPlayerStats(
         basicStats = totalStats,

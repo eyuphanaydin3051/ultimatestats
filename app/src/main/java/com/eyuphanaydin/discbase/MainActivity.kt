@@ -703,7 +703,8 @@ fun UltimateStatsApp(
             PlayerLeaderboardScreen(
                 navController = navController,
                 allPlayers = allPlayers,
-                tournaments = tournaments
+                tournaments = tournaments,
+                viewModel = mainViewModel
             )
         }
     }

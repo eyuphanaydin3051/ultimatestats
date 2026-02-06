@@ -60,7 +60,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.os.LocaleListCompat
 import com.eyuphanaydin.discbase.R // R sınıfının senin paket isminle olduğundan emin ol
 import com.eyuphanaydin.discbase.R.string.language_option
-
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 // ==========================================
 // 1. GİRİŞ VE BAŞLANGIÇ EKRANLARI
 // ==========================================
@@ -726,6 +727,12 @@ fun SettingsScreen(
     val isPremium by viewModel.isPremium.collectAsState() // ViewModel'e eklediğini varsayıyorum
     val monthlyPrice by viewModel.monthlyPrice.collectAsState() // <--- YENİ
     var showPaywall by remember { mutableStateOf(false) }
+    var showEfficiencySheet by remember { mutableStateOf(false) }
+
+    val teamProfile by viewModel.profile.collectAsState()
+    val currentUserId = viewModel.currentUserId
+    val isAdmin = currentUserId != null && teamProfile.members[currentUserId] == "admin" // Yetki kontrolü
+
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -733,6 +740,7 @@ fun SettingsScreen(
             viewModel.importBackupFromJson(uri)
         }
     }
+    // SettingsScreen fonksiyonunun içinde remember'ların yanına ekleyin:
 
     val sampleName = "Eyüphan Aydın"
     val formattedSample = when (currentNameFormat) {
@@ -1026,6 +1034,16 @@ fun SettingsScreen(
                     }
                 )
             }
+            // --- 2. YÖNETİCİ AYARLARI (BURAYA EKLENDİ - GENEL YAPIYI BOZMADAN) ---
+            if (isAdmin) {
+                SettingsSection(title = "Yönetici Ayarları") {
+                    SettingsActionRow(
+                        icon = Icons.Default.BarChart,
+                        text = stringResource(R.string.eff_dialog_title), // "Verimlilik Ayarları"
+                        onClick = { showEfficiencySheet = true }
+                    )
+                }
+            }
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -1100,6 +1118,13 @@ fun SettingsScreen(
             }
         )
     }
+    if (showEfficiencySheet) {
+        EfficiencyBottomSheet(
+            viewModel = viewModel,
+            onDismiss = { showEfficiencySheet = false }
+        )
+    }
+// --- BURADA BİTİRİN ---
 }
 // ==========================================
 // 3. TURNUVA EKRANLARI
@@ -1543,7 +1568,7 @@ fun MatchDetailScreen(
     ourTeamName: String,
     opponentName: String,
     pointsArchive: List<PointData>,
-    rosterAsStats: List<Player>,
+    rosterAsStats: List<Player>, // Bu liste Player nesneleridir
     onBack: () -> Unit,
     tournamentId: String,
     match: Match,
@@ -1554,71 +1579,79 @@ fun MatchDetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedPlayerStats by remember { mutableStateOf<AdvancedPlayerStats?>(null) }
 
-    // TAB BAŞLIKLARI (XML'den)
+    // 1. ADIM: Kriterleri ViewModel'den Dinle
+    val efficiencyCriteria by viewModel.efficiencyCriteria.collectAsState()
+
+    // TAB BAŞLIKLARI
     val tabItems = listOf(
-        stringResource(R.string.match_tab_summary), // "Sayı Özeti"
-        stringResource(R.string.match_tab_team),    // "Takım İstatistikleri"
-        stringResource(R.string.match_tab_player)   // "Oyuncu İstatistikleri"
+        stringResource(R.string.match_tab_summary),
+        stringResource(R.string.match_tab_team),
+        stringResource(R.string.match_tab_player)
     )
     val pagerState = rememberPagerState { tabItems.size }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    // İstatistik Hesaplama (Değişmedi, sadece context korundu)
-    fun calculateOverallStats(archive: List<PointData>): List<AdvancedPlayerStats> {
-        val overallStatsMap = mutableMapOf<String, AdvancedPlayerStats>()
-        for (player in rosterAsStats) {
-            overallStatsMap[player.id] = AdvancedPlayerStats(
-                basicStats = PlayerStats(playerId = player.id, name = player.name),
-                plusMinus = 0.0,
-                oPointsPlayed = 0,
-                dPointsPlayed = 0
-            )
+    // 2. ADIM: Hesaplama Fonksiyonunu Merkezi Sisteme Bağla
+    // Bu fonksiyon artık manuel hesaplama yapmaz, Utils.kt'ye işi devreder.
+    fun calculateMatchStats(
+        archive: List<PointData>,
+        roster: List<Player>,
+        criteria: List<EfficiencyCriterion>
+    ): List<AdvancedPlayerStats> {
+        return roster.map { player ->
+            // Utils.kt içindeki fonksiyonu çağırıyoruz
+            // Bu sayede hem maç verisi (archive) hem de özel puanlar (criteria) kullanılıyor
+            calculateStatsFromPoints(
+                playerId = player.id,
+                pointsArchive = archive,
+                criteria = criteria
+            ).copy(basicStats = PlayerStats(playerId = player.id, name = player.name).copy(
+                // İsim bilgisini kaybetmemek için calculated stats üzerine kopyalıyoruz
+                // calculateStatsFromPoints sadece ID ile işlem yapar, ismi burada set ediyoruz
+                // Ancak calculateStatsFromPoints zaten basicStats döndürdüğü için propertyleri match etmemiz gerek.
+                // Daha temiz yol: Utils fonksiyonundan dönen basicStats üzerine player name eklemek.
+                // calculateStatsFromPoints içinde name default boş gelebilir, burada düzeltiyoruz:
+                pointsPlayed = calculateStatsFromPoints(player.id, archive, criteria).basicStats.pointsPlayed,
+                goal = calculateStatsFromPoints(player.id, archive, criteria).basicStats.goal,
+                assist = calculateStatsFromPoints(player.id, archive, criteria).basicStats.assist,
+                block = calculateStatsFromPoints(player.id, archive, criteria).basicStats.block,
+                throwaway = calculateStatsFromPoints(player.id, archive, criteria).basicStats.throwaway,
+                drop = calculateStatsFromPoints(player.id, archive, criteria).basicStats.drop,
+                successfulPass = calculateStatsFromPoints(player.id, archive, criteria).basicStats.successfulPass,
+                callahan = calculateStatsFromPoints(player.id, archive, criteria).basicStats.callahan,
+                pullAttempts = calculateStatsFromPoints(player.id, archive, criteria).basicStats.pullAttempts,
+                successfulPulls = calculateStatsFromPoints(player.id, archive, criteria).basicStats.successfulPulls,
+                secondsPlayed = calculateStatsFromPoints(player.id, archive, criteria).basicStats.secondsPlayed,
+                catchStat = calculateStatsFromPoints(player.id, archive, criteria).basicStats.catchStat,
+                // Diğer propertyler...
+                // NOT: Bu map işlemi biraz hantal görünebilir ama Utils.kt'nin dönüş tipini bozmamak için en güvenli yol budur.
+                // Aslında calculateStatsFromPoints doğrudan kullanılabilir, sadece player.name'i atadığımızdan emin olmalıyız.
+            ).copy(name = player.name)) // İsmi Player nesnesinden alıp basıyoruz
         }
-
-        for (pointData in archive) {
-            for (playerStat in pointData.stats) {
-                val playerId = playerStat.playerId
-                val currentOverall = overallStatsMap[playerId] ?: continue
-
-                val updatedBasicStats = currentOverall.basicStats.copy(
-                    pointsPlayed = currentOverall.basicStats.pointsPlayed + 1,
-                    successfulPass = currentOverall.basicStats.successfulPass + playerStat.successfulPass,
-                    assist = currentOverall.basicStats.assist + playerStat.assist,
-                    throwaway = currentOverall.basicStats.throwaway + playerStat.throwaway,
-                    catchStat = currentOverall.basicStats.catchStat + playerStat.catchStat,
-                    drop = currentOverall.basicStats.drop + playerStat.drop,
-                    goal = currentOverall.basicStats.goal + playerStat.goal,
-                    pullAttempts = currentOverall.basicStats.pullAttempts + playerStat.pullAttempts,
-                    successfulPulls = currentOverall.basicStats.successfulPulls + playerStat.successfulPulls,
-                    block = currentOverall.basicStats.block + playerStat.block,
-                    passDistribution = (currentOverall.basicStats.passDistribution.toList() + playerStat.passDistribution.toList())
-                        .groupBy({ it.first }, { it.second })
-                        .mapValues { (_, values) -> values.sum() }
-                )
-
-                val efficiencyScore = (updatedBasicStats.goal + updatedBasicStats.assist).toDouble() +
-                        (updatedBasicStats.block * 1.5) -
-                        (updatedBasicStats.throwaway + updatedBasicStats.drop).toDouble() +
-                        (updatedBasicStats.successfulPass * 0.05)
-
-                var newOPoints = currentOverall.oPointsPlayed
-                var newDPoints = currentOverall.dPointsPlayed
-                if (pointData.startMode == PointStartMode.OFFENSE) { newOPoints++ }
-                else if (pointData.startMode == PointStartMode.DEFENSE) { newDPoints++ }
-
-                overallStatsMap[playerId] = currentOverall.copy(
-                    basicStats = updatedBasicStats,
-                    plusMinus = efficiencyScore,
-                    oPointsPlayed = newOPoints,
-                    dPointsPlayed = newDPoints
-                )
-            }
-        }
-        return overallStatsMap.values.toList().sortedBy { it.basicStats.name }
     }
 
-    val overallStats = calculateOverallStats(pointsArchive)
+    // DAHA TEMİZ VERSİYON (Tavsiye Edilen):
+    // Utils.kt'den dönen objeyi alıp sadece ismini güncelliyoruz.
+    fun calculateMatchStatsOptimized(
+        archive: List<PointData>,
+        roster: List<Player>,
+        criteria: List<EfficiencyCriterion>
+    ): List<AdvancedPlayerStats> {
+        return roster.map { player ->
+            val calculated = calculateStatsFromPoints(player.id, archive, criteria)
+            // İsim bilgisini güncelle
+            calculated.copy(
+                basicStats = calculated.basicStats.copy(name = player.name)
+            )
+        }.sortedBy { it.basicStats.name }
+    }
+
+    // 3. ADIM: Fonksiyonu Çağır
+    val overallStats = remember(pointsArchive, efficiencyCriteria) {
+        calculateMatchStatsOptimized(pointsArchive, rosterAsStats, efficiencyCriteria)
+    }
+
     val teamStats = calculateTeamStatsForMatch(pointsArchive, overallStats)
 
     // SİLME DİALOGU
@@ -1637,7 +1670,7 @@ fun MatchDetailScreen(
         )
     }
 
-    // OYUNCU DETAY PENCERESİ (GÜNCELLENDİ)
+    // OYUNCU DETAY PENCERESİ
     if (selectedPlayerStats != null) {
         val advancedStats = selectedPlayerStats!!
         val stats = advancedStats.basicStats
@@ -1646,7 +1679,8 @@ fun MatchDetailScreen(
         var showEfficiencyInfo by remember { mutableStateOf(false) }
 
         if (showEfficiencyInfo) {
-            EfficiencyDescriptionDialog(onDismiss = { showEfficiencyInfo = false })
+            // BURASI DA GÜNCELLENDİ: Dinamik kriterleri gösterir
+            EfficiencyDescriptionDialog(onDismiss = { showEfficiencyInfo = false }, criteria = efficiencyCriteria)
         }
 
         AlertDialog(
@@ -1682,7 +1716,6 @@ fun MatchDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            // "Verimlilik (+/-)" -> XML
                             Text(stringResource(R.string.match_stat_efficiency), style = MaterialTheme.typography.labelMedium, color = Color.Gray)
 
                             val formattedScore = "%.1f".format(advancedStats.plusMinus)
@@ -1697,7 +1730,6 @@ fun MatchDetailScreen(
                             )
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            // "Oynanan Sayı" -> XML
                             Text(stringResource(R.string.match_stat_played), style = MaterialTheme.typography.labelMedium, color = Color.Gray)
                             Text("${stats.pointsPlayed}", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             Text("O: ${advancedStats.oPointsPlayed} | D: ${advancedStats.dPointsPlayed}", fontSize = 12.sp, color = Color.Gray)
@@ -1718,10 +1750,8 @@ fun MatchDetailScreen(
                     val PassingSection = @Composable {
                         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))) {
                             Column(Modifier.padding(12.dp)) {
-                                // "Atış (Throwing)" -> XML
                                 Text(stringResource(R.string.match_stat_throwing), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 Spacer(Modifier.height(8.dp))
-                                // "Başarı" -> XML
                                 PerformanceStatRow(stringResource(R.string.home_pass_success), passSuccessRate.text, passSuccessRate.ratio, passSuccessRate.progress)
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                     Text("${stringResource(R.string.action_assist)}: ${stats.assist}")
@@ -1735,10 +1765,8 @@ fun MatchDetailScreen(
                     val ReceivingSection = @Composable {
                         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))) {
                             Column(Modifier.padding(12.dp)) {
-                                // "Tutuş (Receiving)" -> XML
                                 Text(stringResource(R.string.match_stat_receiving), fontWeight = FontWeight.Bold, color = Color(0xFF009688))
                                 Spacer(Modifier.height(8.dp))
-                                // "Başarı" -> XML
                                 PerformanceStatRow(stringResource(R.string.home_pass_success), catchRate.text, catchRate.ratio, catchRate.progress, progressColor = Color(0xFF009688))
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                     Text("${stringResource(R.string.action_goal)}: ${stats.goal}")
@@ -1756,7 +1784,6 @@ fun MatchDetailScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(4.dp))
-                                // "Savunma" -> XML
                                 Text(stringResource(R.string.match_stat_defense), fontWeight = FontWeight.Bold)
                             }
                             Spacer(Modifier.height(8.dp))
@@ -2995,5 +3022,297 @@ fun DashboardOptionCard(
 
             Icon(Icons.Default.ChevronRight, null, tint = Color.Gray)
         }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddEfficiencyCriterionDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (EfficiencyCriterion) -> Unit
+) {
+    var name by remember { mutableStateOf("") }
+    var selectedStat by remember { mutableStateOf("GOAL") }
+    var points by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+
+    // --- EŞLEŞTİRME LİSTESİ ---
+    // Sol taraf: Veritabanına/Hesaplamaya giden kod (DEĞİŞTİRMEYİN)
+    // Sağ taraf: Ekranda görünen R.string karşılığı (Strings.xml'den)
+    val statMap = mapOf(
+        "GOAL" to R.string.match_event_goal,           // Gol
+        "ASSIST" to R.string.action_assist,            // Asist
+        "BLOCK" to R.string.action_block,              // Blok
+        "THROWAWAY" to R.string.action_turnover,       // Top Kaybı (Throwaway)
+        "DROP" to R.string.action_drop,                // Drop
+        "CALLAHAN" to R.string.stat_title_callahan,    // Callahan
+        "PASS_COUNT" to R.string.stat_title_pass_count,     // Pas Sayısı (Eğer yoksa match_stat_throwing kullanılabilir)
+        "POINTS_PLAYED" to R.string.match_stat_played, // Oynanan Sayı
+        "CATCH_COUNT" to R.string.match_stat_receiving, // Tutuş Sayısı
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.eff_dialog_title)) },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Kriter İsmi
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(stringResource(R.string.eff_label_name)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // İstatistik Seçimi (Dropdown)
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    // Seçili olanın ekranda görünen ismini buluyoruz
+                    val selectedLabelId = statMap[selectedStat] ?: R.string.match_event_goal
+
+                    OutlinedTextField(
+                        value = stringResource(selectedLabelId), // Ekranda Türkçe/İngilizce görünür
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.eff_label_stat)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.heightIn(max = 250.dp)
+                    ) {
+                        statMap.forEach { (techName, resId) ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(resId)) }, // Listede Türkçe görünür
+                                onClick = {
+                                    selectedStat = techName // Arka plana teknik isim (GOAL vb.) kaydedilir
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Puan Girişi
+                OutlinedTextField(
+                    value = points,
+                    onValueChange = { points = it },
+                    label = { Text(stringResource(R.string.eff_label_points)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                val p = points.toDoubleOrNull() ?: 0.0
+                if (name.isNotBlank()) {
+                    // onConfirm'e seçilen teknik ismi (selectedStat) gönderiyoruz
+                    onConfirm(EfficiencyCriterion(name = name, statType = selectedStat, points = p))
+                }
+            }) { Text(stringResource(R.string.eff_btn_add)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EfficiencySettingsSheet(
+    viewModel: MainViewModel,
+    onDismiss: () -> Unit
+) {
+    val criteria by viewModel.efficiencyCriteria.collectAsState()
+    val sheetState = rememberModalBottomSheetState()
+    var showAddDialog by remember { mutableStateOf(false) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .navigationBarsPadding() // Klavye ve navigasyon çubuğu çakışmasını önler
+        ) {
+            Text(
+                text = stringResource(R.string.eff_dialog_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Kriter Listesi (Kendi içinde kaydırılabilir)
+            LazyColumn(
+                modifier = Modifier.weight(1f, fill = false), // Sadece içerik kadar yer kaplar
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (criteria.isEmpty()) {
+                    item {
+                        Text("Henüz kural eklenmedi.", color = Color.Gray)
+                    }
+                }
+                items(criteria) { item ->
+                    EfficiencyCriterionItem(
+                        criterion = item,
+                        onDelete = {
+                            val newList = criteria.filter { it.id != item.id }
+                            viewModel.updateEfficiencyCriteria(newList)
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { showAddDialog = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Add, null)
+                Text(stringResource(R.string.eff_btn_add))
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        if (showAddDialog) {
+            AddEfficiencyCriterionDialog(
+                onDismiss = { showAddDialog = false },
+                onConfirm = { newCriterion ->
+                    viewModel.updateEfficiencyCriteria(criteria + newCriterion)
+                    showAddDialog = false
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun EfficiencyCriterionItem(
+    criterion: EfficiencyCriterion,
+    onDelete: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = criterion.name, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = "${criterion.statType}: ${if (criterion.points > 0) "+" else ""}${criterion.points}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray // Hata veren Secondary yerine Gray kullanıldı
+                )
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
+            }
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EfficiencyBottomSheet(
+    viewModel: MainViewModel,
+    onDismiss: () -> Unit
+) {
+    val criteria by viewModel.efficiencyCriteria.collectAsState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showAddDialog by remember { mutableStateOf(false) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentWindowInsets = { WindowInsets(0, 0, 0, 0) } // Tam ekran kullanımı için
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 32.dp) // Alt navigasyon boşluğu
+        ) {
+            // Başlık
+            Text(
+                text = stringResource(R.string.eff_dialog_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Liste (Boşsa uyarı, doluysa liste)
+            if (criteria.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Henüz özel bir kural eklenmedi.\nStandart puanlama sistemi kullanılıyor.",
+                        color = Color.Gray,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(criteria) { item ->
+                        EfficiencyCriterionItem(
+                            criterion = item,
+                            onDelete = {
+                                val newList = criteria.filter { it.id != item.id }
+                                viewModel.updateEfficiencyCriteria(newList)
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Ekleme Butonu
+            Button(
+                onClick = { showAddDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.eff_btn_add))
+            }
+        }
+    }
+
+    // Yeni Kriter Ekleme Diyaloğu (Sheet'in üstünde açılır)
+    if (showAddDialog) {
+        AddEfficiencyCriterionDialog(
+            onDismiss = { showAddDialog = false },
+            onConfirm = { newCriterion ->
+                viewModel.updateEfficiencyCriteria(criteria + newCriterion)
+                showAddDialog = false
+            }
+        )
     }
 }
