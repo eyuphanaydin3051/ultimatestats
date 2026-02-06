@@ -131,13 +131,14 @@
     <string name="suffix_pos_goal">possessions converted</string>
     <string name="stats_detailed">Detailed Analysis</string>
     <string name="stats_pass_attempt">Pass Att.</string>
-    <string name="stats_pass_completed">Pass Comp.</string>
+    <string name="stats_pass_completed">Pass C.</string>
     <string name="stats_avg_tempo">Avg. Tempo</string>
     <string name="stats_turnover">Turnover</string>
-    <string name="stats_turnover_per_match">Avg Turn/Match</string>
+    <string name="stats_turnover_per_match">A. Turn/G.</string>
     <string name="stats_avg_pull">Avg. Pull</string>
     <string name="stats_points_played">Points Played</string>
 
+    <string name="label_sec_yanına_değer">%1$s sec</string>
     <string name="season_fixture_title">Season Fixture</string>
     <string name="matches_empty">No matches played yet.</string>
     <string name="team_us_default">US</string>
@@ -229,7 +230,7 @@
     <string name="msg_undo_performed">Action Undone</string>
     <string name="msg_match_ended">Match ended.</string>
 
-    <string name="match_opponent_placeholder">Ex: LAKERS</string>
+    <string name="match_opponent_placeholder">Ex: ODTUPUS</string>
     <string name="dialog_reset_title">Reset Point</string>
     <string name="dialog_reset_msg">Return to roster selection. Are you sure?</string>
     <string name="dialog_delete_point_title">Delete Point</string>
@@ -260,8 +261,8 @@
     <string name="pull_title_select">Select Puller</string>
     <string name="pull_in_air">Disc in Air...</string>
     <string name="pull_result_instruction">Select when caught or landed:</string>
-    <string name="btn_pull_good">GOOD PULL (In Bounds)</string>
-    <string name="btn_pull_bad">BAD PULL (OB / Brick)</string>
+    <string name="btn_pull_good">SUCC. PULL (In Bounds)</string>
+    <string name="btn_pull_bad">UNSUCC. PULL (OB / Brick)</string>
 
     <string name="mode_select_title">Select Recording Mode</string>
     <string name="mode_quick">QUICK RECORD</string>
@@ -563,9 +564,9 @@
     <string name="stat_turnover_per_match">Turn/Match</string>
     <string name="stat_avg_tempo">Avg. Tempo</string>
     <string name="stat_avg_pull">Avg. Pull</string>
-    <string name="suffix_goal_converted">possessions converted</string>
-    <string name="suffix_clean_hold">points scored cleanly</string>
-    <string name="suffix_block_converted">blocks converted</string>
+    <string name="suffix_goal_converted"> possessions converted</string>
+    <string name="suffix_clean_hold"> points scored cleanly</string>
+    <string name="suffix_block_converted"> blocks converted</string>
 
     <string name="title_season_fixtures">Season Fixtures</string>
     <string name="msg_no_matches_played">No matches played yet.</string>
@@ -616,7 +617,7 @@
     <string name="report_training_title_cont">Training Report (Cont.)</string>
     <string name="report_section_overview">Overview</string>
     <string name="report_section_notes">Notes</string>
-    <string name="report_section_attendees">Attendee List</string>
+    <string name="report_section_attendees">Attendence List</string>
     <string name="label_date">Date</string>
     <string name="label_time">Time</string>
     <string name="label_location">Location</string>
@@ -699,7 +700,7 @@
     <string name="title_catch_rate_header">Catch Percentage</string>
     <string name="title_defense_stats">Defense</string>
     <string name="title_pull_stats">Pull Stats</string>
-    <string name="label_pull_summary">Total: %1$d (Good: %2$d)</string>
+    <string name="label_pull_summary">Total: %1$d (Succ: %2$d)</string>
     <string name="title_pass_performance">Pass Performance</string>
     <string name="title_success_rate_header">Success Rate</string>
     <string name="title_pass_network_match">Match Pass Network (Most Active: %1$s)</string>
@@ -746,5 +747,13 @@
     <string name="btn_clear">Clear</string>
     <string name="msg_checking_profile">Checking profile...</string>
     <string name="premiumdesc">To use the advanced statistics mode, you must upgrade to a Premium membership.</string>
+    <string name="detayli_istatistikler">•Detailed statistics (Drop, Turnover, Blok)</string>
+    <string name="cikis_yapılıyor">Logout...</string>
+    <string name="Profil_kontrol_ediliyor...">Profile is being checked...</string>
+    <string name="Maç_verisi_senkron_ediliyor">Match data is being synchronized...</string>
+    <string name="Maç_Kaydediliyor...">The match is being recorded...</string>
+    <string name="Takım_yönetimi">Team management, match recording, and analysis.</string>
+    <string name="kendi_istatistik">View your own statistics and passing network.</string>
+    <string name="premium_price_per_month">%1$s/month</string>
 
 </resources>

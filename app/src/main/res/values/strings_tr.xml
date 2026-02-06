@@ -133,6 +133,7 @@
     <string name="stats_turnover_per_match">O. turn/Maç</string>
     <string name="stats_avg_pull">Ort. Pull</string>
     <string name="stats_points_played">Oynanan Sayı</string>
+    <string name="label_sec_yanına_değer">%1$s sn</string>
 
     <string name="season_fixture_title">Sezon Fikstürü</string>
     <string name="matches_empty">Henüz hiç maç oynanmadı.</string>
@@ -228,7 +229,7 @@
     <string name="msg_undo_performed">İşlem Geri Alındı</string>
     <string name="msg_match_ended">Maç sonlandırıldı.</string>
 
-    <string name="match_opponent_placeholder">Örn: ODTÜPUS</string>
+    <string name="match_opponent_placeholder">Örn: ODTUPUS</string>
     <string name="dialog_reset_title">Sayıyı Sıfırla</string>
     <string name="dialog_reset_msg">Kadro seçimine geri dönülecek. Emin misiniz?</string>
     <string name="dialog_delete_point_title">Sayıyı Sil</string>
@@ -561,9 +562,9 @@
     <string name="stat_turnover_per_match">O. Kayıp/Maç</string>
     <string name="stat_avg_tempo">Ort. Tempo</string>
     <string name="stat_avg_pull">Ort. Pull</string>
-    <string name="suffix_goal_converted">pozisyon gol oldu</string>
-    <string name="suffix_clean_hold">sayı hatasız atıldı</string>
-    <string name="suffix_block_converted">blok değerlendirildi</string>
+    <string name="suffix_goal_converted"> pozisyon gol oldu</string>
+    <string name="suffix_clean_hold"> sayı hatasız atıldı</string>
+    <string name="suffix_block_converted"> blok değerlendirildi</string>
 
     <string name="title_season_fixtures">Sezon Fikstürü</string>
     <string name="msg_no_matches_played">Henüz hiç maç oynanmadı.</string>
@@ -743,5 +744,14 @@
     <string name="btn_clear">Temizle</string>
     <string name="msg_checking_profile">Profil kontrol ediliyor...</string>
     <string name="premiumdesc">Gelişmiş istatistik modunu kullanmak için Premium üyeliğe geçmelisiniz.</string>
+    <string name="detayli_istatistikler">•Detaylı istatistikler (Drop, Turnover, Blok)</string>
+
+    <string name="cikis_yapılıyor">Çıkış yapılıyor...</string>
+    <string name="Profil_kontrol_ediliyor...">Profil kontrol ediliyor...</string>
+    <string name="Maç_verisi_senkron_ediliyor">Maç verisi senkronize ediliyor...</string>
+    <string name="Maç_Kaydediliyor...">Maç Kaydediliyor...</string>
+    <string name="Takım_yönetimi">Takım yönetimi, maç kaydı ve analizler.</string>
+    <string name="kendi_istatistik">Kendi istatistiklerini ve pas ağını görüntüle.</string>
+    <string name="premium_price_per_month">%1$s/ay</string>
 
 </resources>

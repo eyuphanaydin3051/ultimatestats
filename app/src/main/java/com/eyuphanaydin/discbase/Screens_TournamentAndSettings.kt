@@ -828,7 +828,7 @@ fun SettingsScreen(
                                 if (monthlyPrice.isNotEmpty()) {
                                     Spacer(Modifier.width(4.dp))
                                     Text(
-                                        text = "($monthlyPrice/ay)", // Örn: (₺29.99/ay)
+                                        text = stringResource(id = R.string.premium_price_per_month, monthlyPrice), // Örn: (₺29.99/ay)
                                         fontSize = 12.sp,
                                         color = StitchColor.Primary,
                                         fontWeight = FontWeight.Bold
@@ -2925,7 +2925,7 @@ fun DashboardSelectionScreen(
             // Takım Yönetimi / Antrenör Modu
             DashboardOptionCard(
                 title = stringResource(R.string.team_my_teams), // "Takımlarım"
-                description = "Takım yönetimi, maç kaydı ve analizler.",
+                description = stringResource(R.string.Takım_yönetimi),
                 icon = Icons.Default.People,
                 color = StitchPrimary,
                 onClick = onNavigateToTeams
@@ -2936,7 +2936,7 @@ fun DashboardSelectionScreen(
             // Oyuncu Modu (Kariyer)
             DashboardOptionCard(
                 title = stringResource(R.string.title_player_career), // "Oyuncu Kariyeri"
-                description = "Kendi istatistiklerini ve pas ağını görüntüle.",
+                description = stringResource(R.string.kendi_istatistik),
                 icon = Icons.Default.Person,
                 color = StitchOffense, // Yeşilimsi renk
                 onClick = onNavigateToProfile

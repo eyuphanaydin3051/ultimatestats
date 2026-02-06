@@ -214,7 +214,7 @@ fun UltimateStatsApp(
 
             when (profileState) {
                 MainViewModel.UserProfileState.LOADING -> {
-                    LoadingScreen("Profil kontrol ediliyor...")
+                    LoadingScreen(stringResource(R.string.Profil_kontrol_ediliyor___))
                 }
                 MainViewModel.UserProfileState.NEEDS_CREATION -> {
                     CreateProfileScreen(
@@ -254,7 +254,7 @@ fun UltimateStatsApp(
                     }
                 }
                 MainViewModel.UserProfileState.UNKNOWN -> {
-                    LoadingScreen("Çıkış yapılıyor...")
+                    LoadingScreen(stringResource(R.string.cikis_yapılıyor))
                 }
             }
         }
@@ -545,7 +545,7 @@ fun UltimateStatsApp(
                     presetLines = tournament.presetLines,
                     onMatchFinished = { finishedMatch ->
                         // 1. Kullanıcıya bilgi ver
-                        Toast.makeText(context, "Maç Kaydediliyor...", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context,R.string.Maç_Kaydediliyor___, Toast.LENGTH_SHORT).show()
 
                         // 2. Veritabanına Kaydet
                         mainViewModel.saveMatch(tournament.id, finishedMatch)
@@ -604,7 +604,7 @@ fun UltimateStatsApp(
                 )
             } else if (tournament != null && match == null) {
                 // Maç kaydedildi ama liste henüz güncellenmediyse bekleme ekranı göster
-                LoadingScreen("Maç verisi senkronize ediliyor...")
+                LoadingScreen(stringResource(R.string.Maç_verisi_senkron_ediliyor))
             } else {
                 // Turnuva bile yoksa çık
                 navController.popBackStack()

@@ -1372,13 +1372,25 @@ fun TeamStatisticsScreen(
             confirmButton = {}
         )
     }
-    val teamAvgTempo = if (advancedStats.totalPassesAttempted > 0)
-        String.format("%.2f sn", advancedStats.totalTempoSeconds.toDouble() / advancedStats.totalPassesAttempted)
-    else "0.00 sn"
+    // Önce sayısal değerleri hesaplayın
+    val avgTempoValue = if (advancedStats.totalPassesAttempted > 0)
+        advancedStats.totalTempoSeconds.toDouble() / advancedStats.totalPassesAttempted
+    else 0.0
 
-    val teamAvgPullTime = if (advancedStats.totalPulls > 0)
-        String.format("%.2f sn", advancedStats.totalPullTimeSeconds.toDouble() / advancedStats.totalPulls)
-    else "0.00 sn"
+    val avgPullTimeValue = if (advancedStats.totalPulls > 0)
+        advancedStats.totalPullTimeSeconds.toDouble() / advancedStats.totalPulls
+    else 0.0
+
+// Compose içinde dile göre formatlanmış stringleri alın
+    val teamAvgTempo = stringResource(
+        id = R.string.label_sec_yanına_değer,
+        String.format("%.2f", avgTempoValue)
+    )
+
+    val teamAvgPullTime = stringResource(
+        id = R.string.label_sec_yanına_değer,
+        String.format("%.2f", avgPullTimeValue)
+    )
 
     Scaffold(
         containerColor = StitchColor.Background,
@@ -1469,7 +1481,7 @@ fun PerformanceCard(
     ) {
         Column(Modifier.padding(20.dp)) {
             Text(
-                "Takım Performansı",
+                stringResource(R.string.header_team_performance),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = StitchColor.TextPrimary
@@ -1478,7 +1490,7 @@ fun PerformanceCard(
 
             // Hold Percentage
             PerformanceStatRow(
-                title = "Hold % (Offense)",
+                title = stringResource(R.string.stat_hold_percentage),
                 percentage = holdRate.text,
                 ratio = holdRate.ratio,
                 progress = holdRate.progress,
@@ -1487,7 +1499,7 @@ fun PerformanceCard(
 
             // Break Percentage
             PerformanceStatRow(
-                title = "Break % (Defense)",
+                title = stringResource(R.string.stat_break_percentage),
                 percentage = breakRate.text,
                 ratio = breakRate.ratio,
                 progress = breakRate.progress,
@@ -1496,7 +1508,7 @@ fun PerformanceCard(
 
             // Completion Rate
             PerformanceStatRow(
-                title = "Pas Başarısı",
+                title = stringResource(R.string.stat_pass_success),
                 percentage = passRate.text,
                 ratio = passRate.ratio,
                 progress = passRate.progress,
@@ -1525,7 +1537,7 @@ fun PossessionCard(
     ) {
         Column(Modifier.padding(20.dp)) {
             Text(
-                "Verimlilik (Efficiency)",
+                stringResource(R.string.header_efficiency),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = StitchColor.TextPrimary
@@ -1536,23 +1548,23 @@ fun PossessionCard(
             PerformanceStatRow(
                 title = "Conversion Rate",
                 percentage = conversionRate.text,
-                ratio = conversionRate.ratio + " pozisyon gol oldu",
+                ratio = conversionRate.ratio + stringResource(R.string.suffix_goal_converted),
                 progress = conversionRate.progress,
                 progressColor = conversionColor // <-- DİNAMİK RENK
             )
             PerformanceStatRow(
-                title = "Hatasız Ofans (Clean Holds)",
+                title = stringResource(R.string.stat_clean_holds),
                 percentage = cleanHoldRate.text,
-                ratio = cleanHoldRate.ratio + " sayı hatasız atıldı",
+                ratio = cleanHoldRate.ratio + stringResource(R.string.suffix_clean_hold),
                 progress = cleanHoldRate.progress,
                 progressColor = Color(0xFF00B0FF) // Açık Mavi
             )
 
             // Blok sonrası gol şansı
             PerformanceStatRow(
-                title = "D-Line Conversion",
+                title = stringResource(R.string.stat_d_line_conversion),
                 percentage = blockConversionRate.text,
-                ratio = blockConversionRate.ratio + " blok değerlendirildi",
+                ratio = blockConversionRate.ratio + stringResource(R.string.suffix_block_converted),
                 progress = blockConversionRate.progress
             )
         }
@@ -1583,7 +1595,7 @@ fun DetailedStatsCard(
             modifier = Modifier.padding(20.dp)
         ) {
             Text(
-                "Detaylı Analiz",
+                stringResource(R.string.stats_detailed),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = StitchColor.TextPrimary // <-- BURADA HATA ALMAMALISINIZ
@@ -1592,42 +1604,42 @@ fun DetailedStatsCard(
 
             // 1. Satır: Paslar
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                StitchStatBox("Pas den.", totalPasses, StitchSecondary, Modifier.weight(1f),
+                StitchStatBox(stringResource(R.string.stats_pass_attempt), totalPasses, StitchSecondary, Modifier.weight(1f),
                     valueFontSize = myFontSize)
                 StitchStatBox(
-                    "Baş. Pas",
+                    stringResource(R.string.stats_pass_completed),
                     totalCompleted,
                     StitchOffense,
                     Modifier.weight(1f),
                     valueFontSize = myFontSize
                 )
                 StitchStatBox(
-                    "Ort. Tempo",
+                    stringResource(R.string.stats_avg_tempo),
                     teamAvgTempo,
                     Color(0xFFFFA000), // Amber rengi
                     Modifier.weight(1f),
-                    valueFontSize = myFontSize
+                    valueFontSize = 14.sp
                 )
             }
             Spacer(Modifier.height(12.dp))
 
             // 2. Satır: Hatalar
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                StitchStatBox("Turnover", totalTurnovers,
+                StitchStatBox(stringResource(R.string.stats_turnover), totalTurnovers,
                     com.eyuphanaydin.discbase.ui.theme.StitchDefense, Modifier.weight(1f))
                 StitchStatBox(
-                    "O. turn/Maç",
+                    stringResource(R.string.stats_turnover_per_match),
                     avgTurnoverMatch,
                     com.eyuphanaydin.discbase.ui.theme.StitchDefense.copy(alpha = 0.8f),
                     Modifier.weight(1f),
                     valueFontSize = myFontSize
                 )
                 StitchStatBox(
-                    "Ort. Pull",
+                    stringResource(R.string.stats_avg_pull),
                     teamAvgPullTime,
                     Color(0xFF795548), // Kahverengi tonu
                     Modifier.weight(1f),
-                    valueFontSize = myFontSize
+                    valueFontSize = 14.sp
                 )
             }
             Spacer(Modifier.height(12.dp))
@@ -1635,7 +1647,7 @@ fun DetailedStatsCard(
             // 3. Satır: Oyun Süresi
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StitchStatBox(
-                    "Oynanan Sayı",
+                    stringResource(R.string.stats_points_played),
                     totalPointsPlayed,
                     Color.Gray,
                     Modifier.weight(1f),

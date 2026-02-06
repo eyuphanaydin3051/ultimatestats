@@ -35,9 +35,7 @@ fun PremiumRequiredDialog(
             Column {
                 Text(stringResource(R.string.premiumdesc))
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("• Detaylı istatistikler (Drop, Turnover, Blok)", fontSize = 14.sp)
-                Text("• PDF Raporlama", fontSize = 14.sp)
-                Text("• Reklamsız deneyim", fontSize = 14.sp)
+                Text(stringResource(R.string.detayli_istatistikler), fontSize = 14.sp)
             }
         },
         confirmButton = {
@@ -50,7 +48,7 @@ fun PremiumRequiredDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("İptal")
+                stringResource(R.string.btn_cancel)
             }
         }
     )
