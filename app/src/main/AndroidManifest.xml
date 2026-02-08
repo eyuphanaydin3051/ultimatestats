@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="com.android.vending.BILLING" />
+
     <application
+        android:name=".DiscBaseApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -13,6 +16,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DiscBase">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -20,16 +24,17 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.DiscBase"
             android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
-
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name="com.canhub.cropper.CropImageActivity"
             android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.eyuphanaydin.discbase.fileprovider"
@@ -39,6 +44,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
             android:enabled="false"
@@ -47,5 +53,6 @@
                 android:name="autoStoreLocales"
                 android:value="true" />
         </service>
+
     </application>
 </manifest>

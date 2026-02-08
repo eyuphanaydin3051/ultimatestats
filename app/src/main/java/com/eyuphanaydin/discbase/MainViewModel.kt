@@ -19,6 +19,7 @@ import android.app.Activity
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -28,8 +29,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 import com.android.billingclient.api.*
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import com.google.firebase.firestore.Source // Offline kontrolü için gerekebilir
 enum class AppTheme { LIGHT, DARK, SYSTEM }
 
+sealed class SignInState {
+    object Idle : SignInState()
+    object Loading : SignInState()
+    data class Success(val message: String) : SignInState()
+    data class Error(val message: String) : SignInState()
+
+}
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     enum class UserProfileState { UNKNOWN, LOADING, NEEDS_CREATION, EXISTS }
 
@@ -39,7 +50,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     // UI Mesajları
     private val _userMessage = MutableSharedFlow<String>(replay = 1)
     val userMessage: SharedFlow<String> = _userMessage.asSharedFlow()
-
+    // MainViewModel sınıfının değişkenlerinin olduğu yere ekle:
+    private val _signInState = MutableStateFlow<SignInState>(SignInState.Loading)
+    val signInState = _signInState.asStateFlow()
     // Auth State
     private val _isLoadingAuth = MutableSharedFlow<Boolean>(replay = 1).apply { tryEmit(true) }
     val isLoadingAuth: SharedFlow<Boolean> = _isLoadingAuth.asSharedFlow()
@@ -298,27 +311,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
     // INIT
     // INIT BLOĞU (GÜNCELLENMİŞ)
+    // MainViewModel içindeki init bloğu:
     init {
-        // 1. Kullanıcı Giriş Durumu
-        viewModelScope.launch {
-            try {
-                currentUser.collect { user ->
-                    if (user != null) {
-                        repository.updateUserInfo(user)
-                        _profileState.value = UserProfileState.LOADING
-                        val p = repository.getUserProfile(user.uid)
-                        _currentUserProfile.value = p
-                        _profileState.value = if (p == null || p.displayName.isNullOrBlank())
-                            UserProfileState.NEEDS_CREATION else UserProfileState.EXISTS
-                    } else {
-                        _profileState.value = UserProfileState.UNKNOWN
-                        _currentUserProfile.value = null
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("InitError", "Kullanıcı verisi alınırken hata: ${e.message}")
-            }
-        }
+        // 1. Kullanıcı Giriş Durumu (GÜNCELLENDİ: Offline Korumalı)
+        checkUserLoggedIn()
 
         // 2. Diğer Ayarları Dinle
         viewModelScope.launch {
@@ -328,7 +324,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             repository.getProModeEnabled().collect { _proModeEnabled.value = it }
         }
 
-        // 3. Mod Ayarı (Hata korumalı)
+        // 3. Mod Ayarı
         viewModelScope.launch {
             repository.getCaptureMode().collect { savedMode ->
                 if (savedMode != null) {
@@ -339,15 +335,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
 
-        // 4. ABONELİK BAŞLATMA (KRİTİK - TRY-CATCH EKLENDİ)
-        // Eğer cihazda Play Store yoksa veya sürümü eskiyse burası çökmeye sebep olabilir.
-        // Try-catch ile uygulamanın kapanmasını engelliyoruz.
+        // 4. ABONELİK BAŞLATMA
         try {
             startBillingConnection()
         } catch (e: Exception) {
-            Log.e("BillingError", "Abonelik sistemi başlatılamadı (CRASH ÖNLENDİ): ${e.message}")
-            // İstersen kullanıcıya Toast mesajı gösterebilirsin:
-            // Toast.makeText(getApplication(), "Ödeme sistemi hazır değil", Toast.LENGTH_SHORT).show()
+            Log.e("BillingError", "Abonelik sistemi başlatılamadı: ${e.message}")
         }
     }
 
@@ -479,16 +471,69 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val tid = getCurrentTeamId() ?: return@launch
         repository.deleteTraining(tid, id)
     }
+    // MainViewModel.kt içinde
+
+    // MainViewModel.kt içinde deleteTeam fonksiyonunu bununla değiştir:
+
     fun deleteTeam(teamId: String) = viewModelScope.launch {
         val context = getApplication<Application>()
-        // Eğer silinen takım aktif takımsa, aktif takım seçimini kaldır
+
         if (activeTeamId.value == teamId) {
             clearActiveTeam()
         }
 
-        if (repository.deleteTeam(teamId)) {
+        try {
+            val db = FirebaseFirestore.getInstance()
+            val batch = db.batch()
+
+            // --- DÜZELTME: Verileri "Root" yerine "Takımın İçinden" siliyoruz ---
+
+            // 1. OYUNCULARI SİL (path: teams/{teamId}/players)
+            val playersSnapshot = db.collection("teams").document(teamId)
+                .collection("players")
+                .get()
+                .await()
+            for (document in playersSnapshot) {
+                batch.delete(document.reference)
+            }
+
+            // 2. TURNUVALARI VE MAÇLARI SİL
+            // (path: teams/{teamId}/tournaments)
+            val tournamentsSnapshot = db.collection("teams").document(teamId)
+                .collection("tournaments")
+                .get()
+                .await()
+
+            for (tourDoc in tournamentsSnapshot) {
+                // Önce bu turnuvanın içindeki MAÇLARI bul ve sil (Sub-sub collection)
+                val matchesSnapshot = tourDoc.reference.collection("matches").get().await()
+                for (matchDoc in matchesSnapshot) {
+                    batch.delete(matchDoc.reference)
+                }
+                // Sonra turnuvanın kendisini sil
+                batch.delete(tourDoc.reference)
+            }
+
+            // 3. ANTRENMANLARI SİL (path: teams/{teamId}/trainings)
+            val trainingsSnapshot = db.collection("teams").document(teamId)
+                .collection("trainings")
+                .get()
+                .await()
+            for (document in trainingsSnapshot) {
+                batch.delete(document.reference)
+            }
+
+            // 4. TAKIMIN KENDİSİNİ SİL
+            val teamRef = db.collection("teams").document(teamId)
+            batch.delete(teamRef)
+
+            batch.commit().await()
+
             _userMessage.emit(context.getString(R.string.msg_team_deleted))
-        } else {
+            fetchUserProfile()
+
+        } catch (e: Exception) {
+            Log.e("DeleteTeam", "Hata: ${e.message}")
             _userMessage.emit(context.getString(R.string.error_generic))
         }
     }
@@ -961,18 +1006,77 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             dPointsPlayed = totalDPoints
         )
     }
+    // MainViewModel sınıfının sonuna (calculateCareerStats fonksiyonunun altına) ekle:
+
+    // --- GİRİŞ VE VERİ YÖNETİMİ ---
+
+    fun checkUserLoggedIn() {
+        val user = auth.currentUser
+        if (user != null) {
+            _signInState.value = SignInState.Loading
+            viewModelScope.launch {
+                try {
+                    // İnternet varsa veriyi tazelemeye çalışır
+                    fetchUserProfile()
+                    _signInState.value = SignInState.Success("Giriş yapıldı")
+                } catch (e: Exception) {
+                    Log.e("Auth", "Offline mod devreye girdi: ${e.message}")
+
+                    // KRİTİK NOKTA: Hata alsa bile "Success" diyoruz ki ekran açılsın
+                    _signInState.value = SignInState.Success("Çevrimdışı Mod")
+                }
+            }
+        } else {
+            _signInState.value = SignInState.Error("Giriş yapılmadı")
+        }
+    }
+
+    // MainViewModel.kt dosyasının en alt kısımlarında
+
+    // MainViewModel.kt dosyasının en altındaki bu fonksiyonu değiştir:
+
+    // MainViewModel.kt dosyasının en altındaki fetchUserProfile fonksiyonunu bununla değiştirin:
+
+    private suspend fun fetchUserProfile() {
+        val user = auth.currentUser ?: return
+
+        _profileState.value = UserProfileState.LOADING
+
+        try {
+            // YENİ EKLENEN KISIM: withTimeout
+            // 5000 milisaniye (5 saniye) bekler.
+            // İnternet yoksa Firestore sonsuza kadar beklemek yerine 5 saniye sonra hata fırlatır.
+            kotlinx.coroutines.withTimeout(5000L) {
+
+                // Firestore işlemleri
+                // (Bu işlemler 5 saniyeyi geçerse iptal edilir ve catch bloğuna düşer)
+                repository.updateUserInfo(user)
+
+                val p = repository.getUserProfile(user.uid)
+
+                _currentUserProfile.value = p
+                _profileState.value = if (p == null || p.displayName.isNullOrBlank())
+                    UserProfileState.NEEDS_CREATION else UserProfileState.EXISTS
+            }
+
+        } catch (e: Exception) {
+            // Timeout (Zaman aşımı) veya başka bir hata olursa buraya düşer
+            Log.e("UserProfile", "Profil yüklenemedi veya zaman aşımı: ${e.message}")
+
+            // Kritik Müdahale: Bekleme ekranını kapatıp "VAR" (EXISTS) diyoruz.
+            // Böylece uygulama açılıyor.
+            _profileState.value = UserProfileState.EXISTS
+
+            // Üst fonksiyona da haber veriyoruz (Orası da "Çevrimdışı Mod" mesajı verecek)
+            throw e
+        }
+    }
 }
 
 
 // Giriş işleminin durumunu tutmak için
 // Giriş işleminin durumunu tutmak için
-sealed class SignInState {
-    object Idle : SignInState()
-    object Loading : SignInState()
-    data class Success(val message: String) : SignInState()
-    data class Error(val message: String) : SignInState()
 
-}
 
 class SignInViewModel : ViewModel() {
 
