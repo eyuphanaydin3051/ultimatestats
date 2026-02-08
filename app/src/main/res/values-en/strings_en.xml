@@ -763,4 +763,8 @@
     <string name="eff_btn_add">Add</string>
     <string name="henuz_kural_eklenmedi">No specific rules have been added yet. The standard scoring system is being used.</string>
 
+    <string name="btn_edit_rules">Edit Rules</string>
+    <string name="label_team_custom_scoring">Team Custom Scoring</string>
+    <string name="unit_points">Points</string>
+
 </resources>

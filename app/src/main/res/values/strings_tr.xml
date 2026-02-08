@@ -761,4 +761,8 @@
     <string name="eff_btn_add">Ekle</string>
     <string name="henuz_kural_eklenmedi">Henüz özel bir kural eklenmedi. Standart puanlama sistemi kullanılıyor.</string>
 
+    <string name="btn_edit_rules">Kuralları Düzenle</string>
+    <string name="label_team_custom_scoring">Takım Özel Puanlaması</string>
+    <string name="unit_points">Puan</string>
+
 </resources>

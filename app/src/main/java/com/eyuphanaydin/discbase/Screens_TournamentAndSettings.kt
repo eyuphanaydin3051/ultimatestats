@@ -1568,7 +1568,7 @@ fun MatchDetailScreen(
     ourTeamName: String,
     opponentName: String,
     pointsArchive: List<PointData>,
-    rosterAsStats: List<Player>, // Bu liste Player nesneleridir
+    rosterAsStats: List<Player>,
     onBack: () -> Unit,
     tournamentId: String,
     match: Match,
@@ -1579,10 +1579,11 @@ fun MatchDetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedPlayerStats by remember { mutableStateOf<AdvancedPlayerStats?>(null) }
 
-    // 1. ADIM: Kriterleri ViewModel'den Dinle
+    // YENİ: Edit Sheet kontrolü
+    var showEditSheet by remember { mutableStateOf(false) }
+
     val efficiencyCriteria by viewModel.efficiencyCriteria.collectAsState()
 
-    // TAB BAŞLIKLARI
     val tabItems = listOf(
         stringResource(R.string.match_tab_summary),
         stringResource(R.string.match_tab_team),
@@ -1592,80 +1593,22 @@ fun MatchDetailScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    // 2. ADIM: Hesaplama Fonksiyonunu Merkezi Sisteme Bağla
-    // Bu fonksiyon artık manuel hesaplama yapmaz, Utils.kt'ye işi devreder.
-    fun calculateMatchStats(
-        archive: List<PointData>,
-        roster: List<Player>,
-        criteria: List<EfficiencyCriterion>
-    ): List<AdvancedPlayerStats> {
-        return roster.map { player ->
-            // Utils.kt içindeki fonksiyonu çağırıyoruz
-            // Bu sayede hem maç verisi (archive) hem de özel puanlar (criteria) kullanılıyor
-            calculateStatsFromPoints(
-                playerId = player.id,
-                pointsArchive = archive,
-                criteria = criteria
-            ).copy(basicStats = PlayerStats(playerId = player.id, name = player.name).copy(
-                // İsim bilgisini kaybetmemek için calculated stats üzerine kopyalıyoruz
-                // calculateStatsFromPoints sadece ID ile işlem yapar, ismi burada set ediyoruz
-                // Ancak calculateStatsFromPoints zaten basicStats döndürdüğü için propertyleri match etmemiz gerek.
-                // Daha temiz yol: Utils fonksiyonundan dönen basicStats üzerine player name eklemek.
-                // calculateStatsFromPoints içinde name default boş gelebilir, burada düzeltiyoruz:
-                pointsPlayed = calculateStatsFromPoints(player.id, archive, criteria).basicStats.pointsPlayed,
-                goal = calculateStatsFromPoints(player.id, archive, criteria).basicStats.goal,
-                assist = calculateStatsFromPoints(player.id, archive, criteria).basicStats.assist,
-                block = calculateStatsFromPoints(player.id, archive, criteria).basicStats.block,
-                throwaway = calculateStatsFromPoints(player.id, archive, criteria).basicStats.throwaway,
-                drop = calculateStatsFromPoints(player.id, archive, criteria).basicStats.drop,
-                successfulPass = calculateStatsFromPoints(player.id, archive, criteria).basicStats.successfulPass,
-                callahan = calculateStatsFromPoints(player.id, archive, criteria).basicStats.callahan,
-                pullAttempts = calculateStatsFromPoints(player.id, archive, criteria).basicStats.pullAttempts,
-                successfulPulls = calculateStatsFromPoints(player.id, archive, criteria).basicStats.successfulPulls,
-                secondsPlayed = calculateStatsFromPoints(player.id, archive, criteria).basicStats.secondsPlayed,
-                catchStat = calculateStatsFromPoints(player.id, archive, criteria).basicStats.catchStat,
-                // Diğer propertyler...
-                // NOT: Bu map işlemi biraz hantal görünebilir ama Utils.kt'nin dönüş tipini bozmamak için en güvenli yol budur.
-                // Aslında calculateStatsFromPoints doğrudan kullanılabilir, sadece player.name'i atadığımızdan emin olmalıyız.
-            ).copy(name = player.name)) // İsmi Player nesnesinden alıp basıyoruz
-        }
-    }
-
-    // DAHA TEMİZ VERSİYON (Tavsiye Edilen):
-    // Utils.kt'den dönen objeyi alıp sadece ismini güncelliyoruz.
-    fun calculateMatchStatsOptimized(
-        archive: List<PointData>,
-        roster: List<Player>,
-        criteria: List<EfficiencyCriterion>
-    ): List<AdvancedPlayerStats> {
-        return roster.map { player ->
-            val calculated = calculateStatsFromPoints(player.id, archive, criteria)
-            // İsim bilgisini güncelle
-            calculated.copy(
-                basicStats = calculated.basicStats.copy(name = player.name)
-            )
-        }.sortedBy { it.basicStats.name }
-    }
-
-    // 3. ADIM: Fonksiyonu Çağır
+    // Optimize edilmiş hesaplama
     val overallStats = remember(pointsArchive, efficiencyCriteria) {
-        calculateMatchStatsOptimized(pointsArchive, rosterAsStats, efficiencyCriteria)
+        rosterAsStats.map { player ->
+            val calculated = calculateStatsFromPoints(player.id, pointsArchive, efficiencyCriteria)
+            calculated.copy(basicStats = calculated.basicStats.copy(name = player.name))
+        }.sortedBy { it.basicStats.name }
     }
 
     val teamStats = calculateTeamStatsForMatch(pointsArchive, overallStats)
 
-    // SİLME DİALOGU
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text(stringResource(R.string.match_delete_title)) },
             text = { Text(stringResource(R.string.match_delete_msg)) },
-            confirmButton = {
-                Button(
-                    onClick = { onDeleteMatch(); showDeleteDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) { Text(stringResource(R.string.btn_delete_confirm)) }
-            },
+            confirmButton = { Button(onClick = { onDeleteMatch(); showDeleteDialog = false }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) { Text(stringResource(R.string.btn_delete_confirm)) } },
             dismissButton = { Button(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
@@ -1678,9 +1621,22 @@ fun MatchDetailScreen(
         val isHandler = playerInfo?.position == "Handler" || playerInfo?.position == "Hybrid"
         var showEfficiencyInfo by remember { mutableStateOf(false) }
 
+        // GÜNCELLENDİ: Diyalog ve Sheet
         if (showEfficiencyInfo) {
-            // BURASI DA GÜNCELLENDİ: Dinamik kriterleri gösterir
-            EfficiencyDescriptionDialog(onDismiss = { showEfficiencyInfo = false }, criteria = efficiencyCriteria)
+            EfficiencyDescriptionDialog(
+                onDismiss = { showEfficiencyInfo = false },
+                onEditRequested = {
+                    showEfficiencyInfo = false
+                    showEditSheet = true
+                }
+            )
+        }
+
+        if (showEditSheet) {
+            EfficiencyBottomSheet(
+                viewModel = viewModel,
+                onDismiss = { showEditSheet = false }
+            )
         }
 
         AlertDialog(
@@ -1693,11 +1649,7 @@ fun MatchDetailScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(stats.name, fontWeight = FontWeight.Bold)
-                        Text(
-                            "${playerInfo?.position ?: stringResource(R.string.unknown)} | ${playerInfo?.gender ?: ""}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
+                        Text("${playerInfo?.position ?: stringResource(R.string.unknown)} | ${playerInfo?.gender ?: ""}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                     }
                     IconButton(onClick = { showEfficiencyInfo = true }) {
                         Icon(Icons.Default.Info, contentDescription = "Info", tint = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
@@ -1705,29 +1657,15 @@ fun MatchDetailScreen(
                 }
             },
             text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                // ... (Detay içeriği - aynı kalacak) ...
+                Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     // GENEL ÖZET
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
                             Text(stringResource(R.string.match_stat_efficiency), style = MaterialTheme.typography.labelMedium, color = Color.Gray)
-
                             val formattedScore = "%.1f".format(advancedStats.plusMinus)
                             val displayText = if (advancedStats.plusMinus > 0) "+$formattedScore" else formattedScore
-                            Text(
-                                text = displayText,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (advancedStats.plusMinus > 0) Color(0xFF03DAC5)
-                                else if (advancedStats.plusMinus < 0) MaterialTheme.colorScheme.error
-                                else Color.Gray
-                            )
+                            Text(text = displayText, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = if (advancedStats.plusMinus > 0) Color(0xFF03DAC5) else if (advancedStats.plusMinus < 0) MaterialTheme.colorScheme.error else Color.Gray)
                         }
                         Column(horizontalAlignment = Alignment.End) {
                             Text(stringResource(R.string.match_stat_played), style = MaterialTheme.typography.labelMedium, color = Color.Gray)
@@ -1735,73 +1673,24 @@ fun MatchDetailScreen(
                             Text("O: ${advancedStats.oPointsPlayed} | D: ${advancedStats.dPointsPlayed}", fontSize = 12.sp, color = Color.Gray)
                         }
                     }
-
                     Divider()
+                    // Atıcılık/Alicilik kartları... (Eski kodun aynısı)
+                    val totalPassesCompleted = stats.successfulPass + stats.assist; val totalPassesAttempted = totalPassesCompleted + stats.throwaway; val passSuccessRate = calculateSafePercentage(totalPassesCompleted, totalPassesAttempted)
+                    val totalSuccesfulCatches = stats.catchStat + stats.goal; val totalCatchesAttempted = totalSuccesfulCatches + stats.drop; val catchRate = calculateSafePercentage(totalSuccesfulCatches, totalCatchesAttempted)
 
-                    val totalPassesCompleted = stats.successfulPass + stats.assist
-                    val totalPassesAttempted = totalPassesCompleted + stats.throwaway
-                    val passSuccessRate = calculateSafePercentage(totalPassesCompleted, totalPassesAttempted)
-
-                    val totalSuccesfulCatches = stats.catchStat + stats.goal
-                    val totalCatchesAttempted = totalSuccesfulCatches + stats.drop
-                    val catchRate = calculateSafePercentage(totalSuccesfulCatches, totalCatchesAttempted)
-
-                    // ATICILIK (THROWING) KARTI
-                    val PassingSection = @Composable {
-                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))) {
-                            Column(Modifier.padding(12.dp)) {
-                                Text(stringResource(R.string.match_stat_throwing), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Spacer(Modifier.height(8.dp))
-                                PerformanceStatRow(stringResource(R.string.home_pass_success), passSuccessRate.text, passSuccessRate.ratio, passSuccessRate.progress)
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("${stringResource(R.string.action_assist)}: ${stats.assist}")
-                                    Text("${stringResource(R.string.action_turnover)}: ${stats.throwaway}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-                    }
-
-                    // ALICILIK (RECEIVING) KARTI
-                    val ReceivingSection = @Composable {
-                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))) {
-                            Column(Modifier.padding(12.dp)) {
-                                Text(stringResource(R.string.match_stat_receiving), fontWeight = FontWeight.Bold, color = Color(0xFF009688))
-                                Spacer(Modifier.height(8.dp))
-                                PerformanceStatRow(stringResource(R.string.home_pass_success), catchRate.text, catchRate.ratio, catchRate.progress, progressColor = Color(0xFF009688))
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                    Text("${stringResource(R.string.action_goal)}: ${stats.goal}")
-                                    Text("${stringResource(R.string.action_drop)}: ${stats.drop}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-                    }
+                    val PassingSection = @Composable { Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))) { Column(Modifier.padding(12.dp)) { Text(stringResource(R.string.match_stat_throwing), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary); Spacer(Modifier.height(8.dp)); PerformanceStatRow(stringResource(R.string.home_pass_success), passSuccessRate.text, passSuccessRate.ratio, passSuccessRate.progress); Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("${stringResource(R.string.action_assist)}: ${stats.assist}"); Text("${stringResource(R.string.action_turnover)}: ${stats.throwaway}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) } } } }
+                    val ReceivingSection = @Composable { Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))) { Column(Modifier.padding(12.dp)) { Text(stringResource(R.string.match_stat_receiving), fontWeight = FontWeight.Bold, color = Color(0xFF009688)); Spacer(Modifier.height(8.dp)); PerformanceStatRow(stringResource(R.string.home_pass_success), catchRate.text, catchRate.ratio, catchRate.progress, progressColor = Color(0xFF009688)); Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("${stringResource(R.string.action_goal)}: ${stats.goal}"); Text("${stringResource(R.string.action_drop)}: ${stats.drop}", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) } } } }
 
                     if (isHandler) { PassingSection(); ReceivingSection() } else { ReceivingSection(); PassingSection() }
 
-                    // SAVUNMA KARTI
-                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))) {
-                        Column(Modifier.padding(12.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text(stringResource(R.string.match_stat_defense), fontWeight = FontWeight.Bold)
-                            }
-                            Spacer(Modifier.height(8.dp))
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("${stringResource(R.string.action_block)} (D):", fontWeight = FontWeight.Bold)
-                                Text("${stats.block}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
-                            }
-                            Divider(Modifier.padding(vertical = 4.dp))
-                            Text("Pull: ${stats.successfulPulls} / ${stats.pullAttempts}", fontSize = 12.sp, color = Color.Gray)
-                        }
-                    }
+                    // Savunma
+                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))) { Column(Modifier.padding(12.dp)) { Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(4.dp)); Text(stringResource(R.string.match_stat_defense), fontWeight = FontWeight.Bold) }; Spacer(Modifier.height(8.dp)); Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text("${stringResource(R.string.action_block)} (D):", fontWeight = FontWeight.Bold); Text("${stats.block}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary) }; Divider(Modifier.padding(vertical = 4.dp)); Text("Pull: ${stats.successfulPulls} / ${stats.pullAttempts}", fontSize = 12.sp, color = Color.Gray) } }
                 }
             },
             confirmButton = { Button(onClick = { selectedPlayerStats = null }) { Text(stringResource(R.string.btn_ok)) } }
         )
     }
 
-    // ANA EKRAN YAPISI
     Scaffold(
         containerColor = StitchColor.Background,
         topBar = {
@@ -1812,21 +1701,13 @@ fun MatchDetailScreen(
                         Text("${match.scoreUs} - ${match.scoreThem}", fontSize = 14.sp, color = if(match.scoreUs > match.scoreThem) StitchOffense else if(match.scoreThem > match.scoreUs) com.eyuphanaydin.discbase.ui.theme.StitchDefense else Color.Gray, fontWeight = FontWeight.Bold)
                     }
                 },
-                navigationIcon = {
-                    ModernIconButton(Icons.Default.ArrowBack, onBack, StitchTextPrimary, stringResource(R.string.desc_back))
-                },
+                navigationIcon = { ModernIconButton(Icons.Default.ArrowBack, onBack, StitchTextPrimary, stringResource(R.string.desc_back)) },
                 actions = {
-                    IconButton(
-                        onClick = { viewModel.shareMatchReport(context, match, context.getString(R.string.pdf_match_report_title), overallStats) }
-                    ) {
-                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.match_share_report), tint = StitchColor.Primary)
-                    }
+                    IconButton(onClick = { viewModel.shareMatchReport(context, match, context.getString(R.string.pdf_match_report_title), overallStats) }) { Icon(Icons.Default.Share, contentDescription = stringResource(R.string.match_share_report), tint = StitchColor.Primary) }
                     if (isAdmin) {
-                        ModernIconButton(Icons.Default.Edit, { navController.navigate("match_playback/$tournamentId/${match.opponentName}?matchId=${match.id}") },
-                            com.eyuphanaydin.discbase.ui.theme.StitchPrimary, stringResource(R.string.btn_edit))
+                        ModernIconButton(Icons.Default.Edit, { navController.navigate("match_playback/$tournamentId/${match.opponentName}?matchId=${match.id}") }, com.eyuphanaydin.discbase.ui.theme.StitchPrimary, stringResource(R.string.btn_edit))
                         Spacer(Modifier.width(8.dp))
-                        ModernIconButton(Icons.Default.Delete, { showDeleteDialog = true },
-                            com.eyuphanaydin.discbase.ui.theme.StitchDefense, stringResource(R.string.btn_delete))
+                        ModernIconButton(Icons.Default.Delete, { showDeleteDialog = true }, com.eyuphanaydin.discbase.ui.theme.StitchDefense, stringResource(R.string.btn_delete))
                         Spacer(Modifier.width(8.dp))
                     }
                 },
@@ -1839,39 +1720,20 @@ fun MatchDetailScreen(
                 selectedTabIndex = pagerState.currentPage,
                 containerColor = StitchColor.Surface,
                 contentColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
-                indicator = { tabPositions ->
-                    androidx.compose.material3.TabRowDefaults.Indicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                        color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary,
-                        height = 3.dp
-                    )
-                }
+                indicator = { tabPositions -> androidx.compose.material3.TabRowDefaults.Indicator(modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]), color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary, height = 3.dp) }
             ) {
                 tabItems.forEachIndexed { index, title ->
                     Tab(
                         selected = pagerState.currentPage == index,
                         onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                        text = {
-                            Text(
-                                title,
-                                fontWeight = if(pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal,
-                                color = if(pagerState.currentPage == index) com.eyuphanaydin.discbase.ui.theme.StitchPrimary else Color.Gray
-                            )
-                        }
+                        text = { Text(title, fontWeight = if(pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal, color = if(pagerState.currentPage == index) com.eyuphanaydin.discbase.ui.theme.StitchPrimary else Color.Gray) }
                     )
                 }
             }
-
             HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize().weight(1f)) { pageIndex ->
                 when (pageIndex) {
                     0 -> PointSummaryTab(navController, pointsArchive, tournamentId, match.id, isAdmin, onDeleteLastPoint)
-                    1 -> TeamStatsTab(
-                        teamStats = teamStats,
-                        allPlayersStats = overallStats,
-                        allPlayers = rosterAsStats,
-                        matchDurationSeconds = match.matchDurationSeconds,
-                        pointsArchive = pointsArchive
-                    )
+                    1 -> TeamStatsTab(teamStats, overallStats, rosterAsStats, match.matchDurationSeconds, pointsArchive)
                     2 -> PlayerStatsTab(overallStats, onPlayerClick = { selectedPlayerStats = it })
                 }
             }
