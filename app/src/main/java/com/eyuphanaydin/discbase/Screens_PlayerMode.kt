@@ -260,11 +260,6 @@ fun PlayerCareerScreen(
                 if (selectedTabIndex == 0) {
                     // --- İSTATİSTİKLER TABI ---
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        EfficiencyCard(
-                            efficiencyScore = stats.plusMinus,
-                            onInfoClick = { /* Bilgi diyaloğu eklenebilir */ }
-                        )
-
                         GameTimeCard(
                             totalPoints = stats.basicStats.pointsPlayed,
                             offensePoints = stats.oPointsPlayed,

@@ -424,12 +424,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun saveMatch(tournamentId: String, match: Match) = viewModelScope.launch {
+    // MainViewModel.kt içindeki saveMatch fonksiyonunu bununla değiştir:
+
+    // onSuccess parametresi eklendi
+    fun saveMatch(tournamentId: String, match: Match, onSuccess: () -> Unit = {}) = viewModelScope.launch {
         val context = getApplication<Application>()
         val tid = getCurrentTeamId() ?: return@launch
 
-        if (repository.saveMatch(tid, tournamentId, match)) {
+        // Repository işlemi bitene kadar bekle (async değil, sonucunu bekliyoruz)
+        val success = repository.saveMatch(tid, tournamentId, match)
+
+        if (success) {
             _userMessage.emit(context.getString(R.string.msg_match_saved))
+            // Kayıt başarılıysa sayfayı değiştirmesi için UI'a haber ver
+            onSuccess()
         } else {
             _userMessage.emit(context.getString(R.string.msg_match_save_error))
         }
