@@ -545,16 +545,17 @@ fun UltimateStatsApp(
                     presetLines = tournament.presetLines,
                     onMatchFinished = { finishedMatch ->
                         // 1. Kullanıcıya bilgi ver
-                        Toast.makeText(context,R.string.Maç_Kaydediliyor___, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.msg_match_saved, Toast.LENGTH_SHORT).show() // String kaynağını kullandık
 
-                        // 2. Veritabanına Kaydet
-                        mainViewModel.saveMatch(tournament.id, finishedMatch)
+                        // 2. Veritabanına Kaydet ve BİTİNCE Yönlendir
+                        mainViewModel.saveMatch(tournament.id, finishedMatch) {
 
-                        // 3. Detay Sayfasına Yönlendir
-                        navController.navigate("match_detail/${tournament.id}/${finishedMatch.id}") {
-                            // Geri tuşuna basınca tekrar maç kaydına dönmemesi için:
-                            popUpTo("tournament_detail/${tournament.id}") {
-                                inclusive = false
+                            // BU BLOK SADECE KAYIT BİTİNCE ÇALIŞIR
+                            navController.navigate("match_detail/${tournament.id}/${finishedMatch.id}") {
+                                // Geri tuşuna basınca tekrar maç kaydına dönmemesi için:
+                                popUpTo("tournament_detail/${tournament.id}") {
+                                    inclusive = false
+                                }
                             }
                         }
                     },

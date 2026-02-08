@@ -102,6 +102,9 @@ android {
         implementation(platform(libs.firebase.bom))
         implementation(libs.firebase.auth.ktx)
         implementation(libs.firebase.firestore.ktx)
+
+        implementation("com.google.firebase:firebase-database")
+
         implementation("com.google.firebase:firebase-storage-ktx")
         implementation(libs.google.play.services.auth) // Google Girişi için
         implementation("androidx.appcompat:appcompat:1.6.1")

@@ -24,7 +24,7 @@
     <string name="match_event_goal">Gol</string>
     <string name="match_event_assist">Asist</string>
     <string name="match_event_block">Blok</string>
-    <string name="match_event_turnover">Hata (Turnover)</string>
+    <string name="match_event_turnover">Turnover</string>
     <string name="match_event_drop">Drop</string>
     <string name="match_select_player">Oyuncu Seçiniz</string>
     <string name="match_point_finished">Sayı Bitti!</string>

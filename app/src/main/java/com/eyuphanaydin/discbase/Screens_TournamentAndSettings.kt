@@ -848,6 +848,7 @@ fun SettingsScreen(
                     }
                 }
                 // --- DEĞİŞTİRİLEN KISIM BİTİŞ ---
+                /*
 
                 SettingsSwitchRow(
                     icon = Icons.Default.Map,
@@ -857,7 +858,7 @@ fun SettingsScreen(
                     onCheckedChange = { viewModel.setProModeEnabled(it) }
                 )
 
-                Divider(color = Color.LightGray.copy(0.2f))
+                Divider(color = Color.LightGray.copy(0.2f))*/
 
                 SettingsSwitchRow(
                     icon = Icons.Default.AccessTime,
