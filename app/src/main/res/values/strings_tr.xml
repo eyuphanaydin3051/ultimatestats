@@ -759,5 +759,6 @@
     <string name="eff_label_stat">İstatistik Seçin</string>
     <string name="eff_label_points">Puan Değeri (Örn: 1.5 veya -2.0)</string>
     <string name="eff_btn_add">Ekle</string>
+    <string name="henuz_kural_eklenmedi">Henüz özel bir kural eklenmedi. Standart puanlama sistemi kullanılıyor.</string>
 
 </resources>

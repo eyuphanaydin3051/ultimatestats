@@ -3268,7 +3268,7 @@ fun EfficiencyBottomSheet(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Henüz özel bir kural eklenmedi.\nStandart puanlama sistemi kullanılıyor.",
+                        text = stringResource(R.string.henuz_kural_eklenmedi),
                         color = Color.Gray,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )

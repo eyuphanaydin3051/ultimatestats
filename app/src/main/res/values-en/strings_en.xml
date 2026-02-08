@@ -761,5 +761,6 @@
     <string name="eff_label_stat">Select Statistic</string>
     <string name="eff_label_points">Point Value (Ex: 1.5 or -2.0)</string>
     <string name="eff_btn_add">Add</string>
+    <string name="henuz_kural_eklenmedi">No specific rules have been added yet. The standard scoring system is being used.</string>
 
 </resources>
