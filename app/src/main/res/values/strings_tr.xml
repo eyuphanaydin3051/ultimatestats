@@ -765,4 +765,16 @@
     <string name="label_team_custom_scoring">Takım Özel Puanlaması</string>
     <string name="unit_points">Puan</string>
 
+    <string name="onboard_title_1">Takımını Yönet</string>
+    <string name="onboard_desc_1">Takım arkadaşlarını ekle, kadroları oluştur ve antrenman yoklamalarını kolayca takip et.</string>
+
+    <string name="onboard_title_2">İstatistikleri Tut</string>
+    <string name="onboard_desc_2">Maç sırasında gol, asist, blok ve top kayıplarını tek tuşla kaydet. Kağıt kalem derdine son ver.</string>
+
+    <string name="onboard_title_3">Analiz Et ve Geliş</string>
+    <string name="onboard_desc_3">Detaylı oyuncu ve takım raporlarıyla eksik yönlerini gör, oyununu bir üst seviyeye taşı.</string>
+
+    <string name="onboard_btn_next">İleri</string>
+    <string name="onboard_btn_start">Hemen Başla</string>
+
 </resources>

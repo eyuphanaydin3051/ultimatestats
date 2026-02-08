@@ -90,6 +90,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _appTheme.value = theme
         viewModelScope.launch { repository.setAppTheme(theme.name) }
     }
+    // --- ONBOARDING ---
+    private val _onboardingCompleted = MutableStateFlow(false)
+    val onboardingCompleted = _onboardingCompleted.asStateFlow()
+    private val _isCheckingOnboarding = MutableStateFlow(true)
+    val isCheckingOnboarding = _isCheckingOnboarding.asStateFlow()
 
     // Aktif Takım ID
     val activeTeamId: StateFlow<String?> = repository.getActiveTeamId()
@@ -340,6 +345,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             startBillingConnection()
         } catch (e: Exception) {
             Log.e("BillingError", "Abonelik sistemi başlatılamadı: ${e.message}")
+        }
+        // Tanıtım ekranı durumunu dinle
+        viewModelScope.launch {
+            repository.getOnboardingCompleted().collect { completed ->
+                _onboardingCompleted.value = completed
+                // Veri geldi, artık kontrol bitti. Yüklemeyi durdur.
+                _isCheckingOnboarding.value = false
+            }
         }
     }
 
@@ -1078,6 +1091,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             // Üst fonksiyona da haber veriyoruz (Orası da "Çevrimdışı Mod" mesajı verecek)
             throw e
         }
+    }
+    fun completeOnboarding() = viewModelScope.launch {
+        repository.setOnboardingCompleted(true)
     }
 }
 

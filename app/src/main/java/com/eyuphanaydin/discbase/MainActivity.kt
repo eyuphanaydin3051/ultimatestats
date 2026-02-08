@@ -144,6 +144,8 @@ fun UltimateStatsApp(
     val isLoadingAuth by mainViewModel.isLoadingAuth.collectAsState(initial = true)
     val currentUser by mainViewModel.currentUser.collectAsState()
 
+    val onboardingCompleted by mainViewModel.onboardingCompleted.collectAsState()
+    val isCheckingOnboarding by mainViewModel.isCheckingOnboarding.collectAsState()
     // Aktif Takım Verileri
     val activeTeamId by mainViewModel.activeTeamId.collectAsState()
     val teamProfile by mainViewModel.profile.collectAsState()
@@ -159,7 +161,21 @@ fun UltimateStatsApp(
     // Yetki Kontrolü
     val currentUserRole by mainViewModel.currentUserRole.collectAsState()
     val isAdmin = currentUserRole == "admin"
-
+    // --- KRİTİK DÜZELTME BURADA ---
+    // Eğer hala onboarding durumu kontrol ediliyorsa, boş ekran göster.
+    // Bu sayede yanlış ekranın "yanıp sönmesi" engellenir.
+    if (isCheckingOnboarding) {
+        // Buraya istersen logonun olduğu bir Splash Screen koyabilirsin.
+        // Şimdilik boş bir Surface veya LoadingScreen koyuyoruz.
+        Box(
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            // İstersen buraya sadece logo koyabilirsin, kullanıcı fark etmez bile.
+        }
+        return // NavHost'u henüz oluşturma, fonksiyonu burada kes.
+    }
+    // -----------------------------
     // Toast Mesajları
     LaunchedEffect(Unit) {
         mainViewModel.userMessage.collect { message ->
@@ -169,14 +185,29 @@ fun UltimateStatsApp(
 
     // --- NAVİGASYON BAŞLANGIÇ MANTIĞI ---
     val startDestination = when {
+        !onboardingCompleted -> "onboarding" // Veri artık kesinleşti, false ise buraya
         isLoadingAuth -> "loading"
         currentUser == null -> "sign_in"
-        // Kullanıcı var ama aktif takım seçilmemişse veya profil eksikse 'app_root'a git
         else -> "app_root"
     }
 
     NavHost(navController = navController, startDestination = startDestination) {
+        // --- 1. YENİ EKLENEN ROTA: TANITIM EKRANI ---
+        composable("onboarding") {
+            OnboardingScreen(
+                onFinishOnboarding = {
+                    // Butona basınca "Tamamlandı" olarak işaretle
+                    mainViewModel.completeOnboarding()
 
+                    // Giriş ekranına veya ana ekrana yönlendir
+                    val nextRoute = if (currentUser == null) "sign_in" else "app_root"
+                    navController.navigate(nextRoute) {
+                        popUpTo("onboarding") { inclusive = true }
+                    }
+                }
+            )
+        }
+        // ---------------------------------------------
         // 1. YÜKLENİYOR EKRANI
         composable(route = "loading") {
             LoadingScreen(text = stringResource(R.string.msg_signing_in))

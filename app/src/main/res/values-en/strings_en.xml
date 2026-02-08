@@ -767,4 +767,16 @@
     <string name="label_team_custom_scoring">Team Custom Scoring</string>
     <string name="unit_points">Points</string>
 
+    <string name="onboard_title_1">Manage Your Team</string>
+    <string name="onboard_desc_1">Add teammates, create rosters, and track training attendance easily.</string>
+
+    <string name="onboard_title_2">Track Stats</string>
+    <string name="onboard_desc_2">Record goals, assists, blocks, and turnovers with a single tap. No more paper and pencil.</string>
+
+    <string name="onboard_title_3">Analyze &amp; Improve</string>
+    <string name="onboard_desc_3">See detailed player and team reports to spot weaknesses and level up your game.</string>
+
+    <string name="onboard_btn_next">Next</string>
+    <string name="onboard_btn_start">Get Started</string>
+
 </resources>

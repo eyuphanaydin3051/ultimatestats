@@ -30,6 +30,7 @@ private val TIME_TRACKING_KEY = androidx.datastore.preferences.core.booleanPrefe
 private val PRO_MODE_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("pro_mode_enabled")
 private val CAPTURE_MODE_KEY = stringPreferencesKey("capture_mode")
 
+private val ONBOARDING_COMPLETED_KEY = androidx.datastore.preferences.core.booleanPreferencesKey("onboarding_completed")
 private const val TEAMS_COLLECTION = "teams"
 private const val TOURNAMENTS_COLLECTION = "tournaments"
 private const val PLAYERS_COLLECTION = "players"
@@ -405,4 +406,10 @@ class TournamentRepository(private val context: Context) {
     suspend fun setTimeTrackingEnabled(enabled: Boolean) { context.dataStore.edit { it[TIME_TRACKING_KEY] = enabled } }
     fun getProModeEnabled(): Flow<Boolean> = context.dataStore.data.map { it[PRO_MODE_KEY] ?: false }
     suspend fun setProModeEnabled(enabled: Boolean) { context.dataStore.edit { it[PRO_MODE_KEY] = enabled } }
+    // --- ONBOARDING KONTROLÜ ---
+    fun getOnboardingCompleted(): Flow<Boolean> = context.dataStore.data.map { it[ONBOARDING_COMPLETED_KEY] ?: false }
+
+    suspend fun setOnboardingCompleted(completed: Boolean) {
+        context.dataStore.edit { it[ONBOARDING_COMPLETED_KEY] = completed }
+    }
 }
