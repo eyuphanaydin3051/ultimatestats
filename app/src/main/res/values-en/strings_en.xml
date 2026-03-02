@@ -778,5 +778,8 @@
 
     <string name="onboard_btn_next">Next</string>
     <string name="onboard_btn_start">Get Started</string>
-
+    <string name="label_email">Email</string>
+    <string name="label_pass_distribution">Pass Distribution</string>
+    <string name="stat_pass">Pass</string>
+    <string name="msg_no_pass_data">No pass data available yet.</string>
 </resources>

@@ -776,5 +776,8 @@
 
     <string name="onboard_btn_next">İleri</string>
     <string name="onboard_btn_start">Hemen Başla</string>
-
+    <string name="label_email">E-posta</string>
+    <string name="label_pass_distribution">Pas Dağılımı</string>
+    <string name="stat_pass">Pas</string>
+    <string name="msg_no_pass_data">Henüz pas verisi bulunmuyor.</string>
 </resources>
