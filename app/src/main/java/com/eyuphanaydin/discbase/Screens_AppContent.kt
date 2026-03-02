@@ -2291,9 +2291,7 @@ fun PlayerEditScreen(
     val scope = rememberCoroutineScope()
     val mainViewModel: MainViewModel = viewModel()
 
-    // Hesaplama için kriterleri çekiyoruz
     val efficiencyCriteria by mainViewModel.efficiencyCriteria.collectAsState()
-
     val currentProfile by mainViewModel.profile.collectAsState()
     val allUserProfiles by mainViewModel.allUserProfiles.collectAsState()
     var isSaving by remember { mutableStateOf(false) }
@@ -2307,10 +2305,9 @@ fun PlayerEditScreen(
     var updatedEmail by remember { mutableStateOf(player.email ?: "") }
     var currentPhotoUrl by remember { mutableStateOf(player.photoUrl) }
     var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+
     var showNumberPickerDialog by remember { mutableStateOf(false) }
     var isEditModeExpanded by remember { mutableStateOf(false) }
-
-    // YENİ: Verimlilik penceresi kontrolü
     var showEditSheet by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -2320,10 +2317,7 @@ fun PlayerEditScreen(
         val playerMail = player.email?.trim()
         currentMail != null && playerMail != null && currentMail.equals(playerMail, ignoreCase = true)
     }
-    val canEditEverything = isAdmin
-    val canEditPhotoAndNumber = isAdmin || isOwner
 
-    // ... (Crop Launcher ve Photo Picker kodları aynen kalacak) ...
     val cropErrorMsg = stringResource(R.string.msg_crop_error)
     val cropImageLauncher = rememberLauncherForActivityResult(contract = CropImageContract()) { result ->
         if (result.isSuccessful) {
@@ -2345,21 +2339,13 @@ fun PlayerEditScreen(
         }
     )
 
-    var showEmailDropdown by remember { mutableStateOf(false) }
-    val teamMemberEmails = remember(currentProfile.members, allUserProfiles) {
-        currentProfile.members.keys.mapNotNull { uid ->
-            val userProfile = allUserProfiles[uid]
-            if (!userProfile?.email.isNullOrBlank()) Triple(uid, userProfile?.displayName ?: "İsimsiz", userProfile!!.email!!) else null
-        }
-    }
-
     var showTournamentDropdown by remember { mutableStateOf(false) }
     var showMatchDropdown by remember { mutableStateOf(false) }
     var selectedTournamentId by remember { mutableStateOf("GENEL") }
     var selectedMatchId by remember { mutableStateOf<String?>(null) }
     val selectedTournament = allTournaments.find { it.id == selectedTournamentId }
 
-    // İstatistik Hesaplamaları (Kriterler dahil)
+    // İstatistik Hesaplamaları
     val advancedStats = calculateGlobalPlayerStats(
         playerId = player.id,
         filterTournamentId = selectedTournamentId,
@@ -2377,8 +2363,6 @@ fun PlayerEditScreen(
     val catchRate = calculateSafePercentage(totalSuccesfulCatches, totalCatchesAttempted)
 
     val teamAverages = remember(allPlayers, selectedTournamentId, selectedMatchId, allTournaments, efficiencyCriteria) {
-        // ... (Ortalama hesaplama kodu aynen kalacak) ...
-        // Kodun uzun olmaması için burayı özet geçiyorum, eski kodun aynısı
         var totalGoals = 0; var totalAssists = 0; var totalBlocks = 0; var totalThrowaways = 0; var totalDrops = 0; var totalPulls = 0; var totalCatches = 0; var totalSuccessfulPasses = 0; var activePlayerCount = 0
         allPlayers.forEach { p ->
             val pStats = calculateGlobalPlayerStats(p.id, selectedTournamentId, selectedMatchId, allTournaments, efficiencyCriteria).basicStats
@@ -2423,9 +2407,31 @@ fun PlayerEditScreen(
         )
     }
 
-    // ... (Turnuva ve Maç Dropdownları aynen kalacak) ...
-    if (showTournamentDropdown) { /* ... */ }
-    if (showMatchDropdown) { /* ... */ }
+    if (showTournamentDropdown) {
+        AlertDialog(
+            onDismissRequest = { showTournamentDropdown = false },
+            title = { Text(stringResource(R.string.filter_tournament)) },
+            text = {
+                LazyColumn {
+                    item { Text(stringResource(R.string.label_all_season), modifier = Modifier.fillMaxWidth().clickable { selectedTournamentId = "GENEL"; selectedMatchId = null; showTournamentDropdown = false }.padding(12.dp)) }
+                    items(allTournaments) { t -> Text(t.tournamentName, modifier = Modifier.fillMaxWidth().clickable { selectedTournamentId = t.id; selectedMatchId = null; showTournamentDropdown = false }.padding(12.dp)) }
+                }
+            }, confirmButton = {}
+        )
+    }
+
+    if (showMatchDropdown && selectedTournament != null) {
+        AlertDialog(
+            onDismissRequest = { showMatchDropdown = false },
+            title = { Text(stringResource(R.string.filter_match)) },
+            text = {
+                LazyColumn {
+                    item { Text(stringResource(R.string.label_all_matches), fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth().clickable { selectedMatchId = null; showMatchDropdown = false }.padding(12.dp)) }
+                    items(selectedTournament.matches) { match -> Text("vs ${match.opponentName}", modifier = Modifier.fillMaxWidth().clickable { selectedMatchId = match.id; showMatchDropdown = false }.padding(12.dp)) }
+                }
+            }, confirmButton = {}
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -2444,7 +2450,6 @@ fun PlayerEditScreen(
         val tabTitles = listOf(stringResource(R.string.tab_player_stats), stringResource(R.string.tab_pass_network))
         var showEfficiencyInfo by remember { mutableStateOf(false) }
 
-        // GÜNCELLENDİ: Efficiency Diyaloğu ve Sheet
         if (showEfficiencyInfo) {
             EfficiencyDescriptionDialog(
                 onDismiss = { showEfficiencyInfo = false },
@@ -2470,10 +2475,6 @@ fun PlayerEditScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ... (Profil Kartı ve Edit Alanı - Eski kodun aynısı) ...
-            // Kodun tamamı uzun olduğu için sadece güncellenen mantığı vurguluyorum,
-            // ama kopyala-yapıştır yaparken eski 'Card' ve 'if(isEditModeExpanded)' bloklarını koruduğundan emin ol.
-
             // --- PROFİL KARTI ---
             Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp), elevation = CardDefaults.cardElevation(8.dp)) {
                 Box(modifier = Modifier.fillMaxWidth().background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(StitchGradientStart, StitchGradientEnd)))) {
@@ -2487,20 +2488,66 @@ fun PlayerEditScreen(
                             Text("${player.position} $captainLabel", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(0.8f))
                         }
                         if (isAdmin || isOwner) {
-                            IconButton(onClick = { isEditModeExpanded = !isEditModeExpanded }) { Icon(imageVector = if (isEditModeExpanded) Icons.Default.ExpandLess else Icons.Default.Edit, contentDescription = stringResource(R.string.btn_edit), tint = Color.White) }
+                            IconButton(onClick = { isEditModeExpanded = !isEditModeExpanded }) {
+                                Icon(imageVector = if (isEditModeExpanded) Icons.Default.ExpandLess else Icons.Default.Edit, contentDescription = stringResource(R.string.btn_edit), tint = Color.White)
+                            }
                         }
                     }
                 }
             }
 
-            // --- DÜZENLEME ALANI ---
+            // --- DÜZENLEME FORMU ---
             if (isEditModeExpanded && (isAdmin || isOwner)) {
-                // ... (Eski düzenleme formu kodları buraya) ...
-                // Bu kısım çok uzun ve değişmediği için özet geçiyorum, kopyalarken eski dosyadan alabilirsin veya istersen tam halini atabilirim.
-                // Temel olarak OutlinedTextField'ler ve Kaydet butonu var.
-                Card(colors = CardDefaults.cardColors(containerColor = StitchColor.Surface), modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, com.eyuphanaydin.discbase.ui.theme.StitchPrimary.copy(alpha = 0.5f))) {
+                Card(colors = CardDefaults.cardColors(containerColor = StitchColor.Surface), modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, StitchColor.Primary.copy(alpha = 0.5f))) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        // ... Form elemanları ...
+
+                        OutlinedButton(
+                            onClick = { photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.PhotoCamera, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.btn_change_photo))
+                        }
+
+                        OutlinedTextField(
+                            value = updatedName,
+                            onValueChange = { updatedName = it },
+                            label = { Text(stringResource(R.string.label_fullname)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        OutlinedTextField(
+                            value = updatedEmail,
+                            onValueChange = { updatedEmail = it },
+                            label = { Text(stringResource(R.string.label_email)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+
+                        Text(stringResource(R.string.label_gender), color = Color.Gray, fontSize = 14.sp)
+                        GenderSelector(selectedGender = updatedGender, onGenderSelect = { updatedGender = it })
+
+                        Text(stringResource(R.string.label_position), color = Color.Gray, fontSize = 14.sp)
+                        PositionSelector(selectedPosition = updatedPosition, onPositionSelect = { updatedPosition = it })
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.jersey_title), modifier = Modifier.weight(1f))
+                            OutlinedButton(onClick = { showNumberPickerDialog = true }) {
+                                Text(selectedJerseyNumber?.toString() ?: stringResource(R.string.jersey_empty))
+                            }
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.role_captain), modifier = Modifier.weight(1f))
+                            Switch(
+                                checked = updatedIsCaptain,
+                                onCheckedChange = { updatedIsCaptain = it },
+                                colors = SwitchDefaults.colors(checkedTrackColor = StitchColor.Primary)
+                            )
+                        }
+
                         // KAYDET BUTONU
                         Button(onClick = {
                             scope.launch {
@@ -2514,43 +2561,93 @@ fun PlayerEditScreen(
                                 isSaving = false; isEditModeExpanded = false
                                 Toast.makeText(context, context.getString(R.string.msg_profile_updated), Toast.LENGTH_SHORT).show()
                             }
-                        }, modifier = Modifier.fillMaxWidth().height(50.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary), enabled = !isSaving) {
+                        }, modifier = Modifier.fillMaxWidth().height(50.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = StitchColor.Primary), enabled = !isSaving) {
                             if (isSaving) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp)) else Text(stringResource(R.string.btn_save_changes), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
             }
 
-            // ... (Filtreleme Alanı - Aynı) ...
+            // --- FİLTRELEME ALANI ---
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterButton(
+                    text = selectedTournament?.tournamentName ?: stringResource(R.string.label_all_season),
+                    onClick = { showTournamentDropdown = true },
+                    modifier = Modifier.weight(1f)
+                )
+                if (selectedTournamentId != "GENEL") {
+                    val matchName = selectedTournament?.matches?.find { it.id == selectedMatchId }?.opponentName
+                    val displayMatch = if (matchName != null) "vs $matchName" else stringResource(R.string.label_all_matches)
+                    FilterButton(
+                        text = displayMatch,
+                        onClick = { showMatchDropdown = true },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
 
             TabRow(selectedTabIndex = selectedTabIndex) {
                 tabTitles.forEachIndexed { index, title -> Tab(selected = selectedTabIndex == index, onClick = { selectedTabIndex = index }, text = { Text(title) }) }
             }
 
             if (selectedTabIndex == 0) {
+                // TAB 1: İSTATİSTİKLER
                 Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     EfficiencyCard(
                         efficiencyScore = advancedStats.plusMinus,
                         onInfoClick = { showEfficiencyInfo = true }
                     )
                     GameTimeCard(totalPoints = stats.pointsPlayed, offensePoints = advancedStats.oPointsPlayed, defensePoints = advancedStats.dPointsPlayed)
-                    if (player.position == "Handler" || player.position == "Hybrid") { PassingStatsCard(passSuccessRate, stats, teamAverages); ReceivingStatsCard(catchRate, stats, teamAverages) }
-                    else { ReceivingStatsCard(catchRate, stats, teamAverages); PassingStatsCard(passSuccessRate, stats, teamAverages) }
+
+                    if (player.position == "Handler" || player.position == "Hybrid") {
+                        PassingStatsCard(passSuccessRate, stats, teamAverages)
+                        ReceivingStatsCard(catchRate, stats, teamAverages)
+                    } else {
+                        ReceivingStatsCard(catchRate, stats, teamAverages)
+                        PassingStatsCard(passSuccessRate, stats, teamAverages)
+                    }
+
                     DefenseStatsCard(stats, teamAverages)
+
                     if (isAdmin) {
                         Button(onClick = { onPlayerDelete(player) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error), modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                            Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.delete_player_confirm))
+                            Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.delete_player_confirm))
                         }
                     }
                     Spacer(Modifier.height(50.dp))
                 }
             } else {
-                // Pas Ağı kodları... (Değişmedi)
+                // TAB 2: PAS AĞI
                 val totalPasses = stats.successfulPass + stats.assist
-                // ...
                 Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    if (stats.passDistribution.isNotEmpty()) { PassNetworkChordDiagram(mainPlayerName = player.name, passDistribution = stats.passDistribution, allPlayers = allPlayers); Spacer(Modifier.height(8.dp)) }
-                    // ... Akış oranları ve detaylı bağlantılar ...
+                    if (stats.passDistribution.isNotEmpty()) {
+                        PassNetworkChordDiagram(mainPlayerName = player.name, passDistribution = stats.passDistribution, allPlayers = allPlayers)
+                        Spacer(Modifier.height(8.dp))
+
+                        Text(stringResource(R.string.label_pass_distribution), fontWeight = FontWeight.Bold)
+                        stats.passDistribution.entries.sortedByDescending { it.value }.forEach { entry ->
+                            val receiverName = allPlayers.find { p -> p.id == entry.key }?.name ?: entry.key
+                            val percentage = if (totalPasses > 0) (entry.value.toFloat() / totalPasses) * 100 else 0f
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(receiverName, fontSize = 14.sp)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("${entry.value} ${stringResource(R.string.stat_pass)}", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(String.format("(%.1f%%)", percentage), fontSize = 12.sp, color = Color.Gray)
+                                }
+                            }
+                            Divider(color = Color.LightGray.copy(alpha = 0.5f))
+                        }
+                    } else {
+                        Text(stringResource(R.string.msg_no_pass_data), color = Color.Gray)
+                    }
                     Spacer(Modifier.height(50.dp))
                 }
             }
