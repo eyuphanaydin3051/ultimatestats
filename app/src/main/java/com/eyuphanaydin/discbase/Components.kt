@@ -1508,9 +1508,9 @@ fun RosterSelectionCard(
     val player = pair.first
     val stats = pair.second
 
-    // Arka plan rengi ve çerçeve
-    val bgColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.White
-    val border = if (isSelected) BorderStroke(2.dp, com.eyuphanaydin.discbase.ui.theme.StitchPrimary) else BorderStroke(1.dp, Color.LightGray.copy(0.5f))
+    // DEĞİŞİKLİK BURADA: Arka plan her zaman beyaz, seçiliyse sadece çerçeve mor ve daha kalın (3.dp)
+    val bgColor = Color.White
+    val border = if (isSelected) BorderStroke(3.dp, com.eyuphanaydin.discbase.ui.theme.StitchPrimary) else BorderStroke(1.dp, Color.LightGray.copy(0.5f))
 
     // Kartın şeffaflığı: Seçili DEĞİLSE ve LİMİT DOLUYSA silikleşsin
     val alpha = if (!isSelected && isSelectionFull) 0.5f else 1f
@@ -1532,9 +1532,9 @@ fun RosterSelectionCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Oyuncu Adı (Çok uzunsa alt satıra geçmesin, ilk adını alsın veya sığdırsın)
+            // Oyuncu Adı
             Text(
-                text = player.name.split(" ").first(), // İsmin ilk kısmını alır (Kutuda daha şık durur)
+                text = player.name.split(" ").first(),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -1549,13 +1549,13 @@ fun RosterSelectionCard(
                 Text(
                     text = "O: ${stats.oPointsPlayed}",
                     fontSize = 13.sp,
-                    color = StitchOffense, // Temandaki hücum rengi (Yeşil)
+                    color = StitchOffense,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "D: ${stats.dPointsPlayed}",
                     fontSize = 13.sp,
-                    color = com.eyuphanaydin.discbase.ui.theme.StitchDefense, // Temandaki savunma rengi (Kırmızı)
+                    color = com.eyuphanaydin.discbase.ui.theme.StitchDefense,
                     fontWeight = FontWeight.Bold
                 )
             }

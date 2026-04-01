@@ -2321,9 +2321,26 @@ fun LineSelectionScreen(
     }
 
     // Oyuncuları Grupla
-    val handlers =
-        displayedRoster.filter { it.first.position == "Handler" || it.first.position == "Hybrid" }
-    val cutters = displayedRoster.filter { it.first.position == "Cutter" }
+    // YENİ KOD: Hangi gruplama modunda olduğumuzu tutan state
+    var groupingMode by remember { mutableStateOf("Position") } // "Position" veya "Gender"
+
+    // YENİ KOD: Dinamik Gruplama İşlemi
+    val groupedRoster = remember(displayedRoster, groupingMode) {
+        if (groupingMode == "Position") {
+            // Eski mantık: Pozisyona göre (Handlers ve Cutters)
+            val handlersList = displayedRoster.filter { it.first.position == "Handler" || it.first.position == "Hybrid" }
+            val cuttersList = displayedRoster.filter { it.first.position == "Cutter" }
+
+            // Boş olmayanları haritaya ekle
+            mapOf("HANDLERS" to handlersList, "CUTTERS" to cuttersList).filter { it.value.isNotEmpty() }
+        } else {
+            // Yeni mantık: Cinsiyete göre (örn: ERKEK, KADIN)
+            // Not: Player modelinizde "gender" adlı bir değişken yoksa, lütfen ekleyin.
+            displayedRoster.groupBy {
+                it.first.gender?.uppercase() ?: "DİĞER"
+            }
+        }
+    }
 
     Column(
         Modifier
@@ -2355,7 +2372,33 @@ fun LineSelectionScreen(
                 }
             }
         }
+        Spacer(Modifier.height(8.dp))
 
+        // --- YENİ EKLENEN KISIM: GRUPLAMA SEÇİM BUTONLARI ---
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            FilterChip(
+                selected = groupingMode == "Position",
+                onClick = { groupingMode = "Position" },
+                label = { Text("Pozisyona Göre") },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = StitchColor.Primary.copy(alpha = 0.2f),
+                    selectedLabelColor = StitchColor.Primary
+                )
+            )
+            Spacer(Modifier.width(16.dp))
+            FilterChip(
+                selected = groupingMode == "Gender",
+                onClick = { groupingMode = "Gender" },
+                label = { Text("Cinsiyete Göre") },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = StitchColor.Primary.copy(alpha = 0.2f),
+                    selectedLabelColor = StitchColor.Primary
+                )
+            )
+        }
         Spacer(Modifier.height(12.dp))
 
         // --- 1. HIZLI SET YÜKLE ---
@@ -2524,44 +2567,28 @@ fun LineSelectionScreen(
 
         // --- 2. OYUNCU LİSTESİ (GRID YAPISI) ---
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3), // Yan yana 3 kutucuk olacak şekilde böler (Ekrana göre 4 de yapabilirsin)
+            columns = GridCells.Fixed(3),
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp), // Alt alta boşluk
-            horizontalArrangement = Arrangement.spacedBy(12.dp) // Yan yana boşluk
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // HANDLERS
-            if (handlers.isNotEmpty()) {
-                // Başlıkların satırı tam kaplaması için span kullanıyoruz
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionHeader(stringResource(R.string.section_handlers))
-                }
-                items(handlers) { pair ->
-                    RosterSelectionCard(
-                        pair = pair,
-                        isSelected = selectedPlayerIds.contains(pair.first.id),
-                        isSelectionFull = selectedPlayerIds.size >= 7,
-                        onToggle = {
-                            val id = it.first.id
-                            if (selectedPlayerIds.contains(id)) {
-                                selectedPlayerIds = selectedPlayerIds - id
-                            } else if (selectedPlayerIds.size < 7) {
-                                selectedPlayerIds = selectedPlayerIds + id
-                            }
-                        }
-                    )
-                }
-            }
+            // YENİ KOD: Haritada gruplanan verilere göre otomatik Section ve İtem oluşturur
+            groupedRoster.forEach { (groupName, playersInGroup) ->
 
-            // CUTTERS
-            if (cutters.isNotEmpty()) {
+                // 1. Grubun Başlığı
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column {
-                        Spacer(Modifier.height(12.dp))
-                        SectionHeader(stringResource(R.string.section_cutters))
+                        // İlk grup değilse üstüne biraz daha boşluk bırak
+                        if (groupName != groupedRoster.keys.first()) {
+                            Spacer(Modifier.height(12.dp))
+                        }
+                        SectionHeader(groupName)
                     }
                 }
-                items(cutters) { pair ->
+
+                // 2. O Gruba Ait Oyuncu Kartları
+                items(playersInGroup) { pair ->
                     RosterSelectionCard(
                         pair = pair,
                         isSelected = selectedPlayerIds.contains(pair.first.id),
