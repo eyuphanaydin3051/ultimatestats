@@ -71,7 +71,11 @@ import com.eyuphanaydin.discbase.ui.theme.StitchPrimary
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.UUID
-
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.ui.unit.dp
 @Composable
 fun PlayerAvatar(
     name: String,
@@ -1495,76 +1499,85 @@ fun PresetLineAddScreen(
 
 
 @Composable
-fun RosterSelectionRow(
+fun RosterSelectionCard(
     pair: Pair<Player, AdvancedPlayerStats>,
     isSelected: Boolean,
+    isSelectionFull: Boolean,
     onToggle: (Pair<Player, AdvancedPlayerStats>) -> Unit
 ) {
     val player = pair.first
     val stats = pair.second
 
-    // Seçiliyse veya Pozisyona göre arka plan
-    val bgColor =
-        if (isSelected) MaterialTheme.colorScheme.primaryContainer else when (player.position) {
-            "Handler" -> Color(0xFFE3F2FD) // Açık Mavi
-            "Cutter" -> Color(0xFFE8F5E9) // Açık Yeşil
-            else -> Color.White
-        }
+    // Arka plan rengi ve çerçeve
+    val bgColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.White
+    val border = if (isSelected) BorderStroke(2.dp, com.eyuphanaydin.discbase.ui.theme.StitchPrimary) else BorderStroke(1.dp, Color.LightGray.copy(0.5f))
+
+    // Kartın şeffaflığı: Seçili DEĞİLSE ve LİMİT DOLUYSA silikleşsin
+    val alpha = if (!isSelected && isSelectionFull) 0.5f else 1f
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
+            .aspectRatio(1f) // Kartı tam bir kare (box) yapar
+            .alpha(alpha)
             .clickable { onToggle(pair) },
         colors = CardDefaults.cardColors(containerColor = bgColor),
-        shape = RoundedCornerShape(8.dp), // Hafif köşe
-        elevation = CardDefaults.cardElevation(0.dp) // Flat görünüm
+        shape = RoundedCornerShape(12.dp),
+        border = border,
+        elevation = CardDefaults.cardElevation(if (isSelected) 4.dp else 1.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            // Sol: Avatar ve İsim
-            PlayerAvatar(
-                name = player.name,
-                jerseyNumber = player.jerseyNumber,
-                size = 40.dp,
-                fontSize = 14.sp
+            // Oyuncu Adı (Çok uzunsa alt satıra geçmesin, ilk adını alsın veya sığdırsın)
+            Text(
+                text = player.name.split(" ").first(), // İsmin ilk kısmını alır (Kutuda daha şık durur)
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            Spacer(Modifier.width(12.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(player.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // İstatistikler (O ve D)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "${player.position} (${player.gender})",
-                    fontSize = 12.sp,
-                    color = Color.Gray
+                    text = "O: ${stats.oPointsPlayed}",
+                    fontSize = 13.sp,
+                    color = StitchOffense, // Temandaki hücum rengi (Yeşil)
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "D: ${stats.dPointsPlayed}",
+                    fontSize = 13.sp,
+                    color = com.eyuphanaydin.discbase.ui.theme.StitchDefense, // Temandaki savunma rengi (Kırmızı)
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            // Orta: İstatistik Özeti (Fotoğraftaki gibi Oyn: 9, O: 7 | D: 2)
-            Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier.padding(end = 8.dp)
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Toplam
+            Surface(
+                color = Color.LightGray.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(6.dp)
             ) {
-                Text("${stringResource(R.string.stat_played_short)} ${stats.basicStats.pointsPlayed}", fontSize = 12.sp) // GÜNCELLENDİ: Oyn:
                 Text(
-                    text = "${stringResource(R.string.stat_offense_short)} ${stats.oPointsPlayed} | ${stringResource(R.string.stat_defense_short)} ${stats.dPointsPlayed}", // GÜNCELLENDİ: O: | D:
-                    fontSize = 12.sp,
+                    text = "Tot: ${stats.basicStats.pointsPlayed}",
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = StitchPrimary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
-            // Sağ: Checkbox
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = null, // Card tıklamasını kullanıyoruz
-                colors = CheckboxDefaults.colors(checkedColor = StitchPrimary)
-            )
         }
     }
 }
-
 
 @Composable
 fun IconButtonBox(
@@ -2208,6 +2221,84 @@ fun EfficiencyCard(
                     fontSize = 14.sp,
                     color = Color.Gray,
                     modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+        }
+    }
+}
+@Composable
+fun PlayerLineSelectionCard(
+    playerName: String,
+    totalLines: Int,
+    oLines: Int,
+    dLines: Int,
+    isSelected: Boolean,
+    onPlayerClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
+            .clickable { onPlayerClick() }
+            .border(
+                width = if (isSelected) 2.dp else 0.dp,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                shape = RoundedCornerShape(8.dp)
+            ),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected)
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+            else
+                MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 4.dp else 1.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
+        ) {
+            // Oyuncu Adı
+            Text(
+                text = playerName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // İstatistikler (O, D ve Total Line)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // O ve D line bilgileri
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "O: $oLines",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFF2E7D32), // Hücum için Koyu Yeşil
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "D: $dLines",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFFC62828), // Savunma için Koyu Kırmızı
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Toplam line
+                Text(
+                    text = "Total: $totalLines",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

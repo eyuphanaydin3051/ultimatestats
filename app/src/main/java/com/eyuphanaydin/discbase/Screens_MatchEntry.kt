@@ -2519,15 +2519,22 @@ fun LineSelectionScreen(
         }
 
         // --- 2. OYUNCU LİSTESİ ---
-        LazyColumn(
+        // --- 2. OYUNCU LİSTESİ (GRID YAPISI) ---
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3), // Yan yana 3 kutucuk olacak şekilde böler (Ekrana göre 4 de yapabilirsin)
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            contentPadding = PaddingValues(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp), // Alt alta boşluk
+            horizontalArrangement = Arrangement.spacedBy(12.dp) // Yan yana boşluk
         ) {
             // HANDLERS
             if (handlers.isNotEmpty()) {
-                item { SectionHeader(stringResource(R.string.section_handlers)) }
+                // Başlıkların satırı tam kaplaması için span kullanıyoruz
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    SectionHeader(stringResource(R.string.section_handlers))
+                }
                 items(handlers) { pair ->
-                    RosterSelectionRow(
+                    RosterSelectionCard(
                         pair = pair,
                         isSelected = selectedPlayerIds.contains(pair.first.id),
                         isSelectionFull = selectedPlayerIds.size >= 7,
@@ -2545,9 +2552,14 @@ fun LineSelectionScreen(
 
             // CUTTERS
             if (cutters.isNotEmpty()) {
-                item { Spacer(Modifier.height(12.dp)); SectionHeader(stringResource(R.string.section_cutters)) }
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column {
+                        Spacer(Modifier.height(12.dp))
+                        SectionHeader(stringResource(R.string.section_cutters))
+                    }
+                }
                 items(cutters) { pair ->
-                    RosterSelectionRow(
+                    RosterSelectionCard(
                         pair = pair,
                         isSelected = selectedPlayerIds.contains(pair.first.id),
                         isSelectionFull = selectedPlayerIds.size >= 7,
@@ -2650,64 +2662,103 @@ fun QuickSetChip(
 fun RosterSelectionRow(
     pair: Pair<Player, AdvancedPlayerStats>,
     isSelected: Boolean,
-    isSelectionFull: Boolean, // Yeni parametre: Limit doldu mu?
+    isSelectionFull: Boolean,
     onToggle: (Pair<Player, AdvancedPlayerStats>) -> Unit
 ) {
     val player = pair.first
     val stats = pair.second
 
-    // Arka plan rengi
-    val bgColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.White
+    // Arka plan rengi ve çerçeve
+    val bgColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.White
+    val border = if (isSelected) BorderStroke(2.dp, com.eyuphanaydin.discbase.ui.theme.StitchPrimary) else null
 
-    // Kartın şeffaflığı: Seçili DEĞİLSE ve LİMİT DOLUYSA biraz silikleşsin (Görsel ipucu)
+    // Kartın şeffaflığı: Seçili DEĞİLSE ve LİMİT DOLUYSA biraz silikleşsin
     val alpha = if (!isSelected && isSelectionFull) 0.5f else 1f
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(vertical = 4.dp) // Kartlar arası hafif boşluk
             .alpha(alpha)
-            .clickable { onToggle(pair) }, // Tıklama mantığı yukarıda halledildi (Limit kontrolü orada)
+            .clickable { onToggle(pair) },
         colors = CardDefaults.cardColors(containerColor = bgColor),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(0.dp)
+        shape = RoundedCornerShape(12.dp),
+        border = border,
+        elevation = CardDefaults.cardElevation(if (isSelected) 4.dp else 1.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            PlayerAvatar(
-                name = player.name,
-                jerseyNumber = player.jerseyNumber,
-                photoUrl = player.photoUrl,
-                size = 40.dp,
-                fontSize = 14.sp
-            )
-            Spacer(Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(player.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text("${player.position}", fontSize = 12.sp, color = Color.Gray)
-            }
-
-            Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier.padding(end = 8.dp)
+            // ÜST SATIR: Oyuncu Adı ve Checkbox
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Oyn: ${stats.basicStats.pointsPlayed}", fontSize = 12.sp)
-                Text(
-                    "O: ${stats.oPointsPlayed} | D: ${stats.dPointsPlayed}",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = com.eyuphanaydin.discbase.ui.theme.StitchPrimary
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = player.name,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (player.position.isNotEmpty()) {
+                        Text(
+                            text = player.position,
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = null,
+                    colors = CheckboxDefaults.colors(checkedColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary),
+                    enabled = isSelected || !isSelectionFull
                 )
             }
 
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = null,
-                colors = CheckboxDefaults.colors(checkedColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary),
-                enabled = isSelected || !isSelectionFull // Doluysa ve seçili değilse disable et
-            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // ALT SATIR: İstatistikler (O, D ve Total Line)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // O ve D line bilgileri
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(
+                        text = "O: ${stats.oPointsPlayed}",
+                        fontSize = 14.sp,
+                        color = StitchOffense, // Temandaki yeşil hücum rengi
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "D: ${stats.dPointsPlayed}",
+                        fontSize = 14.sp,
+                        color = com.eyuphanaydin.discbase.ui.theme.StitchDefense, // Temandaki kırmızı savunma rengi
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Toplam Oynanan Line
+                Surface(
+                    color = Color.LightGray.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Text(
+                        text = "Total: ${stats.basicStats.pointsPlayed}",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }
