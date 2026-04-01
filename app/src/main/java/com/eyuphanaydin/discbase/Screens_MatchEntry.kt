@@ -43,6 +43,10 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.items
 // --- 1. MAÇ KURULUM (İSİM GİRME) ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -2518,7 +2522,6 @@ fun LineSelectionScreen(
             Spacer(Modifier.height(16.dp))
         }
 
-        // --- 2. OYUNCU LİSTESİ ---
         // --- 2. OYUNCU LİSTESİ (GRID YAPISI) ---
         LazyVerticalGrid(
             columns = GridCells.Fixed(3), // Yan yana 3 kutucuk olacak şekilde böler (Ekrana göre 4 de yapabilirsin)
