@@ -440,36 +440,24 @@ fun MatchPlaybackHost(
     fun handlePull(playerId: String) {
         saveCurrentStateToHistory()
         tempPullerId = playerId
-
-        // Pull Zamanlayıcısını Başlat
-        pullStartTimeMs = System.currentTimeMillis()
+        // Pull süresi artık manuel başlayacak, o yüzden burada başlatmıyoruz.
         gameMode = GameMode.DEFENSE_PULL_RESULT
     }
-    fun handlePullResult(isSuccess: Boolean) {
+
+    fun handlePullResult(isSuccess: Boolean, manualDurationMs: Long) {
         val pullerId = tempPullerId ?: return
         saveCurrentStateToHistory()
 
-        // --- YENİ: Süreyi Hesapla ---
-        val durationSeconds: Double
-        if (pullStartTimeMs != null) {
-            val durationMs = System.currentTimeMillis() - pullStartTimeMs!!
-            durationSeconds = durationMs / 1000.0
-            currentPointPullDuration = durationSeconds
-            pullStartTimeMs = null
-        } else {
-            durationSeconds = 0.0
-            currentPointPullDuration = 0.0
-        }
-        // ----------------------------
+        // Arayüzden gelen manuel süreyi direkt saniyeye çevirip kaydediyoruz
+        val durationSeconds = manualDurationMs / 1000.0
+        currentPointPullDuration = durationSeconds
 
         currentPointStats = currentPointStats.map {
             if (it.playerId == pullerId) {
                 it.copy(
                     pullAttempts = 1,
                     successfulPulls = if (isSuccess) 1 else 0,
-                    // --- YENİ: Oyuncuya Süreyi İşle ---
                     totalPullTimeSeconds = durationSeconds
-                    // ----------------------------------
                 )
             } else {
                 it.copy(pullAttempts = 0, successfulPulls = 0, totalPullTimeSeconds = 0.0)
@@ -719,7 +707,7 @@ fun MatchPlaybackHost(
                 onSimpleTheyScored = { handleOpponentGoal() },
                 onSimpleUndo = { /* Basit mod undo */ },
                 onPullSelected = { handlePull(it) },
-                onPullResult = { handlePullResult(it) },
+                onPullResult = { isSuccess, durationMs -> handlePullResult(isSuccess, durationMs) },
                 onBlock = { handleBlock(it) },
                 onCallahan = { handleCallahan(it) },
                 onOpponentTurnover = { handleOpponentTurnover() },
@@ -890,7 +878,7 @@ fun StatEntryScreen(
     onSimpleTheyScored: () -> Unit,
     onSimpleUndo: () -> Unit,
     onPullSelected: (String) -> Unit,
-    onPullResult: (isSuccess: Boolean) -> Unit,
+    onPullResult: (isSuccess: Boolean, durationMs: Long) -> Unit,
     onBlock: (String) -> Unit,
     onCallahan: (String) -> Unit,
     onOpponentTurnover: () -> Unit,
@@ -1530,17 +1518,20 @@ fun PullResultUI(
     theirTeamName: String,
     scoreUs: Int,
     scoreThem: Int,
-    onResultSelected: (isSuccess: Boolean) -> Unit
+    onResultSelected: (isSuccess: Boolean, durationMs: Long) -> Unit
 ) {
-    // --- CANLI SAYAÇ İÇİN STATE ---
-    var elapsedTimeMs by remember { mutableStateOf(0L) }
+    // --- KONTROL STATE'LERİ ---
+    var isPullTimerRunning by remember { mutableStateOf(false) }
+    var pullTimeMs by remember { mutableStateOf(0L) }
+    var hasPullStarted by remember { mutableStateOf(false) }
 
-    // Ekran açıldığında sayacı başlat
-    LaunchedEffect(Unit) {
-        val startTime = System.currentTimeMillis()
-        while (true) {
-            elapsedTimeMs = System.currentTimeMillis() - startTime
-            kotlinx.coroutines.delay(16L) // 100ms'de bir güncelle (daha akıcı)
+    LaunchedEffect(isPullTimerRunning) {
+        if (isPullTimerRunning) {
+            val startTime = System.currentTimeMillis() - pullTimeMs
+            while (isPullTimerRunning) {
+                pullTimeMs = System.currentTimeMillis() - startTime
+                kotlinx.coroutines.delay(16L) // Daha akıcı sayaç için
+            }
         }
     }
 
@@ -1577,39 +1568,98 @@ fun PullResultUI(
 
                     // --- CANLI SAYAÇ ---
                     Text(
-                        text = String.format("%.2f sn", elapsedTimeMs / 1000.0), // Örn: 4.2 sn
+                        text = String.format(java.util.Locale.US, "%.2f sn", pullTimeMs / 1000.0),
                         fontSize = 48.sp,
                         fontWeight = FontWeight.Black,
-                        color = StitchColor.Primary,
+                        color = if (isPullTimerRunning) MaterialTheme.colorScheme.error else StitchColor.Primary,
                         modifier = Modifier.padding(vertical = 16.dp)
                     )
-                    // -------------------
 
-                    Text(
-                        stringResource(R.string.pull_result_instruction),
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
+                    // --- 1. BÜYÜK BAŞLAT / DURDUR BUTONU ---
+                    // --- 1. BÜYÜK BAŞLAT / DURDUR BUTONU ---
                     Button(
-                        onClick = { onResultSelected(true) },
-                        modifier = Modifier.fillMaxWidth().height(60.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = com.eyuphanaydin.discbase.ui.theme.StitchPrimary)
+                        onClick = {
+                            if (isPullTimerRunning) {
+                                isPullTimerRunning = false // Durdur
+                            } else {
+                                isPullTimerRunning = true // Başlat / Devam Et
+                                hasPullStarted = true
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isPullTimerRunning) MaterialTheme.colorScheme.error else com.eyuphanaydin.discbase.ui.theme.StitchPrimary
+                        )
                     ) {
-                        Text(stringResource(R.string.btn_pull_good), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = if (isPullTimerRunning) "SÜREYİ DURDUR" else if (hasPullStarted) "SÜREYE DEVAM ET" else "PULL SÜRESİNİ BAŞLAT",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
-                    Spacer(Modifier.height(12.dp))
+                    // --- SIFIRLA BUTONU (Kronometrenin hemen altına, ince bir şekilde konumlandırıldı) ---
+                    if (hasPullStarted && !isPullTimerRunning) {
+                        Spacer(Modifier.height(8.dp))
+                        TextButton(
+                            onClick = {
+                                isPullTimerRunning = false
+                                pullTimeMs = 0L
+                                hasPullStarted = false
+                            }
+                        ) {
+                            Text("Süreyi Sıfırla", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                        }
+                    }
 
-                    Button(
-                        onClick = { onResultSelected(false) },
-                        modifier = Modifier.fillMaxWidth().height(60.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text(stringResource(R.string.btn_pull_bad), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(24.dp))
+
+                    // --- 2. BAŞARILI / BAŞARISIZ SONUÇ BUTONLARI ---
+                    if (hasPullStarted && !isPullTimerRunning) {
+                        // Seçim butonlarını geniş ve okunaklı yapmak için alt alta (Column) koyuyoruz
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            // BAŞARILI BUTONU
+                            Button(
+                                onClick = {
+                                    isPullTimerRunning = false
+                                    onResultSelected(true, pullTimeMs)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(70.dp), // Yüksek ve basması kolay
+                                colors = ButtonDefaults.buttonColors(containerColor = StitchOffense),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(stringResource(R.string.btn_pull_good), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                    Text("Saha içi", fontSize = 12.sp, color = Color.White.copy(0.8f))
+                                }
+                            }
+
+                            // BAŞARISIZ BUTONU
+                            Button(
+                                onClick = {
+                                    isPullTimerRunning = false
+                                    onResultSelected(false, pullTimeMs)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(70.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(stringResource(R.string.btn_pull_bad), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                    Text("Saha dışı veya Brick noktasından yakın", fontSize = 12.sp, color = Color.White.copy(0.8f))
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -3370,7 +3420,7 @@ fun AdvancedPointEditor(
                 // Kullanılmayanlar
                 onLineSelected = {}, onGameModeSelected = {}, onStatModeSelected = {},
                 onSimpleWeScored = {_,_ ->}, onSimpleTheyScored = {}, onSimpleUndo = {},
-                onPullSelected = {}, onPullResult = {},
+                onPullSelected = {}, onPullResult = { _, _ -> },
             )
         }
     }

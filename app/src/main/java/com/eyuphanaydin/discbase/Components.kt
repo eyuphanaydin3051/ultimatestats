@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -53,7 +52,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -71,11 +69,7 @@ import com.eyuphanaydin.discbase.ui.theme.StitchPrimary
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.UUID
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.ui.unit.dp
+
 @Composable
 fun PlayerAvatar(
     name: String,
@@ -1508,16 +1502,13 @@ fun RosterSelectionCard(
     val player = pair.first
     val stats = pair.second
 
-    // Arka plan her zaman beyaz, seçiliyse sadece çerçeve mor ve daha kalın (3.dp)
     val bgColor = Color.White
     val border = if (isSelected) BorderStroke(3.dp, com.eyuphanaydin.discbase.ui.theme.StitchPrimary) else BorderStroke(1.dp, Color.LightGray.copy(0.5f))
-
-    // Kartın şeffaflığı: Seçili DEĞİLSE ve LİMİT DOLUYSA silikleşsin
     val alpha = if (!isSelected && isSelectionFull) 0.5f else 1f
 
     Card(
         modifier = Modifier
-            .aspectRatio(1f) // Kartı tam bir kare (box) yapar
+            .aspectRatio(1f) // Kare formunu koruyoruz
             .alpha(alpha)
             .clickable { onToggle(pair) },
         colors = CardDefaults.cardColors(containerColor = bgColor),
@@ -1525,47 +1516,45 @@ fun RosterSelectionCard(
         border = border,
         elevation = CardDefaults.cardElevation(if (isSelected) 4.dp else 1.dp)
     ) {
+        // SpaceBetween kullanarak elemanları yukarıdan aşağıya olabildiğince yayıyoruz
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp),
+                .padding(4.dp), // Ana padding'i 8'den 4'e düşürdük
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.SpaceEvenly // Elemanları sıkıştırmak yerine aralarına eşit boşluk dağıtır
         ) {
-            // YENİDEN EKLENEN KISIM: Profil Fotoğrafı / Baş Harfler / Forma No
+            // 1. Profil (Bir tık ufalttık)
             PlayerAvatar(
                 name = player.name,
                 jerseyNumber = player.jerseyNumber,
                 photoUrl = player.photoUrl,
-                size = 44.dp, // Kare kutu içine tam oturması için ideal boyut
-                fontSize = 16.sp
+                size = 38.dp, // 44'ten 38'e çekildi
+                fontSize = 14.sp
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Oyuncu Adı
+            // 2. Oyuncu Adı
             Text(
                 text = player.name.split(" ").first(),
                 fontWeight = FontWeight.Bold,
-                fontSize = 15.sp, // Avatar geldiği için taşıma yapmasın diye bir tık küçülttük
+                fontSize = 13.sp, // 15'ten 13'e çekildi
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // SADECE TOPLAM
+            // 3. Toplam Line Göstergesi
             Surface(
-                color = Color.LightGray.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(6.dp)
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = RoundedCornerShape(4.dp) // Köşeleri biraz daha keskin yaptık ki yer kazansın
             ) {
                 Text(
-                    text = "Tot: ${stats.basicStats.pointsPlayed}",
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                    fontSize = 11.sp, // Kutuyu taşırmaması için biraz ufaltıldı
+                    text = "Line: ${stats.basicStats.pointsPlayed}",
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    maxLines = 1
                 )
             }
         }
