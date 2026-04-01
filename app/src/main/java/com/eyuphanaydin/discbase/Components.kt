@@ -1508,7 +1508,7 @@ fun RosterSelectionCard(
     val player = pair.first
     val stats = pair.second
 
-    // DEĞİŞİKLİK BURADA: Arka plan her zaman beyaz, seçiliyse sadece çerçeve mor ve daha kalın (3.dp)
+    // Arka plan her zaman beyaz, seçiliyse sadece çerçeve mor ve daha kalın (3.dp)
     val bgColor = Color.White
     val border = if (isSelected) BorderStroke(3.dp, com.eyuphanaydin.discbase.ui.theme.StitchPrimary) else BorderStroke(1.dp, Color.LightGray.copy(0.5f))
 
@@ -1532,11 +1532,22 @@ fun RosterSelectionCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // YENİDEN EKLENEN KISIM: Profil Fotoğrafı / Baş Harfler / Forma No
+            PlayerAvatar(
+                name = player.name,
+                jerseyNumber = player.jerseyNumber,
+                photoUrl = player.photoUrl,
+                size = 44.dp, // Kare kutu içine tam oturması için ideal boyut
+                fontSize = 16.sp
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Oyuncu Adı
             Text(
                 text = player.name.split(" ").first(),
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
+                fontSize = 15.sp, // Avatar geldiği için taşıma yapmasın diye bir tık küçülttük
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -1544,33 +1555,15 @@ fun RosterSelectionCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // İstatistikler (O ve D)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "O: ${stats.oPointsPlayed}",
-                    fontSize = 13.sp,
-                    color = StitchOffense,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "D: ${stats.dPointsPlayed}",
-                    fontSize = 13.sp,
-                    color = com.eyuphanaydin.discbase.ui.theme.StitchDefense,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // Toplam
+            // SADECE TOPLAM
             Surface(
                 color = Color.LightGray.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(6.dp)
             ) {
                 Text(
                     text = "Tot: ${stats.basicStats.pointsPlayed}",
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                    fontSize = 11.sp,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                    fontSize = 11.sp, // Kutuyu taşırmaması için biraz ufaltıldı
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
